@@ -1,4 +1,8 @@
-app/database.db
+database.db
 .env
 .venv
 .idea
+.vscode
+node_modules
+build
+dist

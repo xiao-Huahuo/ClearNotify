@@ -1,71 +1,80 @@
 <template>
   <div class="home-container">
-    <!-- 标题区域 -->
-    <div class="hero-section">
+    <!-- 标题区域 (始终显示，或者在结果页也可以显示，视情况而定，这里先始终显示) -->
+    <div class="hero-section" v-if="!showResult">
       <h1 class="main-title">文档解析</h1>
       <p class="sub-title">全格式兼容-精准提取-详细输出</p>
     </div>
 
-    <!-- 上传区域 -->
-    <div
-      class="upload-area"
-      @click="triggerFileUpload"
-      @dragover.prevent
-      @drop.prevent="handleDrop"
-    >
-      <div class="upload-buttons">
-        <button class="action-btn" @click.stop="triggerFileUpload">
-          <span class="icon">📂</span> 本地上传
-        </button>
-        <button class="action-btn" @click.stop="handleUrlUpload">
-          <span class="icon">🔗</span> URL上传
-        </button>
-        <button class="action-btn" @click.stop="handleScreenshot">
-          <span class="icon">📷</span> 截图
-        </button>
+    <!-- 初始视图：上传区 + 示例区 -->
+    <div v-if="!showResult" class="initial-view">
+      <!-- 上传区域 -->
+      <div
+        class="upload-area"
+        @click="triggerFileUpload"
+        @dragover.prevent
+        @drop.prevent="handleDrop"
+        :class="{ 'disabled': loading }"
+      >
+        <div class="upload-buttons">
+          <button class="action-btn" @click.stop="triggerFileUpload" :disabled="loading">
+            <span class="icon">📂</span> 本地上传
+          </button>
+          <button class="action-btn" @click.stop="handleUrlUpload" :disabled="loading">
+            <span class="icon">🔗</span> URL上传
+          </button>
+          <button class="action-btn" @click.stop="handleScreenshot" :disabled="loading">
+            <span class="icon">📷</span> 截图
+          </button>
+        </div>
+        <p class="upload-hint">点击或拖拽上传</p>
+
+        <!-- 隐藏的文件输入框 -->
+        <input
+          type="file"
+          ref="fileInput"
+          style="display: none"
+          @change="handleFileUpload"
+        />
       </div>
-      <p class="upload-hint">点击或拖拽上传</p>
 
-      <!-- 隐藏的文件输入框 -->
-      <input
-        type="file"
-        ref="fileInput"
-        style="display: none"
-        @change="handleFileUpload"
-      />
-    </div>
+      <!-- 加载中小横幅 -->
+      <div v-if="loading" class="loading-banner">
+        <div class="spinner"></div>
+        <span>正在智能解读中...</span>
+      </div>
 
-    <!-- 提交按钮 (如果已上传内容) -->
-    <div v-if="inputText" class="submit-area">
-      <p class="file-status">已准备好内容，点击下方按钮开始解读</p>
-      <button @click="submitToAI" :disabled="loading" class="submit-btn">
-        {{ loading ? '解读中...' : '开始智能解读' }}
-      </button>
-    </div>
-
-    <!-- 示例区域 -->
-    <div class="examples-section">
-      <h2 class="section-title">示例</h2>
-      <div class="examples-grid">
-        <div v-for="ex in examples" :key="ex.id" class="example-card">
-          <div class="card-image">
-            <!-- 占位图片 -->
-            <div class="placeholder-img">IMG</div>
-          </div>
-          <div class="card-content">
-            <h3 class="card-title">{{ ex.title }}</h3>
-            <div class="card-tags">
-              <span v-for="tag in ex.tags" :key="tag" class="tag">{{ tag }}</span>
+      <!-- 示例区域 -->
+      <div class="examples-section">
+        <h2 class="section-title">示例</h2>
+        <div class="examples-grid">
+          <div v-for="ex in examples" :key="ex.id" class="example-card">
+            <div class="card-image">
+              <div class="placeholder-img">IMG</div>
+            </div>
+            <div class="card-content">
+              <h3 class="card-title">{{ ex.title }}</h3>
+              <div class="card-tags">
+                <span v-for="tag in ex.tags" :key="tag" class="tag">{{ tag }}</span>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 结果区域 -->
-    <div v-if="aiResponse" class="response-section">
-      <h3>解读结果：</h3>
-      <div class="result-content">{{ aiResponse }}</div>
+    <!-- 结果视图 -->
+    <div v-else class="result-view">
+      <div class="result-header">
+        <button @click="resetView" class="back-btn">
+          <span class="icon">←</span> 返回
+        </button>
+        <h2>解读结果</h2>
+      </div>
+
+      <div class="response-section">
+        <div class="result-content">{{ aiResponse }}</div>
+      </div>
     </div>
 
     <!-- 弹窗 -->
@@ -96,6 +105,7 @@ const userStore = useUserStore();
 const inputText = ref('');
 const aiResponse = ref('');
 const loading = ref(false);
+const showResult = ref(false);
 const fileInput = ref(null);
 
 const showModal = ref(false);
@@ -127,6 +137,7 @@ const handleLoginSuccess = () => {
 };
 
 const triggerFileUpload = () => {
+  if (loading.value) return;
   fileInput.value.click();
 };
 
@@ -136,6 +147,7 @@ const handleFileUpload = (event) => {
 };
 
 const handleDrop = (event) => {
+  if (loading.value) return;
   const file = event.dataTransfer.files[0];
   processFile(file);
 };
@@ -145,16 +157,19 @@ const processFile = (file) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       inputText.value = e.target.result;
-      alert(`已加载文件: ${file.name}`);
+      // 读取完成后直接提交
+      submitToAI();
     };
     reader.readAsText(file);
   }
 };
 
 const handleUrlUpload = () => {
+  if (loading.value) return;
   const url = prompt("请输入 URL:");
   if (url) {
-    inputText.value = `URL: ${url}`; // 简单处理
+    inputText.value = `URL: ${url}`;
+    submitToAI();
   }
 };
 
@@ -169,7 +184,7 @@ const submitToAI = async () => {
   }
 
   if (!inputText.value.trim()) {
-    alert('请先上传文件或输入内容');
+    // 应该不会发生，因为只有有内容才调这个
     return;
   }
 
@@ -179,6 +194,7 @@ const submitToAI = async () => {
   try {
     const response = await chatWithAI(inputText.value);
     aiResponse.value = response.data.reply;
+    showResult.value = true;
   } catch (error) {
     console.error(error);
     if (error.response?.status === 401) {
@@ -189,6 +205,15 @@ const submitToAI = async () => {
     }
   } finally {
     loading.value = false;
+  }
+};
+
+const resetView = () => {
+  inputText.value = '';
+  aiResponse.value = '';
+  showResult.value = false;
+  if (fileInput.value) {
+    fileInput.value.value = ''; // 清空文件选择
   }
 };
 </script>
@@ -205,7 +230,7 @@ const submitToAI = async () => {
   margin-bottom: 30px;
 }
 .main-title {
-  font-size: 32px; /* 缩小三分之一 (48 -> 32) */
+  font-size: 32px;
   font-weight: bold;
   color: #000;
   margin: 0 0 10px 0;
@@ -222,15 +247,20 @@ const submitToAI = async () => {
   background-color: #fff;
   border: 2px dashed #e0e0e0;
   border-radius: 20px;
-  padding: 120px 60px; /* 竖直方向增大一倍 (60 -> 120) */
+  padding: 120px 60px;
   text-align: center;
   cursor: pointer;
   transition: all 0.3s;
-  margin-bottom: 40px;
+  margin-bottom: 20px; /* 减小一点，给 banner 留空间 */
 }
 .upload-area:hover {
   border-color: var(--color-middle);
   background-color: #fafafa;
+}
+.upload-area.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 .upload-buttons {
   display: flex;
@@ -242,7 +272,7 @@ const submitToAI = async () => {
   background-color: #f5f5f5;
   border: none;
   border-radius: 12px;
-  padding: 8px 20px; /* 纵向缩小，水平也缩小 (原来 15 30) */
+  padding: 8px 20px;
   font-size: 14px;
   font-weight: bold;
   color: #333;
@@ -263,29 +293,34 @@ const submitToAI = async () => {
   margin: 0;
 }
 
-/* 提交区域 */
-.submit-area {
-  text-align: center;
-  margin-bottom: 40px;
-}
-.file-status {
-  color: #666;
-  margin-bottom: 15px;
-}
-.submit-btn {
-  background-color: var(--sidebar-active-bg);
-  border: 2px solid var(--sidebar-active-border);
+/* 加载横幅 */
+.loading-banner {
+  background-color: #e6fffa;
+  border: 1px solid var(--color-secondary);
   color: var(--color-text-dark);
-  padding: 12px 40px;
-  cursor: pointer;
-  border-radius: 12px;
-  font-size: 18px;
-  font-weight: bold;
-  transition: all 0.3s;
+  padding: 15px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 40px;
+  animation: fadeIn 0.5s;
 }
-.submit-btn:hover {
-  transform: translateY(-2px);
-  background-color: #d1f7f5;
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(0, 226, 220, 0.3);
+  border-radius: 50%;
+  border-top-color: var(--color-secondary);
+  animation: spin 1s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* 示例区域 */
@@ -306,7 +341,7 @@ const submitToAI = async () => {
 .example-card {
   flex: 1;
   min-width: 250px;
-  max-width: 350px; /* 大约 1/3 */
+  max-width: 350px;
   background: #fff;
   border-radius: 12px;
   overflow: hidden;
@@ -322,7 +357,7 @@ const submitToAI = async () => {
   box-shadow: 0 5px 15px rgba(0,0,0,0.05);
 }
 .card-image {
-  height: 140px; /* 控制高度比例 */
+  height: 140px;
   background-color: #f0f0f0;
   display: flex;
   align-items: center;
@@ -346,17 +381,46 @@ const submitToAI = async () => {
 .tag {
   background-color: #f5f5f5;
   padding: 4px 10px;
-  border-radius: 6px; /* 圆角矩形 */
+  border-radius: 6px;
   font-size: 12px;
   color: #000;
 }
 
 /* 结果区域 */
+.result-view {
+  animation: fadeIn 0.5s;
+}
+.result-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+.back-btn {
+  background: none;
+  border: 1px solid #ccc;
+  padding: 8px 15px;
+  border-radius: 20px;
+  cursor: pointer;
+  margin-right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+.back-btn:hover {
+  background-color: #f0f0f0;
+}
 .response-section {
-  margin-top: 40px;
   padding: 30px;
   background-color: #fff;
   border-radius: 12px;
   border: 1px solid #e0e0e0;
+  min-height: 300px;
+}
+.result-content {
+  white-space: pre-wrap;
+  line-height: 1.8;
+  color: #333;
 }
 </style>

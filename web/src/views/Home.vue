@@ -52,9 +52,9 @@
 import { ref, onMounted } from 'vue';
 import { useUserStore } from '@/stores/user';
 import { chatWithAI } from '@/api/ai';
-import Modal from '@/components/Modal.vue';
-import LoginForm from '@/components/LoginForm.vue';
-import RegisterForm from '@/components/RegisterForm.vue';
+import Modal from '@/components/common/Modal.vue';
+import LoginForm from '@/components/Home/LoginForm.vue';
+import RegisterForm from '@/components/Home/RegisterForm.vue';
 
 const userStore = useUserStore();
 const inputText = ref('');

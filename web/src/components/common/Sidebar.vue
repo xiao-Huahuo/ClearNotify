@@ -13,20 +13,23 @@
 
 <style scoped>
 .sidebar {
-  width: 200px; /* 稍微窄一点 */
-  background-color: #2c3e50;
-  color: white;
+  width: 200px;
+  background-color: var(--sidebar-bg);
+  color: var(--color-text-dark);
   height: 100vh;
   display: flex;
   flex-direction: column;
-  flex-shrink: 0; /* 防止被压缩 */
+  flex-shrink: 0;
+  border-right: 1px solid var(--border-color);
+  box-shadow: none;
 }
 .logo {
   padding: 20px;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: bold;
   text-align: center;
-  border-bottom: 1px solid #34495e;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--color-text-dark);
 }
 nav {
   flex: 1;
@@ -36,18 +39,21 @@ nav {
 }
 .nav-item {
   padding: 15px 20px;
-  color: #bdc3c7;
+  color: #666;
   text-decoration: none;
-  transition: background 0.3s;
-  border-left: 4px solid transparent;
+  transition: all 0.2s;
+  border-radius: 12px; /* 增大圆角 */
+  margin: 5px 10px;
+  border: 2px solid transparent; /* 预留边框空间 */
 }
 .nav-item:hover {
-  background-color: #34495e;
-  color: white;
+  background-color: #f0f0f0;
+  color: var(--color-text-dark);
 }
 .nav-item.active {
-  background-color: #34495e;
-  color: white;
-  border-left-color: #1abc9c;
+  background-color: var(--sidebar-active-bg);
+  border-color: var(--sidebar-active-border); /* 边缘是 #00e2dc */
+  color: var(--color-text-dark);
+  font-weight: bold;
 }
 </style>

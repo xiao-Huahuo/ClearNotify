@@ -80,11 +80,12 @@ const handleLoginSuccess = () => {
   margin-top: 10px;
 }
 .login-btn {
-  background-color: #2196F3;
+  background: var(--primary-gradient); /* 使用渐变色 */
   color: white;
   border: none;
-  padding: 8px 16px;
+  padding: 10px 20px;
   cursor: pointer;
   border-radius: 4px;
+  font-weight: bold;
 }
 </style>

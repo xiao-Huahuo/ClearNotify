@@ -178,3 +178,4 @@ ADMIN_PASSWORD = 11235813xx
 - 所有的API路由都注册在router/api_routes.js中的API代理,禁止在其他地方使用非API代理的路由.
 - 所有的页面路由都注册在router/index.js中,以实现Modal对于页面的集中管理.
 - 组件分配应该按照**主框架-页面-组件**的逻辑进行编排,主框架(Modal)和所有的页面都放在views中,每个页面XXX含有的组件应该存放于components/XXX/之下,根据页面进行组件的划分,其中components/common存放公共常用组件.不同页面的组件可以相互调用.
+- 主色调: 渐变色 #d4ff80-#00e2dc-#002059 ;整体设计以简约大方白色为主色调,#d4ff80为主题色.

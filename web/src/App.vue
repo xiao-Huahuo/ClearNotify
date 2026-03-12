@@ -35,7 +35,7 @@ body {
 .main-content {
   flex: 1;
   overflow-y: auto;
-  background-color: #f5f7fa;
+  background-color: var(--content-bg); /* 使用 CSS 变量 */
   padding: 20px;
 }
 </style>

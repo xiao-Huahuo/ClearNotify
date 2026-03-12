@@ -1,0 +1,46 @@
+:root {
+  /* 主色调定义 */
+  --color-primary: #d4ff80;
+  --color-secondary: #00e2dc;
+  --color-text-dark: #002059;
+
+  /* 布局颜色 */
+  --sidebar-bg: #ffffff;
+  --header-bg: #ffffff;
+  --content-bg: #ffffff; /* 修改这里：改为真正的白色 */
+  --border-color: #e0e0e0;
+
+  /* 按钮和激活项颜色 */
+  --btn-primary-bg: var(--color-primary);
+  --btn-primary-text: var(--color-text-dark);
+  --btn-hover-bg: #c3f070;
+  --sidebar-active-bg: #e6fffa; /* 淡青色 */
+  --sidebar-active-border: var(--color-secondary); /* #00e2dc */
+
+  /* 统一圆角 */
+  --border-radius-main: 8px; /* 增大圆角 */
+  --border-radius-pill: 20px; /* 两边圆的圆角矩形 */
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  background-color: var(--content-bg);
+  color: var(--color-text-dark);
+}
+
+/* 全局滚动条样式优化 */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}

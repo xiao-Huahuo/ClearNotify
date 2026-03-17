@@ -94,27 +94,40 @@
       <!-- ================= 右侧列 (1/3, 1/3, 1/3) ================= -->
       <div class="col-right">
         <!-- TOP5 所需材料 -->
-        <div class="widget widget-top-materials">
-          <h3 class="widget-title">核心材料 Top5</h3>
-          <div class="chart-placeholder">图表占位：横向柱状图</div>
+        <div class="widget widget-top-materials" :class="{ 'expanded': isMaterialsExpanded }">
+          <div class="widget-header">
+             <h3 class="widget-title">核心材料 Top5</h3>
+             <button class="expand-btn" @click="isMaterialsExpanded = !isMaterialsExpanded">
+                <svg v-if="!isMaterialsExpanded" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                <svg v-else viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><polyline points="18 15 12 9 6 15"></polyline></svg>
+             </button>
+          </div>
+          <div class="chart-content-expandable">
+            <TopMaterialsBarChart :chartData="statsData?.materials_freq" :isExpanded="isMaterialsExpanded" />
+          </div>
         </div>
 
         <!-- 通知难度分布 -->
-        <div class="widget widget-difficulty-bar">
+        <div class="widget widget-difficulty-bar" v-show="!isMaterialsExpanded">
           <h3 class="widget-title">通知难度评估</h3>
-          <div class="chart-placeholder">图表占位：9柱难度分布图</div>
+          <div class="chart-content">
+             <DifficultyBarChart :chartData="statsData?.complexity_distribution" />
+          </div>
         </div>
 
         <!-- 最近会话历史 -->
-        <div class="widget widget-recent-history">
+        <div class="widget widget-recent-history" v-show="!isMaterialsExpanded">
           <h3 class="widget-title">最近处理</h3>
-          <div class="history-placeholder">
-             <!-- 占位，之后调接口渲染 -->
+          <div class="history-content" v-if="recentHistory">
              <div class="mock-history-item">
-                <span class="time">2023-10-27 14:30</span>
-                <p class="text">关于开展2024年度城乡居民医疗保险...</p>
+                <span class="time">{{ formatDate(recentHistory.created_time) }}</span>
+                <p class="text">{{ recentHistory.handling_matter || formatName(recentHistory.original_text) }}</p>
+                <div class="history-tags">
+                   <span class="h-tag">{{ recentHistory.target_audience || '未知对象' }}</span>
+                </div>
              </div>
           </div>
+          <div class="chart-placeholder" v-else>暂无历史记录</div>
         </div>
       </div>
     </div>
@@ -130,14 +143,30 @@ import NoticeTypeRoseChart from '@/components/Analysis/NoticeTypeRoseChart.vue';
 import MaterialsPieChart from '@/components/Analysis/MaterialsPieChart.vue';
 import MaterialsScatterChart from '@/components/Analysis/MaterialsScatterChart.vue';
 import MaterialsWordCloud from '@/components/Analysis/MaterialsWordCloud.vue';
+import TopMaterialsBarChart from '@/components/Analysis/TopMaterialsBarChart.vue';
+import DifficultyBarChart from '@/components/Analysis/DifficultyBarChart.vue';
 
 const userStore = useUserStore();
 const loading = ref(true);
 const statsData = ref(null);
+const recentHistory = ref(null);
 
 // 图表类型控制
 const timeChartType = ref('line'); // 默认曲线图
 const materialsChartType = ref('scatter'); // 默认点云图
+const isMaterialsExpanded = ref(false);
+
+const formatDate = (dateString) => {
+  if (!dateString) return '-';
+  const date = new Date(dateString);
+  return `${date.getMonth()+1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}`;
+};
+
+const formatName = (text) => {
+  if (!text) return '未命名文档';
+  const cleanText = text.replace(/\s+/g, ' ');
+  return cleanText.length > 20 ? cleanText.substring(0, 20) + '...' : cleanText;
+};
 
 onMounted(async () => {
   if (!userStore.token) {
@@ -146,8 +175,15 @@ onMounted(async () => {
   }
 
   try {
+    // 获取统计数据
     const res = await apiClient.get(API_ROUTES.ANALYSIS_ME);
     statsData.value = res.data;
+
+    // 获取最近一条历史记录
+    const historyRes = await apiClient.get(API_ROUTES.CHAT_MESSAGE, { params: { limit: 1 } });
+    if (historyRes.data && historyRes.data.length > 0) {
+       recentHistory.value = historyRes.data[0];
+    }
   } catch (error) {
     console.error("获取统计数据失败:", error);
   } finally {
@@ -212,6 +248,15 @@ onMounted(async () => {
   height: 100%;
 }
 
+.col-right {
+    overflow-y: auto;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* Internet Explorer 10+ */
+}
+.col-right::-webkit-scrollbar {
+    display: none; /* WebKit */
+}
+
 /* ======= Widget 基础样式 ======= */
 .widget {
   background: #ffffff;
@@ -221,6 +266,7 @@ onMounted(async () => {
   display: flex;
   flex-direction: column;
   position: relative;
+  transition: all 0.3s ease;
 }
 
 .widget-header {
@@ -228,6 +274,7 @@ onMounted(async () => {
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 10px;
+  flex-shrink: 0;
 }
 
 .widget-title {
@@ -262,6 +309,24 @@ onMounted(async () => {
   font-weight: bold;
 }
 
+.expand-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.expand-btn:hover {
+  background: #f5f5f5;
+  color: #333;
+}
+
 .chart-placeholder {
   flex: 1;
   background: #fafafa;
@@ -282,21 +347,31 @@ onMounted(async () => {
   min-height: 150px;
 }
 
-/* ======= 比例划分 ======= */
-.widget-time-curve { flex: 5; }
-.widget-rose-pie { flex: 7; }
+.chart-content-expandable {
+  width: 100%;
+}
 
-.widget-cloud-scatter { flex: 3; }
+
+/* ======= 比例划分 ======= */
+.widget-time-curve { flex: 5; min-height: 0; }
+.widget-rose-pie { flex: 7; min-height: 0; }
+
+.widget-cloud-scatter { flex: 3; min-height: 0; }
 .widget-time-cards {
   flex: 1;
   padding: 0;
   background: transparent;
   box-shadow: none;
+  min-height: 0;
 }
 
-.widget-top-materials { flex: 1; }
-.widget-difficulty-bar { flex: 1; }
-.widget-recent-history { flex: 1; }
+.widget-top-materials { flex: 1; min-height: 0; }
+.widget-difficulty-bar { flex: 1; min-height: 0; }
+.widget-recent-history { flex: 1; min-height: 0; }
+
+.widget-top-materials.expanded {
+    flex: 3;
+}
 
 
 /* ======= 特殊组件：节省时间层叠卡片 ======= */
@@ -372,34 +447,53 @@ onMounted(async () => {
   font-weight: normal;
 }
 
-/* ======= 历史记录占位 ======= */
-.history-placeholder {
+/* ======= 历史记录卡片 ======= */
+.history-content {
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 10px;
   margin-top: 10px;
 }
 .mock-history-item {
-  background: #f9f9f9;
+  background: #fafafa;
   padding: 15px;
-  border-radius: 8px;
-  border-left: 4px solid #000;
+  border-radius: 12px;
+  border: 1px solid #eee;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.mock-history-item:hover {
+  background: #fff;
+  border-color: #000;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  transform: translateY(-2px);
 }
 .mock-history-item .time {
   font-size: 12px;
   color: #999;
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
 }
 .mock-history-item .text {
-  margin: 0;
-  font-size: 14px;
-  color: #333;
-  font-weight: 500;
-  white-space: nowrap;
+  margin: 0 0 10px 0;
+  font-size: 15px;
+  color: #000;
+  font-weight: bold;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.4;
+}
+.history-tags {
+  display: flex;
+}
+.h-tag {
+  background: #000;
+  color: #fff;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
 }
 </style>

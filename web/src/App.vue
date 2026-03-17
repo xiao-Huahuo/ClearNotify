@@ -1,6 +1,20 @@
 <script setup>
+import { onMounted } from 'vue';
+import { useUserStore } from '@/stores/user';
+import { useSettingsStore } from '@/stores/settings';
 import Sidebar from '@/components/common/Sidebar.vue';
 import Header from '@/components/common/Header.vue';
+
+const userStore = useUserStore();
+const settingsStore = useSettingsStore();
+
+onMounted(async () => {
+  // 应用启动时，如果已登录，自动拉取用户信息和设置并应用
+  if (userStore.token) {
+    await userStore.fetchUser();
+    await settingsStore.fetchSettings();
+  }
+});
 </script>
 
 <template>

@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from app.models.chat_message import ChatMessage
     from app.models.stats_analysis import StatsAnalysis
+    from app.models.settings import Settings
 
 #通用模型,无需存入数据库
 class UserBase(SQLModel):
@@ -27,3 +28,6 @@ class User(UserBase,table=True):
     
     # 建立一对一(或一对多)关联关系：一个用户对应其个人的统计分析数据
     stats_analyses: List["StatsAnalysis"] = Relationship(back_populates="user")
+    
+    # 建立一对一关联关系：一个用户对应一套个人设置
+    settings: Optional["Settings"] = Relationship(back_populates="user")

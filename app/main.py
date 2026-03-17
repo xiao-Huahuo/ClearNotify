@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 # 加载环境变量
 load_dotenv()
 
-from app.api.routes import user, login, chat_message, stats_analysis
+from app.api.routes import user, login, chat_message, stats_analysis, settings
 from app.services.init_db import init_db_and_admin
 
 # 定义生命周期管理器
@@ -35,6 +35,7 @@ app.include_router(user.router, prefix="/user", tags=["user"])
 app.include_router(login.router, prefix="/login", tags=["login"])
 app.include_router(chat_message.router, prefix="/chat", tags=["chat_message"])
 app.include_router(stats_analysis.router, prefix="/analysis", tags=["analysis"])
+app.include_router(settings.router, prefix="/settings", tags=["settings"])
 
 @app.get("/")
 async def root():

@@ -6,3 +6,6 @@ database.db
 node_modules
 build
 dist
+
+# 上传的文件目录
+/uploads/

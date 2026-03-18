@@ -3,16 +3,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
-import os
 
-# 加载环境变量
-load_dotenv()
+# 使用动态绝对路径加载环境变量
+from app.core.config import GlobalConfig
+load_dotenv(dotenv_path=GlobalConfig.ENV_PATH)
 
 from app.api.routes import user, login, chat_message, stats_analysis, settings, upload
 from app.services.init_db import init_db_and_admin
 
-# 确保上传目录存在
-os.makedirs("uploads/avatars", exist_ok=True)
+# 确保上传目录存在 (基于绝对路径)
+GlobalConfig.AVATAR_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 # 定义生命周期管理器
 @asynccontextmanager
@@ -35,8 +35,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 挂载静态文件目录，使得前端可以通过 /media/... 访问上传的文件
-app.mount("/media", StaticFiles(directory="uploads"), name="media")
+# 挂载静态文件目录，使得前端可以通过 /media/... 访问上传的文件 (使用绝对路径)
+app.mount("/media", StaticFiles(directory=str(GlobalConfig.UPLOAD_DIR)), name="media")
 
 # 注入路由
 app.include_router(user.router, prefix="/user", tags=["user"])

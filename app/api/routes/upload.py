@@ -1,18 +1,13 @@
 import os
 import shutil
-from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from app.models.user import User
 from app.api.deps import get_current_user
+from app.core.config import GlobalConfig
 import uuid
 import mimetypes
 
 router = APIRouter()
-
-# 确定上传目录
-UPLOAD_DIR = Path("uploads/avatars")
-# 如果目录不存在，自动创建
-UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 # 允许的图片格式
 ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
@@ -46,7 +41,7 @@ async def upload_avatar(
     # 使用 uuid 加上用户 ID 作为文件名，防止覆盖冲突
     new_filename = f"user_{current_user.uid}_{uuid.uuid4().hex[:8]}{ext}"
     
-    file_path = UPLOAD_DIR / new_filename
+    file_path = GlobalConfig.AVATAR_UPLOAD_DIR / new_filename
     
     # 4. 保存文件到本地磁盘
     try:

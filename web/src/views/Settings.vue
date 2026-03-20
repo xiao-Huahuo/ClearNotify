@@ -220,7 +220,7 @@
 <script setup>
 import { ref, onMounted, computed, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
-import { useUserStore } from '@/stores/user';
+import { useUserStore } from '@/stores/auth.js';
 import { useSettingsStore } from '@/stores/settings';
 import Modal from '@/components/common/Modal.vue';
 import AvatarEditor from '@/components/common/AvatarEditor.vue';

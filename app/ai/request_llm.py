@@ -6,7 +6,7 @@ load_dotenv()
 # 环境变量现在由 main.py 统一加载，此处仅在单独测试时加载
 # load_dotenv()
 
-class RequestKimi:
+class RequestLLM:
     def __init__(self):
         self.api_key = os.getenv("MOONSHOT_API_KEY")
         if not self.api_key:

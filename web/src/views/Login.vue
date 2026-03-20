@@ -41,7 +41,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import { useUserStore } from '@/stores/user';
+import { useUserStore } from '@/stores/auth.js';
 import { useRouter } from 'vue-router';
 
 const username = ref('');

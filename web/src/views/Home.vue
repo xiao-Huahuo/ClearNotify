@@ -306,7 +306,7 @@
 import { ref, onMounted, onUnmounted, nextTick } from 'vue';
 import * as echarts from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
-import { useUserStore } from '@/stores/user';
+import { useUserStore } from '@/stores/auth.js';
 import { createChatMessage, createChatMessageWithFile, uploadAndExtractDocument, rewriteChatMessage } from '@/api/ai';
 import { getHotNews, getCentralDocs, getHotKeywords, getNewsWithImages } from '@/api/news';
 import { useRouter } from 'vue-router';
@@ -354,9 +354,9 @@ const newsImages = ref([]);
 
 // ── 示例数据 ──────────────────────────────────────────────────────────────────
 const examples = ref([
-  { id: 1, title: '社区通知', tags: ['通知', '民生', '公告'] },
+  { id: 1, title: '书籍摘要', tags: ['书籍', '文化', '摘要'] },
   { id: 2, title: '政务文件', tags: ['政策', '解读', '官方'] },
-  { id: 3, title: '学校通知', tags: ['教育', '学生', '家长'] },
+  { id: 3, title: '学术任务', tags: ['教育', '学生', '计算机'] },
 ]);
 
 const getExampleImage = (num) => {

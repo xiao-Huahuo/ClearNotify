@@ -119,7 +119,7 @@
 
 <script setup>
 import { ref, onMounted, computed, nextTick } from 'vue';
-import { useUserStore } from '@/stores/user';
+import { useUserStore } from '@/stores/auth.js';
 import { useRouter } from 'vue-router';
 import { apiClient, API_ROUTES } from '@/router/api_routes';
 import Modal from '@/components/common/Modal.vue';

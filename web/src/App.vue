@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted } from 'vue';
-import { useUserStore } from '@/stores/user';
+import { useUserStore } from '@/stores/auth.js';
 import { useSettingsStore } from '@/stores/settings';
 import Sidebar from '@/components/common/Sidebar.vue';
 import Header from '@/components/common/Header.vue';

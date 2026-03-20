@@ -1,5 +1,5 @@
 import json
-from app.ai.request_kimi import RequestKimi
+from app.ai.request_llm import RequestLLM
 from app.models.chat_message import ChatMessageBase
 
 def analyze_complexity_and_type(original_text: str) -> dict:
@@ -7,7 +7,7 @@ def analyze_complexity_and_type(original_text: str) -> dict:
     业务函数：仅使用大模型分析单篇通知的【复杂度】和【通知类型】。
     这是方案A中，分词算法无法完成的语义理解部分。
     """
-    kimi = RequestKimi()
+    kimi = RequestLLM()
     
     system_prompt = """
     你是一个通知分析专家。请根据提供的通知原文，分析其“复杂度”和“通知类型”。

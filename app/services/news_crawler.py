@@ -12,7 +12,7 @@ import urllib.request
 import urllib.error
 
 logger = logging.getLogger(__name__)
-
+today = time.strftime("%Y-%m-%d")
 # ── 缓存 ──────────────────────────────────────────────────────────────────────
 # TODO:转换为Redis缓存
 _cache: dict = {}

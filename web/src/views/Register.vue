@@ -50,7 +50,7 @@
 <script setup>
 import { ref } from 'vue';
 import { register } from '@/api/user';
-import { useUserStore } from '@/stores/user';
+import { useUserStore } from '@/stores/auth.js';
 import { useRouter } from 'vue-router';
 
 const username = ref('');

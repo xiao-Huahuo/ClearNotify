@@ -43,7 +43,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { useUserStore } from '@/stores/user';
+import { useUserStore } from '@/stores/auth.js';
 import { apiClient, API_ROUTES } from '@/router/api_routes';
 
 const emit = defineEmits(['close', 'saved']);

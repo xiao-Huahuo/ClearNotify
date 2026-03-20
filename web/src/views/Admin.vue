@@ -146,7 +146,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { apiClient, API_ROUTES } from '@/router/api_routes.js';
-import { useUserStore } from '@/stores/user';
+import { useUserStore } from '@/stores/auth.js';
 import * as echarts from 'echarts/core';
 import { LineChart, BarChart, PieChart, GraphChart } from 'echarts/charts';
 import { TitleComponent, TooltipComponent, GridComponent, LegendComponent } from 'echarts/components';

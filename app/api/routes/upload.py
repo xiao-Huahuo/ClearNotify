@@ -200,8 +200,8 @@ async def ocr_image(
 
     # 调用 Kimi 文件上传 OCR
     try:
-        from app.ai.request_kimi import RequestKimi
-        kimi = RequestKimi()
+        from app.ai.request_llm import RequestLLM
+        kimi = RequestLLM()
 
         # 使用 Kimi 文件上传接口
         with open(file_path, "rb") as f:

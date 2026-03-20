@@ -145,7 +145,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { createChatMessage, createChatMessageWithFile, uploadAndExtractDocument, rewriteChatMessage, getChatMessages } from '@/api/ai';
-import { useUserStore } from '@/stores/user';
+import { useUserStore } from '@/stores/auth.js';
 
 const router = useRouter();
 const userStore = useUserStore();

@@ -9,15 +9,15 @@
         <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
         主页
       </router-link>
-      <router-link to="/feature-a" class="nav-item" active-class="active">
+      <router-link to="/discovery-home" class="nav-item" active-class="active">
         <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
         发现
       </router-link>
-      <router-link to="/feature-b" class="nav-item" active-class="active">
+      <router-link to="/data-analysis-and-visualization" class="nav-item" active-class="active">
         <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
         数据分析
       </router-link>
-      <router-link to="/feature-c" class="nav-item" active-class="active">
+      <router-link to="/history" class="nav-item" active-class="active">
         <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="nav-icon"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
         会话历史
       </router-link>
@@ -39,10 +39,10 @@
     <div class="login-widget" v-if="!userStore.token">
       <p class="widget-title">登录即享</p>
       <ul class="widget-list">
-        <li>📄 AI 秒级解析政务文件</li>
-        <li>🔔 个性化通知推送</li>
-        <li>📊 专属数据分析报告</li>
-        <li>💬 智能追问与改写</li>
+        <li>- AI 秒级解析政务文件</li>
+        <li>- 个性化通知推送</li>
+        <li>- 专属数据分析报告</li>
+        <li>- 智能追问与改写</li>
       </ul>
       <button class="widget-login-btn" @click="emitLogin">立即登录</button>
     </div>
@@ -133,7 +133,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
-import { useUserStore } from '@/stores/user';
+import { useUserStore } from '@/stores/auth.js';
 import { apiClient, API_ROUTES } from '@/router/api_routes.js';
 
 const hasIcon = ref(true);

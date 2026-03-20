@@ -1,5 +1,5 @@
 import json
-from app.ai.request_kimi import RequestKimi
+from app.ai.request_llm import RequestLLM
 from app.models.chat_message import ChatMessageBase
 from pathlib import Path
 
@@ -24,7 +24,7 @@ def parse_document(original_text: str, user_id: int) -> ChatMessageBase:
     """
     通用文档解析，传入文本或提取出的文件文本，调用大模型进行归纳和解析
     """
-    kimi = RequestKimi()
+    kimi = RequestLLM()
     
     # 构造系统提示词，要求返回 JSON 格式
     system_prompt = """
@@ -92,7 +92,7 @@ def rewrite_document(original_text: str, target_audience: str, user_id: int) -> 
     """
     根据目标群体，重新改写文档并提取对应信息
     """
-    kimi = RequestKimi()
+    kimi = RequestLLM()
     
     system_prompt = f"""
     你是一个专业的公文翻译和改写专家。现在有一篇官方通知，你需要根据目标受众【{target_audience}】，重新审视并改写这份通知，以便于他们理解。

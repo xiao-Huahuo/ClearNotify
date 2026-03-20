@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
-import FeatureA from '../views/FeatureA.vue'
-import FeatureB from '../views/FeatureB.vue'
-import FeatureC from '../views/FeatureC.vue'
+import DiscoveryHome from '../views/DiscoveryHome.vue'
+import DataAnalysisAndVisualization from '../views/DataAnalysisAndVisualization.vue'
+import History from '../views/History.vue'
 import Profile from '../views/Profile.vue'
 import Search from '../views/Search.vue'
 import Rewrite from '../views/Rewrite.vue'
@@ -16,9 +16,9 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     { path: '/', name: 'home', component: Home },
-    { path: '/feature-a', name: 'feature-a', component: FeatureA },
-    { path: '/feature-b', name: 'feature-b', component: FeatureB },
-    { path: '/feature-c', name: 'feature-c', component: FeatureC },
+    { path: '/discovery-home', name: 'discovery-home', component: DiscoveryHome },
+    { path: '/data-analysis-and-visualization', name: 'data-analysis-and-visualization', component: DataAnalysisAndVisualization },
+    { path: '/history', name: 'history', component: History },
     { path: '/profile', name: 'profile', component: Profile },
     { path: '/settings', name: 'settings', component: Settings },
     { path: '/search', name: 'search', component: Search },

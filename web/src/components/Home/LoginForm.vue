@@ -30,7 +30,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import { useUserStore } from '@/stores/user';
+import { useUserStore } from '@/stores/auth.js';
 
 const emit = defineEmits(['success', 'switch-to-register']);
 

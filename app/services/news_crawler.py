@@ -118,6 +118,7 @@ def get_hot_news(limit: int = 10) -> list[dict]:
     return unique[:limit]
 
 def _mock_hot_news() -> list[dict]:
+    # TODO:加入真实爬虫逻辑获取真实热点数据
     return [
         {"title": "习近平主持召开中央全面深化改革委员会第四次会议", "link": "https://www.gov.cn", "pubDate": "", "description": "会议审议通过了多项重要改革方案"},
         {"title": "国务院常务会议研究部署稳增长相关工作", "link": "https://www.gov.cn", "pubDate": "", "description": "会议强调要持续推动经济高质量发展"},
@@ -159,6 +160,7 @@ def get_central_docs(limit: int = 10) -> list[dict]:
     return all_items[:limit]
 
 def _mock_central_docs() -> list[dict]:
+    # TODO:加入真实爬虫逻辑获取真实中央新闻数据
     return [
         {
             "title": "国务院关于进一步优化营商环境降低市场主体制度性交易成本的意见",
@@ -223,7 +225,7 @@ def get_news_with_images(limit: int = 5) -> list[dict]:
         return cached[:limit]
 
     news = get_hot_news(10)
-    # 为每条新闻附加一个图片占位（实际图片需要爬取，此处用占位色块数据）
+    # 为每条新闻附加一个图片占位,TODO:实际图片需要爬取，此处用占位色块数据
     colors = ["#c0392b", "#2980b9", "#27ae60", "#e67e22", "#8e44ad", "#16a085", "#d35400", "#2c3e50"]
     result = []
     for i, item in enumerate(news[:limit]):

@@ -9,6 +9,28 @@
     <div class="spacer" v-else></div>
 
     <div class="user-actions">
+      <!-- 明暗切换开关 -->
+      <label class="theme-switch" title="切换明暗模式">
+        <input class="theme-switch__checkbox" type="checkbox" :checked="isDark" @change="toggleTheme" />
+        <div class="theme-switch__container">
+          <div class="theme-switch__clouds"></div>
+          <div class="theme-switch__stars-container">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 55" fill="none">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M135.831 3.00688C135.055 3.85027 134.111 4.29946 133 4.35447C134.111 4.40947 135.055 4.85867 135.831 5.71206C136.607 6.55545 136.996 7.56878 136.996 8.75C136.996 7.56878 137.385 6.55545 138.161 5.71206C138.937 4.85867 139.881 4.40947 141 4.35447C139.881 4.29946 138.937 3.85027 138.161 3.00688C137.385 2.16348 136.996 1.15016 136.996 0C136.996 1.15016 136.607 2.16348 135.831 3.00688ZM123.831 23.0069C123.055 23.8503 122.111 24.2995 121 24.3545C122.111 24.4095 123.055 24.8587 123.831 25.7121C124.607 26.5555 124.996 27.5688 124.996 28.75C124.996 27.5688 125.385 26.5555 126.161 25.7121C126.937 24.8587 127.881 24.4095 129 24.3545C127.881 24.2995 126.937 23.8503 126.161 23.0069C125.385 22.1635 124.996 21.1502 124.996 20C124.996 21.1502 124.607 22.1635 123.831 23.0069ZM97.831 43.0069C97.055 43.8503 96.1114 44.2995 95 44.3545C96.1114 44.4095 97.055 44.8587 97.831 45.7121C98.607 46.5555 98.9959 47.5688 98.9959 48.75C98.9959 47.5688 99.3849 46.5555 100.161 45.7121C100.937 44.8587 101.881 44.4095 103 44.3545C101.881 44.2995 100.937 43.8503 100.161 43.0069C99.3849 42.1635 98.9959 41.1502 98.9959 40C98.9959 41.1502 98.607 42.1635 97.831 43.0069Z" fill="white"/>
+            </svg>
+          </div>
+          <div class="theme-switch__circle-container">
+            <div class="theme-switch__sun-moon-container">
+              <div class="theme-switch__moon">
+                <div class="theme-switch__spot"></div>
+                <div class="theme-switch__spot"></div>
+                <div class="theme-switch__spot"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </label>
+
       <!-- 通知图标 (对接 settingsStore) -->
       <button class="icon-btn" @click="toggleNotification" :title="settingsStore.settings.system_notifications ? '关闭系统通知' : '开启系统通知'">
         <!-- 开启通知：普通铃铛 -->
@@ -59,6 +81,17 @@ const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore();
 const settingsStore = useSettingsStore();
+
+const isDark = computed(() => settingsStore.settings.theme_mode === 'dark');
+
+const toggleTheme = async () => {
+  const newTheme = isDark.value ? 'light' : 'dark';
+  settingsStore.applyTheme(newTheme);
+  settingsStore.settings.theme_mode = newTheme;
+  if (userStore.token) {
+    await settingsStore.updateSettings({ theme_mode: newTheme });
+  }
+};
 
 const searchQuery = ref('');
 
@@ -218,4 +251,92 @@ const toggleNotification = async () => {
 }
 
 .login-capsule:hover { background-color: rgba(255,255,255,0.35); }
+
+/* ── 明暗切换开关 (from Uiverse.io by Galahhad) ── */
+.theme-switch {
+  --toggle-size: 11px;
+  --container-width: 5.625em;
+  --container-height: 2.5em;
+  --container-radius: 6.25em;
+  --container-light-bg: #3D7EAE;
+  --container-night-bg: #1D1F2C;
+  --circle-container-diameter: 3.375em;
+  --sun-moon-diameter: 2.125em;
+  --sun-bg: #ECCA2F;
+  --moon-bg: #C4C9D1;
+  --spot-color: #959DB1;
+  --circle-container-offset: calc((var(--circle-container-diameter) - var(--container-height)) / 2 * -1);
+  --stars-color: #fff;
+  --clouds-color: #F3FDFF;
+  --back-clouds-color: #AACADF;
+  --transition: .5s cubic-bezier(0, -0.02, 0.4, 1.25);
+  --circle-transition: .3s cubic-bezier(0, -0.02, 0.35, 1.17);
+  font-size: var(--toggle-size);
+  cursor: pointer;
+}
+.theme-switch *, .theme-switch *::before, .theme-switch *::after {
+  box-sizing: border-box; margin: 0; padding: 0; font-size: var(--toggle-size);
+}
+.theme-switch__checkbox { display: none; }
+.theme-switch__container {
+  width: var(--container-width); height: var(--container-height);
+  background-color: var(--container-light-bg);
+  border-radius: var(--container-radius); overflow: hidden; cursor: pointer;
+  box-shadow: 0em -0.062em 0.062em rgba(0,0,0,0.25), 0em 0.062em 0.125em rgba(255,255,255,0.94);
+  transition: var(--transition); position: relative;
+}
+.theme-switch__container::before {
+  content: ""; position: absolute; z-index: 1; inset: 0;
+  box-shadow: 0em 0.05em 0.187em rgba(0,0,0,0.25) inset, 0em 0.05em 0.187em rgba(0,0,0,0.25) inset;
+  border-radius: var(--container-radius);
+}
+.theme-switch__checkbox:checked + .theme-switch__container { background-color: var(--container-night-bg); }
+.theme-switch__circle-container {
+  width: var(--circle-container-diameter); height: var(--circle-container-diameter);
+  background-color: rgba(255,255,255,0.1); position: absolute;
+  left: var(--circle-container-offset); top: var(--circle-container-offset);
+  border-radius: 50%; box-shadow: inset 0 0 0 3.272em rgba(255,255,255,0.1), inset 0 0 0 3.272em rgba(255,255,255,0.1), 0 0 0 0.625em rgba(255,255,255,0.1), 0 0 0 1.25em rgba(255,255,255,0.05);
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--circle-transition);
+}
+.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__circle-container {
+  left: calc(100% - var(--circle-container-offset) - var(--circle-container-diameter));
+}
+.theme-switch__sun-moon-container {
+  pointer-events: none; position: relative; z-index: 2;
+  width: var(--sun-moon-diameter); height: var(--sun-moon-diameter);
+  background-color: var(--sun-bg); border-radius: 50%;
+  box-shadow: 0.062em 0.062em 0.062em 0em rgba(254,255,239,0.61) inset, 0em -0.062em 0.062em 0em #a1872a inset;
+  filter: drop-shadow(0.062em 0.125em 0.125em rgba(0,0,0,0.25)) drop-shadow(0em 0.062em 0.125em rgba(0,0,0,0.25));
+  overflow: hidden; transition: var(--transition);
+}
+.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__sun-moon-container {
+  background-color: var(--moon-bg);
+  box-shadow: 0.062em 0.062em 0.062em 0em rgba(254,255,239,0.61) inset, 0em -0.062em 0.062em 0em #969696 inset;
+}
+.theme-switch__moon {
+  transform: translateX(100%); width: 100%; height: 100%;
+  background-color: var(--moon-bg); border-radius: inherit; transition: var(--transition);
+  box-shadow: 0.062em 0.062em 0.062em 0em rgba(254,255,239,0.61) inset, 0em -0.062em 0.062em 0em #969696 inset;
+}
+.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__moon { transform: translateX(0); }
+.theme-switch__spot {
+  position: absolute; top: 0.75em; left: 0.312em;
+  width: 0.75em; height: 0.75em; border-radius: 50%; background-color: var(--spot-color);
+  box-shadow: 0em 0.0312em 0.062em rgba(0,0,0,0.25) inset;
+}
+.theme-switch__spot:nth-of-type(2) { width: 0.375em; height: 0.375em; top: 0.937em; left: 1.375em; }
+.theme-switch__spot:nth-of-type(3) { width: 0.25em; height: 0.25em; top: 0.312em; left: 1em; }
+.theme-switch__clouds {
+  width: 1.25em; height: 1.25em; background-color: var(--clouds-color);
+  border-radius: 50%; position: absolute; bottom: -0.625em; left: 0.312em;
+  box-shadow: 0.937em 0.312em 0 var(--clouds-color), -0.312em -0.312em 0 0.625em var(--clouds-color), 1.437em 0.375em 0 0.5em var(--clouds-color), 0.5em -0.125em 0 0.625em var(--clouds-color), 2.187em 0 0 0.312em var(--clouds-color);
+  transition: 0.5s cubic-bezier(0, -0.02, 0.4, 1.25);
+}
+.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__clouds { bottom: -1.25em; }
+.theme-switch__stars-container {
+  position: absolute; color: var(--stars-color); top: -100%; left: 0.312em;
+  width: 2.75em; height: auto; transition: var(--transition);
+}
+.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__stars-container { top: 0.312em; }
 </style>

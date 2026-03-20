@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
-
+from app.core.cors import CorsMiddleWare
 # 使用动态绝对路径加载环境变量
 from app.core.config import GlobalConfig
 load_dotenv(dotenv_path=GlobalConfig.ENV_PATH)
@@ -28,12 +28,11 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 # 配置 CORS
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # 允许所有来源
+app=CorsMiddleWare(app).add_cors_middleware(
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*"]
 )
 
 # 挂载静态文件目录，使得前端可以通过 /media/... 访问上传的文件 (使用绝对路径)
@@ -58,4 +57,4 @@ async def root():
 if __name__ == "__main__":
     import uvicorn
     # 传app,且reload=True(热重载),改代码后可以直接改后端,无需重启
-    uvicorn.run("app.main:app", host="127.0.0.1", port=8080, reload=True)
+    uvicorn.run("app.main:app", host=GlobalConfig.HOST, port=GlobalConfig.PORT, reload=True, timeout_keep_alive=60)

@@ -89,7 +89,7 @@ const updateChart = () => {
           name: item.name,
           value: item.value,
           // 词频越高，symbolSize 越大
-          symbolSize: 20 + Math.sqrt(item.value) * 10,
+          symbolSize: Math.max(40, 30 + Math.sqrt(item.value) * 14),
           itemStyle: {
             color: ['#c0392b', '#e67e22', '#f1c40f', '#7f8c8d', '#922b21'][index % 5],
           },
@@ -104,9 +104,10 @@ const updateChart = () => {
         })),
         // 力导向图的配置
         force: {
-          repulsion: 120, // 节点之间的斥力因子
-          edgeLength: 30,
-          gravity: 0.2 // 中心引力
+          repulsion: 220,
+          edgeLength: 60,
+          gravity: 0.08,
+          layoutAnimation: true,
         },
         roam: false, // 禁止拖拽和缩放
         draggable: true,

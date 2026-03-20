@@ -12,9 +12,17 @@ class RequestKimi:
         if not self.api_key:
             raise ValueError("MOONSHOT_API_KEY is not set in environment variables (check .env file)")
         
+        # 从环境变量获取超时设置，默认为 60 秒
+        timeout_str = os.getenv("MOONSHOT_API_TIMEOUT", "60")
+        try:
+            self.timeout = float(timeout_str)
+        except ValueError:
+            self.timeout = 60.0 # 如果转换失败，使用默认值
+
         self.client = OpenAI(
             api_key=self.api_key,
             base_url="https://api.moonshot.cn/v1",
+            timeout=self.timeout # 设置 API 请求超时
         )
         self.system_prompt = "你是 Kimi，由 Moonshot AI 提供的人工智能助手，你更擅长中文和英文的对话。你会为用户提供安全，有帮助，准确的回答。同时，你会拒绝一切涉及恐怖主义，种族歧视，黄色暴力等问题的回答。Moonshot AI 为专有名词，不可翻译成其他语言。"
 

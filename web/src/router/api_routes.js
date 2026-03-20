@@ -22,6 +22,9 @@ export const API_ROUTES = {
   FAVORITE: '/favorite/',
   ADMIN_USERS: '/admin/users',
   ADMIN_STATS: '/admin/stats',
+  ADMIN_ANALYSIS_ALL: '/admin/analysis/all',
+  REQUEST_PERMISSION_UPGRADE: '/user/request-upgrade',
+  REQUEST_PERMISSION_DOWNGRADE: '/user/request-downgrade',
 };
 
 // 统一的 API Client

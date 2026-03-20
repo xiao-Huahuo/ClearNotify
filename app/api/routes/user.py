@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends
-from sqlmodel import Session
+from fastapi import APIRouter, Depends, HTTPException
+from sqlmodel import Session, select
 from app.core.database import get_session
 from app.models.user import User
 from app.schemas.user import *
@@ -79,3 +79,35 @@ def update_user(user_in:UserUpdate,session:Session=Depends(get_session),current_
 
     # 5. 返回更新后的用户
     return current_user
+
+
+@router.post("/request-upgrade")
+def request_permission_upgrade(
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """普通用户申请提升为管理员权限（向所有管理员发送通知）"""
+    if current_user.is_admin:
+        raise HTTPException(status_code=400, detail="您已经是管理员")
+    # 查找所有管理员
+    admins = session.exec(select(User).where(User.is_admin == True)).all()
+    if not admins:
+        raise HTTPException(status_code=404, detail="暂无管理员可处理申请")
+    # TODO: 接入邮件系统后，向每位管理员发送邮件通知
+    return {"message": f"申请已提交，已通知 {len(admins)} 位管理员"}
+
+
+@router.post("/request-downgrade")
+def request_permission_downgrade(
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
+    """管理员申请降级为普通用户"""
+    if not current_user.is_admin:
+        raise HTTPException(status_code=400, detail="您不是管理员")
+    current_user.is_admin = False
+    session.add(current_user)
+    session.commit()
+    session.refresh(current_user)
+    # TODO: 接入邮件系统后，发送降级确认邮件
+    return {"message": "已成功降级为普通用户"}

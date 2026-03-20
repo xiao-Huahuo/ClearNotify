@@ -6,7 +6,8 @@
       <!-- 左：轮播图 -->
       <div class="carousel-area">
         <transition name="slide-fade" mode="out-in">
-          <div class="carousel-slide" :key="slideIdx" :style="{ background: slides[slideIdx].bg }">
+          <div class="carousel-slide" :key="slideIdx" :style="slides[slideIdx].img ? { backgroundImage: `url(${slides[slideIdx].img})`, backgroundSize: 'cover', backgroundPosition: 'center' } : { background: slides[slideIdx].bg }">
+            <div class="slide-overlay"></div>
             <div class="slide-inner">
               <span class="slide-tag">{{ slides[slideIdx].tag }}</span>
               <h2 class="slide-title">{{ slides[slideIdx].title }}</h2>
@@ -238,6 +239,9 @@
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { getHotNews, getCentralDocs, getDailySummary } from '@/api/news';
+import slide1Img from '@/assets/photos/discover/slide1.jpg';
+import slide2Img from '@/assets/photos/discover/slide2.jpg';
+import slide3Img from '@/assets/photos/discover/slide3.jpg';
 
 const router = useRouter();
 
@@ -250,6 +254,7 @@ const slides = [
     desc: '上传通知、政策文件，AI 秒级提取关键信息',
     btnText: '立即体验',
     bg: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+    img: slide1Img,
     action: () => router.push('/'),
   },
   {
@@ -258,6 +263,7 @@ const slides = [
     desc: '老人版、学生版、极简版，一键切换表达风格',
     btnText: '去改写',
     bg: 'linear-gradient(135deg, #c0392b 0%, #8e44ad 100%)',
+    img: slide2Img,
     action: () => router.push('/rewrite'),
   },
   {
@@ -266,6 +272,7 @@ const slides = [
     desc: '多维度图表，直观呈现文件处理统计',
     btnText: '查看分析',
     bg: 'linear-gradient(135deg, #16a085 0%, #2980b9 100%)',
+    img: slide3Img,
     action: () => router.push('/feature-b'),
   },
 ];
@@ -514,6 +521,12 @@ const getComplexityClass = (item) => {
   align-items: center;
   padding: 0 60px;
   overflow: hidden;
+}
+.slide-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0.25) 100%);
+  z-index: 1;
 }
 .slide-inner {
   position: relative;

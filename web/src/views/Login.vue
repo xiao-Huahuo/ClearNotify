@@ -3,7 +3,9 @@
     <div class="form-container">
       <div class="logo-area">
         <img src="@/assets/photos/main-icon.png" alt="icon" class="main-icon" v-if="hasIcon" @error="hasIcon = false" />
-        <h1 class="logo-text">ClearNotify</h1>
+        <h1 class="logo-text">
+          <span v-for="(ch, i) in 'ClearNotify'" :key="i" class="letter" :style="{ animationDelay: `${i * 0.06}s` }">{{ ch }}</span>
+        </h1>
       </div>
 
       <form class="form" @submit.prevent="handleLogin">
@@ -70,7 +72,7 @@ const handleLogin = async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f5f7fa; /* 页面背景色 */
+  background: #111;
   padding: 20px;
 }
 
@@ -91,79 +93,82 @@ const handleLogin = async () => {
 .main-icon {
   width: 60px;
   height: 60px;
-  filter: drop-shadow(0px 4px 8px rgba(0,0,0,0.1));
+  filter: drop-shadow(0px 4px 8px rgba(192,57,43,0.4)) brightness(0) invert(1);
 }
 
 .logo-text {
-  color: #002059; /* 使用深蓝色作为外部标题颜色 */
   font-size: 36px;
   font-weight: 800;
   margin: 0;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
+  display: flex;
 }
 
-/* From Uiverse.io by KapeParaguay */
+.letter {
+  display: inline-block;
+  color: #fff;
+  animation: letterFloat 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  opacity: 0;
+}
+
+@keyframes letterFloat {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .form {
   display: flex;
   flex-direction: column;
   gap: 15px;
-  background: linear-gradient(45deg, skyblue, darkblue);
+  background: linear-gradient(160deg, #c0392b 0%, #7b1a1a 40%, #1a1a1a 100%);
   padding: 40px;
   width: 450px;
-  border-radius: 20px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-  transition: background 0.3s ease;
-  box-shadow: 0 20px 40px rgba(0, 0, 139, 0.2);
-}
-
-.form:hover {
-  background: linear-gradient(45deg, darkblue, skyblue);
+  border-radius: 10px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  box-shadow: 0 20px 60px rgba(192,57,43,0.3), 0 4px 20px rgba(0,0,0,0.5);
 }
 
 ::placeholder {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   color: #aaa;
 }
 
 .flex-column > label {
-  color: white;
+  color: rgba(255,255,255,0.85);
   font-weight: 600;
   font-size: 14px;
 }
 
 .inputForm {
-  border: 1.5px solid #ecedec;
-  border-radius: 10em;
+  border: 1.5px solid rgba(255,255,255,0.15);
+  border-radius: 6px;
   height: 50px;
   display: flex;
   align-items: center;
   padding-left: 15px;
   transition: 0.2s ease-in-out;
-  background-color: white;
+  background-color: rgba(255,255,255,0.08);
   margin-bottom: 10px;
 }
 
-.input-icon {
-  color: #666;
-}
+.input-icon { color: rgba(255,255,255,0.5); }
 
 .input {
   margin-left: 10px;
-  border-radius: 10rem;
+  border-radius: 6px;
   border: none;
   width: 100%;
   height: 100%;
   font-size: 15px;
+  background: transparent;
+  color: #fff;
 }
 
-.input:focus {
-  outline: none;
-}
+.input:focus { outline: none; }
 
 .inputForm:focus-within {
-  border: 1.5px solid #00e2dc; /* 聚焦时使用主题青色 */
+  border: 1.5px solid #e74c3c;
+  background-color: rgba(255,255,255,0.12);
 }
 
 .flex-row {
@@ -171,22 +176,18 @@ const handleLogin = async () => {
   flex-direction: row;
   align-items: center;
   gap: 10px;
-  justify-content: flex-end; /* 靠右对齐 */
+  justify-content: flex-end;
 }
 
 .span {
   font-size: 14px;
-  margin-left: 5px;
-  color: white;
+  color: rgba(255,255,255,0.7);
   font-weight: 500;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: color 0.2s;
   text-decoration: underline;
 }
-
-.span:hover {
-  opacity: 0.8;
-}
+.span:hover { color: #fff; }
 
 .button-submit {
   position: relative;
@@ -194,12 +195,11 @@ const handleLogin = async () => {
   padding: 15px 30px;
   text-align: center;
   letter-spacing: 2px;
-  text-decoration: none;
   background: transparent;
-  transition: ease-out 0.5s;
-  border: 2px solid white;
-  border-radius: 10em;
-  box-shadow: inset 0 0 0 0 white;
+  transition: ease-out 0.4s;
+  border: 2px solid rgba(255,255,255,0.6);
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 0 #fff;
   margin: 10px 0;
   color: white;
   font-size: 16px;
@@ -210,18 +210,12 @@ const handleLogin = async () => {
 }
 
 .button-submit:hover {
-  color: darkblue;
-  box-shadow: inset 0 -100px 0 0 white;
+  color: #c0392b;
+  box-shadow: inset 0 -100px 0 0 #fff;
 }
 
-.button-submit:active {
-  transform: scale(0.95);
-}
-
-.button-submit:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
+.button-submit:active { transform: scale(0.98); }
+.button-submit:disabled { opacity: 0.7; cursor: not-allowed; }
 
 .error-msg {
   color: #ffcccc;
@@ -231,3 +225,4 @@ const handleLogin = async () => {
   font-weight: 500;
 }
 </style>
+

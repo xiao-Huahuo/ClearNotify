@@ -6,6 +6,7 @@ from app.api.deps import get_current_user
 from app.models.user import User
 from app.models.chat_message import ChatMessage
 from app.models.stats_analysis import StatsAnalysis
+from app.services import stats_service
 
 router = APIRouter()
 
@@ -28,6 +29,7 @@ def list_users(
             "is_admin": u.is_admin,
             "created_time": str(u.created_time),
             "last_login": str(u.last_login),
+            "avatar_url": u.avatar_url,
         }
         for u in users
     ]
@@ -86,3 +88,25 @@ def delete_user(
     session.delete(user)
     session.commit()
     return {"ok": True}
+
+
+@router.get("/analysis/all")
+def admin_analysis_all(
+    session: Session = Depends(get_session),
+    admin: User = Depends(require_admin)
+):
+    """获取所有用户的汇总统计数据"""
+    return stats_service.generate_all_users_stats(session)
+
+
+@router.get("/users/{uid}/avatar")
+def get_user_avatar(
+    uid: int,
+    session: Session = Depends(get_session),
+    admin: User = Depends(require_admin)
+):
+    """获取指定用户的头像URL"""
+    user = session.get(User, uid)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"uid": uid, "avatar_url": user.avatar_url}

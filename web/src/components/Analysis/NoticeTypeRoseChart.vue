@@ -113,13 +113,13 @@ const updateChart = () => {
             width: 1.5
           }
         },
-        data: dataArray.sort(function (a, b) { return a.value - b.value; }), // 排序后玫瑰图视觉呈螺旋上升，更好看
-        animationType: 'scale',
-        animationEasing: 'elasticOut',
-        animationDelay: function (idx) {
-          // 螺旋弹出的动画效果
-          return Math.random() * 200;
-        }
+        data: dataArray.sort(function (a, b) { return a.value - b.value; }),
+        animationType: 'expansion',
+        animationEasing: 'cubicOut',
+        animationDuration: 1200,
+        animationDelay: function (idx) { return idx * 80; },
+        startAngle: 90,
+        clockwise: true,
       }
     ]
   };

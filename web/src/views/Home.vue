@@ -171,7 +171,23 @@
                     <div class="info-text"><strong>所需材料：</strong><p>{{ aiResponse.required_materials }}</p></div>
                   </div>
                   <div class="info-item" v-if="aiResponse.handling_process">
-                    <div class="info-text"><strong>办理流程：</strong><div class="process-text">{{ aiResponse.handling_process }}</div></div>
+                    <div class="info-text"><strong>办理流程：</strong>
+                      <div class="process-text">{{ aiResponse.handling_process }}</div>
+                      <!-- 流程图 -->
+                      <div class="process-flowchart" v-if="parseProcessSteps(aiResponse.handling_process).length > 1">
+                        <div
+                          v-for="(step, si) in parseProcessSteps(aiResponse.handling_process)"
+                          :key="si"
+                          class="flow-step-wrap"
+                        >
+                          <div class="flow-step">
+                            <span class="flow-num">{{ si + 1 }}</span>
+                            <span class="flow-text">{{ step }}</span>
+                          </div>
+                          <div class="flow-arrow" v-if="si < parseProcessSteps(aiResponse.handling_process).length - 1">▼</div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div class="right-panel">
@@ -442,6 +458,11 @@ async function initWordCloud() {
         data: keywords,
       }],
     });
+    wordCloudChart.on('click', (params) => {
+      if (params.name) {
+        window.open(`https://www.baidu.com/s?wd=${encodeURIComponent(params.name)}`, '_blank');
+      }
+    });
   } catch (e) {
     console.warn('词云加载失败', e);
   }
@@ -608,8 +629,17 @@ async function addFavorite() {
   } catch (e) { console.warn('收藏失败', e); }
 }
 
-const getComplexityClass = (level) => {
-  if (level === '高') return 'level-high';
+const parseProcessSteps = (text) => {
+  if (!text) return [];
+  // 尝试按数字序号、换行、分号等分割
+  const byNum = text.split(/\d+[.、。）)]\s*/);
+  if (byNum.length > 2) return byNum.filter(s => s.trim()).map(s => s.trim());
+  const byNewline = text.split(/[\n；;]+/);
+  if (byNewline.length > 1) return byNewline.filter(s => s.trim()).map(s => s.trim());
+  return [text.trim()];
+};
+
+const getComplexityClass = (level) => {  if (level === '高') return 'level-high';
   if (level === '中') return 'level-medium';
   if (level === '低') return 'level-low';
   return '';
@@ -1041,13 +1071,28 @@ const getComplexityClass = (level) => {
 .info-tag { background: var(--color-primary, #ffe066); color: #000; padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: bold; }
 
 .scrollable-content { padding: 24px; overflow-y: auto; flex: 1; }
-.result-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 32px; }
+.result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 
 .info-list { display: flex; flex-direction: column; gap: 20px; }
 .info-item { display: flex; align-items: flex-start; }
 .info-text strong { display: block; margin-bottom: 6px; color: #000; font-size: 14px; }
 .info-text p { margin: 0; color: #333; line-height: 1.6; font-size: 14px; }
 .process-text { white-space: pre-wrap; color: #333; line-height: 1.6; background: var(--content-bg, #f5f7fa); padding: 12px; border-radius: 8px; border: 1px solid #eee; font-size: 14px; }
+
+.process-flowchart { margin-top: 12px; display: flex; flex-direction: column; align-items: flex-start; gap: 0; }
+.flow-step-wrap { display: flex; flex-direction: column; align-items: flex-start; width: 100%; }
+.flow-step {
+  display: flex; align-items: center; gap: 10px;
+  background: #fff; border: 1px solid #e0e0e0; border-left: 3px solid #c0392b;
+  padding: 8px 14px; border-radius: 4px; width: 100%; box-sizing: border-box;
+}
+.flow-num {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: #c0392b; color: #fff; font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.flow-text { font-size: 13px; color: #333; line-height: 1.4; }
+.flow-arrow { font-size: 12px; color: #c0392b; padding: 2px 0 2px 12px; }
 
 .right-panel { display: flex; flex-direction: column; gap: 20px; }
 .warning-panel { display: flex; flex-direction: column; gap: 12px; }

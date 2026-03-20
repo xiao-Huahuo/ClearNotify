@@ -31,3 +31,7 @@ class GlobalConfig:
     SECRET_KEY = "09d25e094faa6ca2556c81"  # 密钥
     ALGORITHM = "HS256"  # 加密算法,采用Hash256
     ACCESS_TOKEN_EXPIRE_DAYS = 30  # token有效期为30天
+
+    # 启动配置
+    PORT=8080
+    HOST='127.0.0.1'

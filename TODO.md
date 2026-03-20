@@ -1,232 +1,7 @@
 # TODO
 ### 客户端UI
 ##### 进行中
-- [ ] 将发现页轮播图背景图片(web/src/assets/photos/discover/)真实渲染上去,代替掉当前的渐变色.
-- [ ] 登录注册页从原来的圆角水晶蓝色渐变改为更小圆角的红黑渐变.给登录页面出现时的标题增加"一个一个字母浮上来"的动效.
-- [ ] 解决主页扫描文件后内容分布左右不均匀的问题.(解决LLM生成内容量太少的问题),添加文件解析后流程图展示.
-- [ ] 将左下角齿轮更改为"更多",悬停时展示栏目有:
-  - 关于(包括关于本平台,关于我们).
-  - 权限设置(管理员可以自我设置为用户,用户需要在所有的管理员中选择一个去申请提高权限,需要增补邮件系统,使用真实邮箱进行邮件传递,管理员降级和用户提交申请和用户申请通过时都要发送邮件)
-  - 接入API(暂时搁置,等内置智能体开发完成后再接入)
-  - 常见问题(瞎编)
-  - (红色按钮)不要点这个!,当用户点击这个时自动跳转到原神页面并开始下载原神.
-- 未登录时在sidebar的最下面的栏目下面放一个widget,"登录即享"...,写四条,下面是一个胶囊形红色登录按钮.
-- 主页-中央文件的词云图的每个词应该可点击,点击后自动调用搜索引擎搜索这个词.
-- [ ] 明暗切换的精细化UI调整,保证每个白色在黑暗切换时都变为灰色或者黑色或者红色.在header右方添加一个明暗切换开关,css如下:
-```css
-/* From Uiverse.io by Galahhad */ 
-.theme-switch {
-  --toggle-size: 30px;
-  /* the size is adjusted using font-size,
-     this is not transform scale,
-     so you can choose any size */
-  --container-width: 5.625em;
-  --container-height: 2.5em;
-  --container-radius: 6.25em;
-  /* radius 0 - minecraft mode :) */
-  --container-light-bg: #3D7EAE;
-  --container-night-bg: #1D1F2C;
-  --circle-container-diameter: 3.375em;
-  --sun-moon-diameter: 2.125em;
-  --sun-bg: #ECCA2F;
-  --moon-bg: #C4C9D1;
-  --spot-color: #959DB1;
-  --circle-container-offset: calc((var(--circle-container-diameter) - var(--container-height)) / 2 * -1);
-  --stars-color: #fff;
-  --clouds-color: #F3FDFF;
-  --back-clouds-color: #AACADF;
-  --transition: .5s cubic-bezier(0, -0.02, 0.4, 1.25);
-  --circle-transition: .3s cubic-bezier(0, -0.02, 0.35, 1.17);
-}
-
-.theme-switch, .theme-switch *, .theme-switch *::before, .theme-switch *::after {
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-size: var(--toggle-size);
-}
-
-.theme-switch__container {
-  width: var(--container-width);
-  height: var(--container-height);
-  background-color: var(--container-light-bg);
-  border-radius: var(--container-radius);
-  overflow: hidden;
-  cursor: pointer;
-  -webkit-box-shadow: 0em -0.062em 0.062em rgba(0, 0, 0, 0.25), 0em 0.062em 0.125em rgba(255, 255, 255, 0.94);
-  box-shadow: 0em -0.062em 0.062em rgba(0, 0, 0, 0.25), 0em 0.062em 0.125em rgba(255, 255, 255, 0.94);
-  -webkit-transition: var(--transition);
-  -o-transition: var(--transition);
-  transition: var(--transition);
-  position: relative;
-}
-
-.theme-switch__container::before {
-  content: "";
-  position: absolute;
-  z-index: 1;
-  inset: 0;
-  -webkit-box-shadow: 0em 0.05em 0.187em rgba(0, 0, 0, 0.25) inset, 0em 0.05em 0.187em rgba(0, 0, 0, 0.25) inset;
-  box-shadow: 0em 0.05em 0.187em rgba(0, 0, 0, 0.25) inset, 0em 0.05em 0.187em rgba(0, 0, 0, 0.25) inset;
-  border-radius: var(--container-radius)
-}
-
-.theme-switch__checkbox {
-  display: none;
-}
-
-.theme-switch__circle-container {
-  width: var(--circle-container-diameter);
-  height: var(--circle-container-diameter);
-  background-color: rgba(255, 255, 255, 0.1);
-  position: absolute;
-  left: var(--circle-container-offset);
-  top: var(--circle-container-offset);
-  border-radius: var(--container-radius);
-  -webkit-box-shadow: inset 0 0 0 3.375em rgba(255, 255, 255, 0.1), inset 0 0 0 3.375em rgba(255, 255, 255, 0.1), 0 0 0 0.625em rgba(255, 255, 255, 0.1), 0 0 0 1.25em rgba(255, 255, 255, 0.1);
-  box-shadow: inset 0 0 0 3.375em rgba(255, 255, 255, 0.1), inset 0 0 0 3.375em rgba(255, 255, 255, 0.1), 0 0 0 0.625em rgba(255, 255, 255, 0.1), 0 0 0 1.25em rgba(255, 255, 255, 0.1);
-  display: -webkit-box;
-  display: -ms-flexbox;
-  display: flex;
-  -webkit-transition: var(--circle-transition);
-  -o-transition: var(--circle-transition);
-  transition: var(--circle-transition);
-  pointer-events: none;
-}
-
-.theme-switch__sun-moon-container {
-  pointer-events: auto;
-  position: relative;
-  z-index: 2;
-  width: var(--sun-moon-diameter);
-  height: var(--sun-moon-diameter);
-  margin: auto;
-  border-radius: var(--container-radius);
-  background-color: var(--sun-bg);
-  -webkit-box-shadow: 0.062em 0.062em 0.062em 0em rgba(254, 255, 239, 0.61) inset, 0em -0.062em 0.062em 0em #a1872a inset;
-  box-shadow: 0.062em 0.062em 0.062em 0em rgba(254, 255, 239, 0.61) inset, 0em -0.062em 0.062em 0em #a1872a inset;
-  -webkit-filter: drop-shadow(0.062em 0.125em 0.125em rgba(0, 0, 0, 0.25)) drop-shadow(0em 0.062em 0.125em rgba(0, 0, 0, 0.25));
-  filter: drop-shadow(0.062em 0.125em 0.125em rgba(0, 0, 0, 0.25)) drop-shadow(0em 0.062em 0.125em rgba(0, 0, 0, 0.25));
-  overflow: hidden;
-  -webkit-transition: var(--transition);
-  -o-transition: var(--transition);
-  transition: var(--transition);
-}
-
-.theme-switch__moon {
-  -webkit-transform: translateX(100%);
-  -ms-transform: translateX(100%);
-  transform: translateX(100%);
-  width: 100%;
-  height: 100%;
-  background-color: var(--moon-bg);
-  border-radius: inherit;
-  -webkit-box-shadow: 0.062em 0.062em 0.062em 0em rgba(254, 255, 239, 0.61) inset, 0em -0.062em 0.062em 0em #969696 inset;
-  box-shadow: 0.062em 0.062em 0.062em 0em rgba(254, 255, 239, 0.61) inset, 0em -0.062em 0.062em 0em #969696 inset;
-  -webkit-transition: var(--transition);
-  -o-transition: var(--transition);
-  transition: var(--transition);
-  position: relative;
-}
-
-.theme-switch__spot {
-  position: absolute;
-  top: 0.75em;
-  left: 0.312em;
-  width: 0.75em;
-  height: 0.75em;
-  border-radius: var(--container-radius);
-  background-color: var(--spot-color);
-  -webkit-box-shadow: 0em 0.0312em 0.062em rgba(0, 0, 0, 0.25) inset;
-  box-shadow: 0em 0.0312em 0.062em rgba(0, 0, 0, 0.25) inset;
-}
-
-.theme-switch__spot:nth-of-type(2) {
-  width: 0.375em;
-  height: 0.375em;
-  top: 0.937em;
-  left: 1.375em;
-}
-
-.theme-switch__spot:nth-last-of-type(3) {
-  width: 0.25em;
-  height: 0.25em;
-  top: 0.312em;
-  left: 0.812em;
-}
-
-.theme-switch__clouds {
-  width: 1.25em;
-  height: 1.25em;
-  background-color: var(--clouds-color);
-  border-radius: var(--container-radius);
-  position: absolute;
-  bottom: -0.625em;
-  left: 0.312em;
-  -webkit-box-shadow: 0.937em 0.312em var(--clouds-color), -0.312em -0.312em var(--back-clouds-color), 1.437em 0.375em var(--clouds-color), 0.5em -0.125em var(--back-clouds-color), 2.187em 0 var(--clouds-color), 1.25em -0.062em var(--back-clouds-color), 2.937em 0.312em var(--clouds-color), 2em -0.312em var(--back-clouds-color), 3.625em -0.062em var(--clouds-color), 2.625em 0em var(--back-clouds-color), 4.5em -0.312em var(--clouds-color), 3.375em -0.437em var(--back-clouds-color), 4.625em -1.75em 0 0.437em var(--clouds-color), 4em -0.625em var(--back-clouds-color), 4.125em -2.125em 0 0.437em var(--back-clouds-color);
-  box-shadow: 0.937em 0.312em var(--clouds-color), -0.312em -0.312em var(--back-clouds-color), 1.437em 0.375em var(--clouds-color), 0.5em -0.125em var(--back-clouds-color), 2.187em 0 var(--clouds-color), 1.25em -0.062em var(--back-clouds-color), 2.937em 0.312em var(--clouds-color), 2em -0.312em var(--back-clouds-color), 3.625em -0.062em var(--clouds-color), 2.625em 0em var(--back-clouds-color), 4.5em -0.312em var(--clouds-color), 3.375em -0.437em var(--back-clouds-color), 4.625em -1.75em 0 0.437em var(--clouds-color), 4em -0.625em var(--back-clouds-color), 4.125em -2.125em 0 0.437em var(--back-clouds-color);
-  -webkit-transition: 0.5s cubic-bezier(0, -0.02, 0.4, 1.25);
-  -o-transition: 0.5s cubic-bezier(0, -0.02, 0.4, 1.25);
-  transition: 0.5s cubic-bezier(0, -0.02, 0.4, 1.25);
-}
-
-.theme-switch__stars-container {
-  position: absolute;
-  color: var(--stars-color);
-  top: -100%;
-  left: 0.312em;
-  width: 2.75em;
-  height: auto;
-  -webkit-transition: var(--transition);
-  -o-transition: var(--transition);
-  transition: var(--transition);
-}
-
-/* actions */
-
-.theme-switch__checkbox:checked + .theme-switch__container {
-  background-color: var(--container-night-bg);
-}
-
-.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__circle-container {
-  left: calc(100% - var(--circle-container-offset) - var(--circle-container-diameter));
-}
-
-.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__circle-container:hover {
-  left: calc(100% - var(--circle-container-offset) - var(--circle-container-diameter) - 0.187em)
-}
-
-.theme-switch__circle-container:hover {
-  left: calc(var(--circle-container-offset) + 0.187em);
-}
-
-.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__moon {
-  -webkit-transform: translate(0);
-  -ms-transform: translate(0);
-  transform: translate(0);
-}
-
-.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__clouds {
-  bottom: -4.062em;
-}
-
-.theme-switch__checkbox:checked + .theme-switch__container .theme-switch__stars-container {
-  top: 50%;
-  -webkit-transform: translateY(-50%);
-  -ms-transform: translateY(-50%);
-  transform: translateY(-50%);
-}
-
-```
-- [ ] 将数据分析-通知类型分布的玫瑰图动效改编为顺时针生长的动效.增大"高频材料分析"的点云中每个点的大小,让点充满高频材料分析的区域;词云也应该覆盖满区域,且点击词云的每个词后都在内置搜索框中搜索这个词.
-- [ ] 为管理员控制台提供更多数据可视化,并针对管理员增加更多特有的数据分析接口(针对多用户和所有用户总体数据的分析,如多线程的所有用户的解析数量变化曲线,放在右上角),在管理员的数据分析页面中需要有:
-  - 节省时间趋势成为两条曲线(两组柱子),一蓝一红,蓝色代表针对所有用户的某种节省时间走向分析?.
-  - 通知类型分布,高频材料分析,核心材料top5,以及通知难度评估均提供管理员个人分布和所有用户分布的切换.
-  - 管理员的节省时间卡片不同于用户,应该有4个,分别个人平均节省时间,个人总计节省时间,所有用户平均节省时间,所有用户总计节省时间.
-- 管理员页面的用户管理应该显示其头像.
-- "我的"页面的累计为您节省时间不要使用随机数.
-- 
+- [ ] 明暗切换的精细化UI调整,保证每个白色在黑暗切换时都变为灰色或者黑色或者红色,暗色下文字变为白色或灰色.
 ---
 ### 待补充资源文件（需手动处理）
 - [ ] 热点资讯图片（当前使用色块占位）：后端 `get_news_with_images()` 中 `image_url` 字段为 None，需要爬虫补充真实图片 URL
@@ -245,6 +20,7 @@
 - [ ] 提供恢复对话功能,每次对话后将对话保存到一个json文件,可以在历史记录中点击对话来恢复,也可以点击历史记录每个对话的文件夹来在文件资源管理器中显示.
   - 在主页解析完成文件后右上角添加一个导出按钮.在主页和会话历史右上角分别提供一个导入按钮,导入对话的json来重建对话并加入历史记录.
 - [ ] 修改"节省时间"计算逻辑,防止有些文件的节省时间超过三十分钟.
+- [ ] 加入真实邮件系统,补完注册时验证邮箱的逻辑.
 - [ ] 日志管理.
 - [ ] "实时"逻辑:管理员可以实时监测所有用户的解析数量变化,可能要引入多线程?.
 - [ ] 微信登录接口对接.
@@ -320,3 +96,25 @@
   - `web/src/assets/photos/discover/slide1.jpg` - 智能解析主题图
   - `web/src/assets/photos/discover/slide2.jpg` - 多版本改写主题图
   - `web/src/assets/photos/discover/slide3.jpg` - 数据分析主题图
+- [x] 将发现页轮播图背景图片(web/src/assets/photos/discover/)真实渲染上去,代替掉当前的渐变色.
+- [x] 登录注册页从原来的圆角水晶蓝色渐变改为更小圆角的红黑渐变.给登录页面出现时的标题增加"一个一个字母浮上来"的动效.
+- [x] 将左下角齿轮更改为"更多",悬停时展示栏目有:
+  - 关于(包括关于本平台,关于我们).
+  - 权限设置(管理员可以自我设置为用户,用户需要在所有的管理员中选择一个去申请提高权限,需要增补邮件系统,使用真实邮箱进行邮件传递,管理员降级和用户提交申请和用户申请通过时都要发送邮件)
+  - 接入API(暂时搁置,等内置智能体开发完成后再接入)
+  - 常见问题(瞎编)
+  - (红色按钮)不要点这个!,当用户点击这个时自动跳转到[原神](https://ys.mihoyo.com/)页面.
+- [x] 未登录时在sidebar的最下面的栏目下面放一个widget,"登录即享"...,写四条,下面是一个胶囊形红色登录按钮.
+- [x] 主页-中央文件的词云图的每个词应该可点击,点击后自动调用搜索引擎搜索这个词.
+- [x] 在header右方添加一个明暗切换开关.
+- [x] 将数据分析-通知类型分布的玫瑰图动效改编为顺时针生长的动效.增大"高频材料分析"的点云中每个点的大小,让点充满高频材料分析的区域;词云也应该覆盖满区域,且点击词云的每个词后都在内置搜索框中搜索这个词.
+- [x] 为管理员控制台提供更多数据可视化,并针对管理员增加更多特有的数据分析接口(针对多用户和所有用户总体数据的分析,如多线程的所有用户的解析数量变化曲线,放在右上角),在管理员的数据分析页面中需要有:
+  - 节省时间趋势成为两条曲线(两组柱子),一蓝一红,蓝色代表针对所有用户的某种节省时间走向分析?.
+  - 通知类型分布,高频材料分析,核心材料top5,以及通知难度评估均提供管理员个人分布和所有用户分布的切换.
+  - 管理员的节省时间卡片不同于用户,应该有4个,分别个人平均节省时间,个人总计节省时间,所有用户平均节省时间,所有用户总计节省时间.
+- [x] 管理员页面的用户管理应该显示各用户头像.
+- [x] "我的"页面的累计为您节省时间不要使用随机数.
+- [x] (红色按钮)不要点这个!,当用户点击这个时自动跳转到[原神](https://ys.mihoyo.com/)页面,并开始下载[原神](https://ys-api.mihoyo.com/event/download_porter/link/ys_cn/official/pc_backup316).
+- [x] 缩小header右边的明暗切换开关.
+- [x] 解决主页扫描文件后内容分布左右不均匀的问题.(解决LLM生成内容量太少的问题),添加文件解析后用流程图展示功能.
+- [x] 解决现在数据分析无法显示以及管理员页面无数据的问题.

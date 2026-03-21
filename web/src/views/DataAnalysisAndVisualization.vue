@@ -14,33 +14,29 @@
     <div v-else class="dashboard-grid">
       <!-- ================= 左侧列 (上5/12 下7/12) ================= -->
       <div class="col-left">
-        <!-- 节省时间曲线图 -->
-        <div class="widget widget-time-curve">
+        <!-- RAG 命中趋势 -->
+        <div class="widget widget-rag-trend">
           <div class="widget-header">
-            <h3 class="widget-title">节省时间趋势</h3>
+            <h3 class="widget-title">RAG 命中趋势</h3>
             <div class="widget-actions">
                <span
                  class="action-tag"
-                 :class="{ active: timeChartType === 'line' }"
-                 @click="timeChartType = 'line'"
+                 :class="{ active: ragChartType === 'line' }"
+                 @click="ragChartType = 'line'"
                >曲线</span>
                <span
                  class="action-tag"
-                 :class="{ active: timeChartType === 'bar' }"
-                 @click="timeChartType = 'bar'"
+                 :class="{ active: ragChartType === 'bar' }"
+                 @click="ragChartType = 'bar'"
                >柱状</span>
             </div>
             <div class="widget-actions scope-toggle" v-if="isAdmin">
-              <span class="action-tag" :class="{ active: materialsScope === 'me' }" @click="materialsScope = 'me'">个人</span>
-              <span class="action-tag" :class="{ active: materialsScope === 'all' }" @click="materialsScope = 'all'">全体</span>
+              <span class="action-tag" :class="{ active: ragScope === 'me' }" @click="ragScope = 'me'">个人</span>
+              <span class="action-tag" :class="{ active: ragScope === 'all' }" @click="ragScope = 'all'">全体</span>
             </div>
           </div>
           <div class="chart-content">
-            <TimeSavedChart
-              :chartData="statsData?.time_saved_distribution"
-              :compareData="isAdmin ? statsAll?.time_saved_distribution : null"
-              :chartType="timeChartType"
-            />
+            <RagTrendChart :chartData="ragSeriesData" :compareData="isAdmin ? ragSeriesCompare : null" :chartType="ragChartType" />
           </div>
         </div>
 
@@ -60,38 +56,67 @@
         </div>
       </div>
 
-      <!-- ================= 中间列 (上3/4 下1/4) ================= -->
+      <!-- ================= 中间列 (四块布局) ================= -->
       <div class="col-center">
-        <!-- 高频材料统计图 -->
-        <div class="widget widget-cloud-scatter">
-          <div class="widget-header">
-            <h3 class="widget-title">高频材料分析</h3>
-            <div class="widget-actions">
-               <span
-                 class="action-tag"
-                 :class="{ active: materialsChartType === 'pie' }"
-                 @click="materialsChartType = 'pie'"
-               >饼图</span>
-               <span
-                 class="action-tag"
-                 :class="{ active: materialsChartType === 'scatter' }"
-                 @click="materialsChartType = 'scatter'"
-               >点云</span>
-               <span
-                 class="action-tag"
-                 :class="{ active: materialsChartType === 'wordCloud' }"
-                 @click="materialsChartType = 'wordCloud'"
-               >词云</span>
+        <div class="center-grid">
+          <div class="widget widget-time-curve span-2">
+            <div class="widget-header">
+              <h3 class="widget-title">节省时间趋势</h3>
+              <div class="widget-actions">
+                <span class="action-tag" :class="{ active: timeChartType === 'line' }" @click="timeChartType = 'line'">曲线</span>
+                <span class="action-tag" :class="{ active: timeChartType === 'bar' }" @click="timeChartType = 'bar'">柱状</span>
+              </div>
+              <div class="widget-actions scope-toggle" v-if="isAdmin">
+                <span class="action-tag" :class="{ active: timeScope === 'me' }" @click="timeScope = 'me'">个人</span>
+                <span class="action-tag" :class="{ active: timeScope === 'all' }" @click="timeScope = 'all'">全体</span>
+              </div>
+            </div>
+            <div class="chart-content">
+              <TimeSavedChart
+                :chartData="timeSeriesData"
+                :compareData="isAdmin ? timeSeriesCompare : null"
+                :chartType="timeChartType"
+              />
             </div>
           </div>
-          <div class="chart-content">
-            <MaterialsPieChart v-if="materialsChartType === 'pie'" :chartData="materialsChartData" />
-            <MaterialsScatterChart v-else-if="materialsChartType === 'scatter'" :chartData="materialsChartData" />
-            <MaterialsWordCloud v-else-if="materialsChartType === 'wordCloud'" :chartData="materialsChartData" />
+
+          <div class="widget widget-vector-scatter">
+            <div class="widget-header">
+              <h3 class="widget-title">向量散点评估</h3>
+              <div class="widget-actions scope-toggle" v-if="isAdmin">
+                <span class="action-tag" :class="{ active: vectorScope === 'me' }" @click="vectorScope = 'me'">个人</span>
+                <span class="action-tag" :class="{ active: vectorScope === 'all' }" @click="vectorScope = 'all'">全体</span>
+              </div>
+            </div>
+            <div class="chart-content">
+              <VectorScatterChart :chartData="vectorScatterData" />
+            </div>
+          </div>
+
+          <div class="widget widget-materials-block">
+            <div class="widget-header">
+              <h3 class="widget-title">高频材料分析</h3>
+              <div class="widget-actions">
+                <span class="action-tag" :class="{ active: materialsChartType === 'pie' }" @click="materialsChartType = 'pie'">饼图</span>
+                <span class="action-tag" :class="{ active: materialsChartType === 'scatter' }" @click="materialsChartType = 'scatter'">点云</span>
+                <span class="action-tag" :class="{ active: materialsChartType === 'wordCloud' }" @click="materialsChartType = 'wordCloud'">词云</span>
+              </div>
+              <div class="widget-actions scope-toggle" v-if="isAdmin">
+                <span class="action-tag" :class="{ active: materialsScope === 'me' }" @click="materialsScope = 'me'">个人</span>
+                <span class="action-tag" :class="{ active: materialsScope === 'all' }" @click="materialsScope = 'all'">全体</span>
+              </div>
+            </div>
+            <div class="chart-content">
+              <MaterialsPieChart v-if="materialsChartType === 'pie'" :chartData="materialsChartData" />
+              <MaterialsScatterChart v-else-if="materialsChartType === 'scatter'" :chartData="materialsChartData" />
+              <MaterialsWordCloud v-else-if="materialsChartType === 'wordCloud'" :chartData="materialsChartData" />
+            </div>
           </div>
         </div>
+      </div>
 
-        <!-- 节省时间叠放卡片 -->
+      <!-- ================= 右侧列 ================= -->
+      <div class="col-right">
         <div class="widget widget-time-cards">
           <div v-if="isAdmin" class="time-cards-grid">
             <div class="time-card-grid card-personal-avg">
@@ -122,30 +147,8 @@
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- ================= 右侧列 (1/3, 1/3, 1/3) ================= -->
-      <div class="col-right">
-        <!-- TOP5 所需材料 -->
-        <div class="widget widget-top-materials" :class="{ 'expanded': isMaterialsExpanded }">
-          <div class="widget-header">
-             <h3 class="widget-title">核心材料 Top5</h3>
-             <button class="expand-btn" @click="isMaterialsExpanded = !isMaterialsExpanded">
-                <svg v-if="!isMaterialsExpanded" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                <svg v-else viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><polyline points="18 15 12 9 6 15"></polyline></svg>
-             </button>
-             <div class="widget-actions" v-if="isAdmin">
-               <span class="action-tag" :class="{ active: topMaterialsScope === 'me' }" @click="topMaterialsScope = 'me'">个人</span>
-               <span class="action-tag" :class="{ active: topMaterialsScope === 'all' }" @click="topMaterialsScope = 'all'">全体</span>
-             </div>
-          </div>
-          <div class="chart-content-expandable">
-            <TopMaterialsBarChart :chartData="topMaterialsData" :isExpanded="isMaterialsExpanded" />
-          </div>
-        </div>
-
-        <!-- 通知难度分布 -->
-        <div class="widget widget-difficulty-bar" v-show="!isMaterialsExpanded">
+        <div class="widget widget-difficulty-bar">
           <h3 class="widget-title">通知难度评估</h3>
           <div class="widget-actions scope-toggle" v-if="isAdmin">
              <span class="action-tag" :class="{ active: difficultyScope === 'me' }" @click="difficultyScope = 'me'">个人</span>
@@ -156,8 +159,7 @@
           </div>
         </div>
 
-        <!-- 最近会话历史 -->
-        <div class="widget widget-recent-history" v-show="!isMaterialsExpanded">
+        <div class="widget widget-recent-history">
           <h3 class="widget-title">最近处理</h3>
           <div class="history-content" v-if="recentHistory">
              <div class="mock-history-item">
@@ -184,8 +186,9 @@ import NoticeTypeRoseChart from '@/components/Analysis/NoticeTypeRoseChart.vue';
 import MaterialsPieChart from '@/components/Analysis/MaterialsPieChart.vue';
 import MaterialsScatterChart from '@/components/Analysis/MaterialsScatterChart.vue';
 import MaterialsWordCloud from '@/components/Analysis/MaterialsWordCloud.vue';
-import TopMaterialsBarChart from '@/components/Analysis/TopMaterialsBarChart.vue';
 import DifficultyBarChart from '@/components/Analysis/DifficultyBarChart.vue';
+import RagTrendChart from '@/components/Analysis/RagTrendChart.vue';
+import VectorScatterChart from '@/components/Analysis/VectorScatterChart.vue';
 
 const userStore = useUserStore();
 const loading = ref(true);
@@ -195,22 +198,29 @@ const recentHistory = ref(null);
 const isAdmin = computed(() => !!userStore.user?.is_admin);
 
 const noticeScope = ref('me');
+const timeScope = ref('me');
 const materialsScope = ref('me');
-const topMaterialsScope = ref('me');
 const difficultyScope = ref('me');
+const ragScope = ref('me');
+const vectorScope = ref('me');
 
 const noticeChartData = computed(() => {
   if (noticeScope.value === 'all' && statsAll.value) return statsAll.value.notice_type_distribution;
   return statsData.value?.notice_type_distribution;
 });
 
-const materialsChartData = computed(() => {
-  if (materialsScope.value === 'all' && statsAll.value) return statsAll.value.materials_freq;
-  return statsData.value?.materials_freq;
+const timeSeriesData = computed(() => {
+  if (timeScope.value === 'all' && statsAll.value) return statsAll.value.time_saved_distribution;
+  return statsData.value?.time_saved_distribution;
 });
 
-const topMaterialsData = computed(() => {
-  if (topMaterialsScope.value === 'all' && statsAll.value) return statsAll.value.materials_freq;
+const timeSeriesCompare = computed(() => {
+  if (!statsAll.value) return null;
+  return timeScope.value === 'me' ? (statsAll.value.time_saved_distribution || {}) : null;
+});
+
+const materialsChartData = computed(() => {
+  if (materialsScope.value === 'all' && statsAll.value) return statsAll.value.materials_freq;
   return statsData.value?.materials_freq;
 });
 
@@ -219,10 +229,24 @@ const difficultyChartData = computed(() => {
   return statsData.value?.complexity_distribution;
 });
 
+const ragSeriesData = computed(() => {
+  if (ragScope.value === 'all' && statsAll.value) return statsAll.value.rag_series || {};
+  return statsData.value?.rag_series || {};
+});
+
+const ragSeriesCompare = computed(() => {
+  return null;
+});
+
+const vectorScatterData = computed(() => {
+  if (vectorScope.value === 'all' && statsAll.value) return statsAll.value.vector_scatter || [];
+  return statsData.value?.vector_scatter || [];
+});
+
 // 图表类型控制
 const timeChartType = ref('line'); // 默认曲线图
 const materialsChartType = ref('scatter'); // 默认点云图
-const isMaterialsExpanded = ref(false);
+const ragChartType = ref('line');
 
 const formatDate = (dateString) => {
   if (!dateString) return '-';
@@ -318,6 +342,19 @@ onMounted(async () => {
   flex-direction: column;
   gap: 20px;
   height: 100%;
+}
+
+.center-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: 1.2fr 1fr;
+  gap: 20px;
+  flex: 1;
+  min-height: 0;
+}
+
+.center-grid .span-2 {
+  grid-column: span 2;
 }
 
 .col-right {
@@ -440,22 +477,18 @@ onMounted(async () => {
 .widget-time-curve { flex: 5; min-height: 0; }
 .widget-rose-pie { flex: 7; min-height: 0; }
 
-.widget-cloud-scatter { flex: 3; min-height: 0; }
 .widget-time-cards {
-  flex: 1;
   padding: 0;
   background: transparent;
   box-shadow: none;
   min-height: 0;
 }
 
-.widget-top-materials { flex: 1; min-height: 0; }
+.widget-rag-trend { min-height: 0; }
+.widget-vector-scatter { min-height: 0; }
+.widget-materials-block { min-height: 0; }
 .widget-difficulty-bar { flex: 1; min-height: 0; }
 .widget-recent-history { flex: 1; min-height: 0; }
-
-.widget-top-materials.expanded {
-    flex: 3;
-}
 
 
 /* ======= 特殊组件：节省时间层叠卡片 ======= */

@@ -156,7 +156,14 @@ def rag_search(
     top_k: int = Query(5, ge=1, le=10),
     admin: User = Depends(require_admin),
 ):
-    return {"items": rag_service.search_related_context(q, top_k=top_k)}
+    return {
+        "items": rag_service.search_related_context(
+            q,
+            top_k=top_k,
+            user_id=admin.uid,
+            source="admin_search",
+        )
+    }
 
 
 @router.get("/users/{uid}/avatar")

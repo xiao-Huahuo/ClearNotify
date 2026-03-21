@@ -45,6 +45,10 @@ def create_chat_message(
         message_payload=parsed_payload,
         user_id=current_user.uid,
     )
+    try:
+        chat_message_service.get_rag_context_for_message(db_message, top_k=3)
+    except Exception:
+        pass
     return ChatMessageRead(**chat_message_service.serialize_message(db_message))
 
 

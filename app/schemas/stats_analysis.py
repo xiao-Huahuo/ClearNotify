@@ -18,6 +18,9 @@ class StatsAnalysisRead(SQLModel):
     total_time_saved_minutes: int
     avg_time_saved_minutes: int
     time_saved_distribution: Dict[str, int]
-    
+
     total_parsed_count: int
     user_id: Optional[int]
+    rag_metrics: Dict[str, Any] = {}
+    rag_series: Dict[str, Any] = {}
+    vector_scatter: list[Dict[str, Any]] = []

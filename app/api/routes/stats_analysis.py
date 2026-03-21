@@ -29,5 +29,8 @@ def get_my_stats(
         total_time_saved_minutes=stats_dict["total_time_saved_minutes"],
         avg_time_saved_minutes=stats_dict["avg_time_saved_minutes"],
         time_saved_distribution=stats_dict["time_saved_distribution"],
-        total_parsed_count=stats_dict["total_parsed_count"]
+        total_parsed_count=stats_dict["total_parsed_count"],
+        rag_metrics=stats_dict.get("rag_metrics", {}),
+        rag_series=stats_dict.get("rag_series", {}),
+        vector_scatter=stats_dict.get("vector_scatter", []),
     )

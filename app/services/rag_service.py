@@ -6,8 +6,11 @@ from pathlib import Path
 from typing import Any
 
 import jieba
+from sqlmodel import Session
 
 from app.core.config import GlobalConfig
+from app.core.database import engine
+from app.models.rag_usage import RagUsage
 
 
 logger = logging.getLogger(__name__)
@@ -25,7 +28,7 @@ def _load_documents() -> list[dict[str, Any]]:
     try:
         return json.loads(path.read_text(encoding="utf-8"))
     except Exception as exc:
-        logger.exception("知识库加载失败: %s", exc)
+        logger.exception("知识库加载失败 %s", exc)
         return []
 
 
@@ -74,12 +77,47 @@ def _search_locally(query: str, top_k: int) -> list[dict[str, Any]]:
     return results[:top_k]
 
 
-def search_related_context(query: str, top_k: int = 5) -> list[dict[str, Any]]:
+def _log_usage(
+    query: str,
+    top_k: int,
+    result_count: int,
+    avg_score: float,
+    user_id: int | None,
+    source: str,
+):
+    try:
+        with Session(engine) as session:
+            session.add(
+                RagUsage(
+                    user_id=user_id,
+                    query=query[:1000],
+                    top_k=top_k,
+                    result_count=result_count,
+                    avg_score=avg_score,
+                    source=source,
+                )
+            )
+            session.commit()
+    except Exception as exc:
+        logger.warning("RAG usage log failed: %s", exc)
+
+
+def search_related_context(
+    query: str,
+    top_k: int = 5,
+    user_id: int | None = None,
+    source: str = "unknown",
+    log_usage: bool = True,
+) -> list[dict[str, Any]]:
     if not query.strip():
         return []
 
     if chromadb is None:
-        return _search_locally(query, top_k)
+        results = _search_locally(query, top_k)
+        if log_usage:
+            avg_score = sum(item.get("score", 0) for item in results) / len(results) if results else 0.0
+            _log_usage(query, top_k, len(results), avg_score, user_id, source)
+        return results
 
     try:
         GlobalConfig.CHROMA_DIR.mkdir(parents=True, exist_ok=True)
@@ -117,10 +155,17 @@ def search_related_context(query: str, top_k: int = 5) -> list[dict[str, Any]]:
                     "tags": metadata.get("tags", "").split(",") if metadata.get("tags") else [],
                 }
             )
+        if log_usage:
+            avg_score = sum(item.get("score", 0) for item in rag_items) / len(rag_items) if rag_items else 0.0
+            _log_usage(query, top_k, len(rag_items), avg_score, user_id, source)
         return rag_items
     except Exception as exc:  # pragma: no cover
-        logger.warning("ChromaDB 查询失败，回退本地检索: %s", exc)
-        return _search_locally(query, top_k)
+        logger.warning("ChromaDB 查询失败，回退本地检索 %s", exc)
+        results = _search_locally(query, top_k)
+        if log_usage:
+            avg_score = sum(item.get("score", 0) for item in results) / len(results) if results else 0.0
+            _log_usage(query, top_k, len(results), avg_score, user_id, source)
+        return results
 
 
 def get_status() -> dict[str, Any]:

@@ -7,6 +7,7 @@ from app.models.user import User
 from app.models.chat_message import ChatMessage
 from app.models.favorite import Favorite
 from app.models.todo import TodoItem
+from app.models.rag_usage import RagUsage
 from app.core.security import get_password_hash
 from app.core.config import GlobalConfig
 

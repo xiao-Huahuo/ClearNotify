@@ -325,7 +325,12 @@ def get_rag_context_for_message(
             ],
         )
     )
-    return rag_service.search_related_context(query, top_k=top_k)
+    return rag_service.search_related_context(
+        query,
+        top_k=top_k,
+        user_id=message.user_id,
+        source="chat_message",
+    )
 
 
 def evaluate_notice_difficulty(

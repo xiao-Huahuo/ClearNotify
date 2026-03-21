@@ -4,8 +4,11 @@ import axios from 'axios';
 export const API_ROUTES = {
   LOGIN: '/login/',
   REGISTER: '/user',
+  VERIFY_EMAIL: '/user/verify-email',
+  RESEND_VERIFICATION: '/user/resend-verification',
   GET_ME: '/user/me',
   CHAT_MESSAGE: '/chat/',
+  CHAT_IMPORT: '/chat/import',
   ANALYSIS_ME: '/analysis/me',
   SETTINGS_ME: '/settings/me',
   UPLOAD_AVATAR: '/upload/avatar',
@@ -22,7 +25,11 @@ export const API_ROUTES = {
   FAVORITE: '/favorite/',
   ADMIN_USERS: '/admin/users',
   ADMIN_STATS: '/admin/stats',
+  ADMIN_STATS_STREAM: '/admin/stats/stream',
   ADMIN_ANALYSIS_ALL: '/admin/analysis/all',
+  ADMIN_LOGS: '/admin/logs',
+  ADMIN_RAG_STATUS: '/admin/rag/status',
+  ADMIN_RAG_SEARCH: '/admin/rag/search',
   REQUEST_PERMISSION_UPGRADE: '/user/request-upgrade',
   REQUEST_PERMISSION_DOWNGRADE: '/user/request-downgrade',
 };
@@ -31,7 +38,7 @@ export const API_ROUTES = {
 export const apiClient = axios.create({
   baseURL: '/api',
   headers: { 'Content-Type': 'application/json' },
-  timeout: 10000,
+  timeout: 60000, // 将超时时间增加到 60 秒
 });
 
 // 请求拦截器：自动附加 Token

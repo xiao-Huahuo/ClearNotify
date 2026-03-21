@@ -15,6 +15,14 @@ export const register = (userData) => {
   return apiClient.post(API_ROUTES.REGISTER, userData);
 };
 
+export const verifyEmail = (email, code) => {
+  return apiClient.post(API_ROUTES.VERIFY_EMAIL, { email, code });
+};
+
+export const resendVerification = (email) => {
+  return apiClient.post(API_ROUTES.RESEND_VERIFICATION, { email });
+};
+
 export const getMe = (token) => {
   return apiClient.get(API_ROUTES.GET_ME, {
     headers: {

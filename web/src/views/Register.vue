@@ -49,7 +49,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import { register } from '@/api/user';
+import { register, verifyEmail } from '@/api/user';
 import { useUserStore } from '@/stores/auth.js';
 import { useRouter } from 'vue-router';
 
@@ -72,14 +72,20 @@ const handleRegister = async () => {
   loading.value = true;
   errorMessage.value = '';
   try {
-    // 1. 注册
-    await register({
+    const res = await register({
       uname: username.value,
       email: email.value,
       pwd: password.value,
     });
 
-    // 2. 注册成功后直接登录
+    const prefix = res.data.preview_code ? `当前为本地预览模式，验证码：${res.data.preview_code}\n` : '';
+    const code = window.prompt(`${prefix}请输入邮箱收到的验证码`);
+    if (!code) {
+      errorMessage.value = '注册成功，但尚未完成邮箱验证';
+      return;
+    }
+
+    await verifyEmail(email.value, code.trim());
     await userStore.login(username.value, password.value);
     router.push('/');
   } catch (error) {

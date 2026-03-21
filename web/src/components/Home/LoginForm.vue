@@ -68,29 +68,29 @@ const handleLogin = async () => {
 }
 
 ::placeholder {
-  color: #aaa;
+  color: #a5a5a5;
 }
 
 .flex-column > label {
-  color: white;
+  color: #f1f1f1;
   font-weight: 600;
   font-size: 14px;
 }
 
 .inputForm {
-  border: 1.5px solid #ecedec;
+  border: 1.5px solid #a85c5c;
   border-radius: 10em;
   height: 50px;
   display: flex;
   align-items: center;
   padding-left: 15px;
   transition: 0.2s ease-in-out;
-  background-color: white;
+  background-color: #f6f6f6;
   margin-bottom: 10px;
 }
 
 .input-icon {
-  color: #666;
+  color: #a85c5c;
 }
 
 .input {
@@ -101,6 +101,7 @@ const handleLogin = async () => {
   height: 100%;
   font-size: 15px;
   background: transparent;
+  color: #2f2f2f;
 }
 
 .input:focus {
@@ -108,7 +109,7 @@ const handleLogin = async () => {
 }
 
 .inputForm:focus-within {
-  border: 1.5px solid #00e2dc; /* 聚焦时使用主题青色 */
+  border: 1.5px solid #e14b4b;
 }
 
 .flex-row {
@@ -122,7 +123,7 @@ const handleLogin = async () => {
 .span {
   font-size: 14px;
   margin-left: 5px;
-  color: white;
+  color: #f2d3d3;
   font-weight: 500;
   cursor: pointer;
   transition: opacity 0.2s;
@@ -142,11 +143,11 @@ const handleLogin = async () => {
   text-decoration: none;
   background: transparent;
   transition: ease-out 0.5s;
-  border: 2px solid white;
+  border: 2px solid #f0b0b0;
   border-radius: 10em;
-  box-shadow: inset 0 0 0 0 white;
+  box-shadow: inset 0 0 0 0 #f0b0b0;
   margin: 10px 0;
-  color: white;
+  color: #f6eaea;
   font-size: 16px;
   font-weight: bold;
   height: 55px;
@@ -155,8 +156,8 @@ const handleLogin = async () => {
 }
 
 .button-submit:hover {
-  color: darkblue;
-  box-shadow: inset 0 -100px 0 0 white;
+  color: #3a1a1a;
+  box-shadow: inset 0 -100px 0 0 #f0b0b0;
 }
 
 .button-submit:active {
@@ -169,7 +170,7 @@ const handleLogin = async () => {
 }
 
 .error-msg {
-  color: #ffcccc;
+  color: #ffb3b3;
   text-align: center;
   font-size: 14px;
   margin: 0;

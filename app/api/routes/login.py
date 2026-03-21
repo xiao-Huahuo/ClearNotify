@@ -7,7 +7,7 @@ from sqlmodel import Session, select
 
 from app.core.config import GlobalConfig
 from app.core.database import get_session
-from app.core.security import create_access_token, verify_password, get_password_hash
+from app.core.security import create_access_token, verify_password
 from app.models.user import User
 from app.schemas.token import Token
 
@@ -23,31 +23,13 @@ def login_access_token(
     """
     OAuth2兼容的access-token验证登录接口
     """
-    print(f"Login attempt: username={form_data.username}")
-    print(f"Received password repr: {repr(form_data.password)}")  # 调试：打印 repr
-
-    # 根据用户名查找用户
     statement = select(User).where(User.uname == form_data.username)
     user = session.exec(statement).first()
 
-    if not user:
-        print("User not found by uname")
-
-    if user:
-        print(f"User found: {user.uname}")
-        print(f"Stored hash: '{user.hashed_pwd}'")
-
-        is_valid = verify_password(form_data.password, user.hashed_pwd)
-        print(f"Password valid: {is_valid}")
-
-        if not is_valid:
-            # 测试本地哈希
-            test_hash = get_password_hash(form_data.password)
-            print(f"Test hash: {test_hash}")
-            print(f"Test verify: {verify_password(form_data.password, test_hash)}")
-
     if not user or not verify_password(form_data.password, user.hashed_pwd):
         raise HTTPException(status_code=400, detail="Incorrect username or password")
+    if not user.email_verified:
+        raise HTTPException(status_code=403, detail="邮箱未验证，请先完成邮箱验证")
 
     user.last_login = datetime.now()
     session.add(user)

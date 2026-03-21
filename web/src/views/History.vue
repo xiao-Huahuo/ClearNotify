@@ -1,50 +1,47 @@
 <template>
   <div class="history-container">
-    <!-- 固定的头部和控制栏 -->
     <div class="fixed-header-area">
       <div class="header-section">
         <h1 class="page-title">会话历史</h1>
+        <div class="header-actions">
+          <button class="import-btn" @click="triggerImport">导入会话</button>
+          <input ref="importInput" type="file" accept=".json,application/json" hidden @change="handleImport" />
+        </div>
       </div>
 
-      <!-- 顶部操作栏与过滤区 -->
       <div class="top-bar">
         <div class="filter-section">
           <span class="filter-label">排序方式:</span>
           <div class="tags-group">
-            <span class="sort-tag active">按时间降序</span>
-            <span class="sort-tag">按复杂度</span>
-            <span class="sort-tag">仅看办理类</span>
+            <span class="sort-tag" :class="{ active: sortBy === 'created_time' && sortOrder === 'desc' }" @click="applySort('created_time', 'desc')">按时间降序</span>
+            <span class="sort-tag" :class="{ active: sortBy === 'difficulty' }" @click="applySort('difficulty', sortOrder === 'asc' ? 'desc' : 'asc')">按复杂度</span>
+            <span class="sort-tag" :class="{ active: handlingOnly }" @click="toggleHandlingOnly">仅看办理类</span>
           </div>
         </div>
 
-        <!-- 多选操作组 -->
         <div class="multi-select-actions">
-          <button class="batch-action-btn" @click="toggleSelectMode" :class="{ 'active': isSelectMode }">
-            <svg v-if="!isSelectMode" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+          <button class="batch-action-btn" @click="toggleSelectMode" :class="{ active: isSelectMode }">
             <span v-if="!isSelectMode">多选</span>
             <span v-else>取消多选</span>
           </button>
         </div>
       </div>
 
-      <!-- 固定的表头 -->
       <div class="table-header">
         <div class="col-checkbox" v-show="isSelectMode">
-          <div class="custom-checkbox" :class="{ 'checked': isAllSelected }" @click="toggleSelectAll">
+          <div class="custom-checkbox" :class="{ checked: isAllSelected }" @click="toggleSelectAll">
             <svg v-if="isAllSelected" viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
           </div>
         </div>
         <div class="col-name">任务名称</div>
         <div class="col-type">类型</div>
-        <div class="col-model">模型</div>
+        <div class="col-model">难度</div>
         <div class="col-time">创建时间</div>
         <div class="col-actions">操作</div>
       </div>
     </div>
 
-    <!-- 可滚动的列表区 -->
     <div class="table-container scrollable-area">
-      <!-- 当没有记录或加载中时，这个绝对居中的块会显示 -->
       <div v-if="loading" class="empty-state-centered">
         <span>加载中...</span>
       </div>
@@ -53,9 +50,15 @@
       </div>
 
       <div v-else class="table-body">
-        <div v-for="msg in messages" :key="msg.id" class="table-row" :class="{ 'row-selected': selectedIds.includes(msg.id) }" @click="handleRowClick(msg.id)">
+        <div
+          v-for="msg in messages"
+          :key="msg.id"
+          class="table-row"
+          :class="{ 'row-selected': selectedIds.includes(msg.id) }"
+          @click="handleRowClick(msg.id)"
+        >
           <div class="col-checkbox" v-show="isSelectMode">
-            <div class="custom-checkbox" :class="{ 'checked': selectedIds.includes(msg.id) }">
+            <div class="custom-checkbox" :class="{ checked: selectedIds.includes(msg.id) }">
               <svg v-if="selectedIds.includes(msg.id)" viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
             </div>
           </div>
@@ -63,64 +66,73 @@
             {{ formatName(msg.original_text) }}
           </div>
           <div class="col-type">
-            <span class="type-text">文档</span>
+            <span class="type-text">{{ msg.chat_analysis?.notice_type || '文档' }}</span>
           </div>
           <div class="col-model">
-            <span class="model-badge">MOONSHOT</span>
+            <span class="model-badge">{{ getDifficultyLabel(msg) }}</span>
           </div>
           <div class="col-time">{{ formatDate(msg.created_time) }}</div>
           <div class="col-actions" @click.stop>
-            <button class="icon-btn" title="打开原文件" @click="handleOpenFolder(msg.id)">
-              <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+            <button class="icon-btn favorite-btn" :class="{ active: isFavorited(msg.id) }" title="收藏" @click="toggleFavorite(msg)">
+              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" :fill="isFavorited(msg.id) ? '#f1c40f' : 'none'">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              </svg>
             </button>
-            <button class="icon-btn delete-btn" title="删除记录" @click="handleDelete(msg.id)">
-              <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
-            </button>
+            <button class="icon-btn" title="恢复对话" @click="restoreMessage(msg.id)">恢复</button>
+            <button class="icon-btn" title="打开文件夹" @click="handleOpenFolder(msg.id)">目录</button>
+            <button class="icon-btn" title="导出 JSON" @click="handleExport(msg.id)">导出</button>
+            <button class="icon-btn delete-btn" title="删除记录" @click="handleDelete(msg.id)">删除</button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 悬浮批量操作栏 -->
-    <div class="floating-action-bar" :class="{ 'show': isSelectMode && selectedIds.length > 0 }">
+    <div class="floating-action-bar" :class="{ show: isSelectMode && selectedIds.length > 0 }">
       <div class="action-content">
         <span class="selected-count">已选择 {{ selectedIds.length }} 项</span>
         <span class="divider">|</span>
-        <button class="icon-btn batch-delete-btn" title="批量删除" @click="handleBatchDelete">
-          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-        </button>
-        <button class="icon-btn close-action-btn" title="取消选择" @click="clearSelection">
-          <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
+        <button class="icon-btn batch-delete-btn" title="批量删除" @click="handleBatchDelete">删除</button>
+        <button class="icon-btn close-action-btn" title="取消选择" @click="clearSelection">关闭</button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import { getChatMessages, deleteChatMessage, batchDeleteChatMessages } from '@/api/ai';
+import { computed, onMounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import {
+  batchDeleteChatMessages,
+  deleteChatMessage,
+  exportChatMessage,
+  getChatMessage,
+  getChatMessages,
+  importChatMessage,
+  openChatMessageFolder,
+} from '@/api/ai';
+import { apiClient, API_ROUTES } from '@/router/api_routes.js';
 
+const router = useRouter();
 const messages = ref([]);
 const loading = ref(false);
-
-// 多选状态
 const isSelectMode = ref(false);
 const selectedIds = ref([]);
+const sortBy = ref('created_time');
+const sortOrder = ref('desc');
+const handlingOnly = ref(false);
+const importInput = ref(null);
+const favoritesMap = ref({});
 
-// 计算属性：是否全选
 const isAllSelected = computed(() => {
   return messages.value.length > 0 && selectedIds.value.length === messages.value.length;
 });
 
-// 格式化名称：取原文前 20 个字符，不使用省略号
 const formatName = (text) => {
   if (!text) return '未命名文档';
   const cleanText = text.replace(/\s+/g, ' ');
   return cleanText.length > 20 ? cleanText.substring(0, 20) : cleanText;
 };
 
-// 格式化日期
 const formatDate = (dateString) => {
   if (!dateString) return '-';
   const date = new Date(dateString);
@@ -129,15 +141,31 @@ const formatDate = (dateString) => {
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   });
+};
+
+const getDifficultyLabel = (msg) => {
+  const analysis = msg.chat_analysis || {};
+  const values = [
+    analysis.language_complexity,
+    analysis.handling_complexity,
+    analysis.risk_level,
+  ].filter(Boolean);
+  if (values.includes('高')) return '高';
+  if (values.includes('中')) return '中';
+  return values[0] || '低';
 };
 
 const fetchMessages = async () => {
   loading.value = true;
   try {
-    const res = await getChatMessages();
-    messages.value = res.data.sort((a, b) => new Date(b.created_time) - new Date(a.created_time));
+    const res = await getChatMessages({
+      sort_by: sortBy.value,
+      sort_order: sortOrder.value,
+      handling_only: handlingOnly.value,
+    });
+    messages.value = res.data;
   } catch (error) {
     console.error('获取历史记录失败:', error);
   } finally {
@@ -145,43 +173,138 @@ const fetchMessages = async () => {
   }
 };
 
-// --- 操作逻辑 ---
+const fetchFavorites = async () => {
+  try {
+    const res = await apiClient.get(API_ROUTES.FAVORITE);
+    const map = {};
+    (res.data || []).forEach((fav) => {
+      map[fav.chat_message_id] = fav;
+    });
+    favoritesMap.value = map;
+  } catch (error) {
+    console.warn('加载收藏失败', error);
+  }
+};
 
-const handleOpenFolder = (id) => {
-  alert(`占位功能：准备打开记录 ID ${id} 对应的文件或详情`);
+const isFavorited = (id) => Boolean(favoritesMap.value[id]);
+
+const toggleFavorite = async (msg) => {
+  if (!msg?.id) return;
+  const existing = favoritesMap.value[msg.id];
+  try {
+    if (existing) {
+      await apiClient.delete(`${API_ROUTES.FAVORITE}${existing.id}`);
+      const nextMap = { ...favoritesMap.value };
+      delete nextMap[msg.id];
+      favoritesMap.value = nextMap;
+    } else {
+      const res = await apiClient.post(`${API_ROUTES.FAVORITE}?chat_message_id=${msg.id}`);
+      favoritesMap.value = { ...favoritesMap.value, [msg.id]: res.data };
+    }
+  } catch (error) {
+    console.warn('收藏操作失败', error);
+  }
+};
+
+const applySort = (nextSortBy, nextOrder) => {
+  sortBy.value = nextSortBy;
+  sortOrder.value = nextOrder;
+  fetchMessages();
+};
+
+const toggleHandlingOnly = () => {
+  handlingOnly.value = !handlingOnly.value;
+  fetchMessages();
+};
+
+const triggerImport = () => {
+  importInput.value?.click();
+};
+
+const handleImport = async (event) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  try {
+    const res = await importChatMessage(file);
+    sessionStorage.setItem('restoredChatMessage', JSON.stringify(res.data));
+    await fetchMessages();
+    router.push('/');
+  } catch (error) {
+    alert(error.response?.data?.detail || '导入失败');
+  } finally {
+    event.target.value = '';
+  }
+};
+
+const downloadBlob = (blob, filename) => {
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+};
+
+const handleExport = async (id) => {
+  try {
+    const res = await exportChatMessage(id);
+    downloadBlob(res.data, `chat_${id}.json`);
+  } catch (error) {
+    alert(error.response?.data?.detail || '导出失败');
+  }
+};
+
+const restoreMessage = async (id) => {
+  try {
+    const res = await getChatMessage(id);
+    sessionStorage.setItem('restoredChatMessage', JSON.stringify(res.data));
+    router.push('/');
+  } catch (error) {
+    alert(error.response?.data?.detail || '恢复失败');
+  }
+};
+
+const handleOpenFolder = async (id) => {
+  try {
+    const res = await openChatMessageFolder(id);
+    if (!res.data.opened && res.data.path) {
+      alert(`无法直接打开目录，路径为：${res.data.path}`);
+    }
+  } catch (error) {
+    alert(error.response?.data?.detail || '打开目录失败');
+  }
 };
 
 const handleDelete = async (id) => {
   try {
     await deleteChatMessage(id);
-    messages.value = messages.value.filter(msg => msg.id !== id);
-    // 如果该项被选中，从选中列表中移除
-    selectedIds.value = selectedIds.value.filter(selectedId => selectedId !== id);
+    messages.value = messages.value.filter((msg) => msg.id !== id);
+    selectedIds.value = selectedIds.value.filter((selectedId) => selectedId !== id);
   } catch (error) {
-    console.error('删除失败:', error);
-    alert('删除失败');
+    alert(error.response?.data?.detail || '删除失败');
   }
 };
 
-// --- 多选逻辑 ---
-
 const toggleSelectMode = () => {
   isSelectMode.value = !isSelectMode.value;
-  if (!isSelectMode.value) {
-    clearSelection();
-  }
+  if (!isSelectMode.value) clearSelection();
 };
 
 const toggleSelectAll = () => {
   if (isAllSelected.value) {
     selectedIds.value = [];
   } else {
-    selectedIds.value = messages.value.map(msg => msg.id);
+    selectedIds.value = messages.value.map((msg) => msg.id);
   }
 };
 
 const handleRowClick = (id) => {
-  if (!isSelectMode.value) return;
+  if (!isSelectMode.value) {
+    restoreMessage(id);
+    return;
+  }
 
   const index = selectedIds.value.indexOf(id);
   if (index === -1) {
@@ -197,21 +320,19 @@ const clearSelection = () => {
 
 const handleBatchDelete = async () => {
   if (selectedIds.value.length === 0) return;
-
   try {
     await batchDeleteChatMessages(selectedIds.value);
-    // 从前端列表中移除已删除的项
-    messages.value = messages.value.filter(msg => !selectedIds.value.includes(msg.id));
+    messages.value = messages.value.filter((msg) => !selectedIds.value.includes(msg.id));
     clearSelection();
     isSelectMode.value = false;
   } catch (error) {
-    console.error('批量删除失败:', error);
-    alert('批量删除失败');
+    alert(error.response?.data?.detail || '批量删除失败');
   }
 };
 
 onMounted(() => {
   fetchMessages();
+  fetchFavorites();
 });
 </script>
 
@@ -219,17 +340,22 @@ onMounted(() => {
 .history-container {
   display: flex;
   flex-direction: column;
-  height: 100%; /* 占满父容器高度 */
+  height: 100%;
   background-color: var(--content-bg);
   position: relative;
 }
 
-/* 固定头部区域 */
 .fixed-header-area {
-  padding: 30px 30px 0 30px; /* 顶部和左右内边距，底部无 */
-  background-color: var(--content-bg); /* 确保背景色覆盖可能出现的滚动内容 */
-  z-index: 10; /* 保证在滚动内容之上 */
-  flex-shrink: 0; /* 防止被挤压 */
+  padding: 30px 30px 0 30px;
+  background-color: var(--content-bg);
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .page-title {
@@ -237,6 +363,24 @@ onMounted(() => {
   font-weight: bold;
   margin-bottom: 20px;
   color: var(--color-text-dark);
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.import-btn {
+  border: 1px solid #ddd;
+  background: #fff;
+  color: #333;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+.import-btn:hover {
+  border-color: #c0392b;
+  color: #c0392b;
 }
 
 .top-bar {
@@ -273,15 +417,12 @@ onMounted(() => {
   transition: all 0.2s;
 }
 
-.sort-tag:hover {
-  opacity: 0.8;
-}
-
 .sort-tag.active {
+  background: #c0392b;
+  color: #fff;
   font-weight: bold;
 }
 
-/* 多选按钮 */
 .batch-action-btn {
   display: flex;
   align-items: center;
@@ -296,16 +437,11 @@ onMounted(() => {
   transition: all 0.2s;
 }
 
-.batch-action-btn:hover {
-  background-color: #eee;
-}
-
 .batch-action-btn.active {
   background-color: #000;
   color: #fff;
 }
 
-/* 固定的表头 */
 .table-header {
   display: flex;
   padding: 15px 0;
@@ -316,18 +452,17 @@ onMounted(() => {
   align-items: center;
 }
 
-/* 表格主体及可滚动区域 */
 .table-container {
-  flex: 1; /* 占据剩余所有空间 */
+  flex: 1;
   display: flex;
   flex-direction: column;
-  position: relative; /* 为居中提供上下文 */
-  overflow: hidden; /* 隐藏容器溢出，让子元素滚动 */
+  position: relative;
+  overflow: hidden;
 }
 
 .scrollable-area {
-  overflow-y: auto; /* 仅在此区域垂直滚动 */
-  padding: 0 30px 100px 30px; /* 恢复左右内边距，底部留出空间给悬浮栏 */
+  overflow-y: auto;
+  padding: 0 30px 100px 30px;
 }
 
 .table-row {
@@ -338,31 +473,25 @@ onMounted(() => {
   font-size: 15px;
   transition: background-color 0.2s;
   background-color: var(--content-bg);
-  cursor: default;
+  cursor: pointer;
 }
 
 .table-row.row-selected {
-  background-color: #f8f9fa; /* 选中时稍微给点底色区分 */
-}
-
-.table-row:last-child {
-  border-bottom: none;
+  background-color: #f8f9fa;
 }
 
 .table-row:hover {
   background-color: #fafafa;
 }
 
-/* 列宽分配 */
 .col-checkbox {
-  width: 40px; /* 固定宽度 */
+  width: 40px;
   display: flex;
   justify-content: center;
   align-items: center;
   flex-shrink: 0;
 }
 
-/* 自定义复选框 UI */
 .custom-checkbox {
   width: 16px;
   height: 16px;
@@ -373,7 +502,7 @@ onMounted(() => {
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s;
-  color: transparent; /* 默认不显示 SVG 颜色 */
+  color: transparent;
 }
 
 .custom-checkbox.checked {
@@ -387,25 +516,20 @@ onMounted(() => {
   padding-right: 20px;
   padding-left: 5px;
 }
-.col-type {
-  flex: 1;
-}
-.col-model {
-  flex: 1;
-}
+.col-type { flex: 1; }
+.col-model { flex: 1; }
 .col-time {
   flex: 1.5;
   color: #666;
   font-size: 14px;
 }
 .col-actions {
-  flex: 1;
+  flex: 1.4;
   display: flex;
-  gap: 15px;
+  gap: 10px;
   justify-content: flex-end;
 }
 
-/* 文本截断 */
 .text-ellipsis {
   white-space: nowrap;
   overflow: hidden;
@@ -426,7 +550,6 @@ onMounted(() => {
   font-weight: bold;
 }
 
-/* 简约线条风操作按钮 */
 .icon-btn {
   background: none;
   border: none;
@@ -434,24 +557,24 @@ onMounted(() => {
   padding: 4px;
   border-radius: 4px;
   transition: transform 0.2s, color 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #999; /* 默认浅灰色线条 */
+  color: #999;
 }
 
 .icon-btn:hover {
-  transform: scale(1.1);
-  color: #000; /* hover 变黑 */
+  transform: scale(1.05);
+  color: #000;
+}
+
+.favorite-btn.active {
+  color: #f1c40f;
 }
 
 .delete-btn:hover {
-  color: #f44336; /* 删除按钮 hover 变红 */
+  color: #f44336;
 }
 
-/* 悬浮批量操作栏 */
 .floating-action-bar {
-  position: absolute; /* 改为基于父容器(history-container)定位 */
+  position: absolute;
   bottom: 40px;
   left: 50%;
   transform: translateX(-50%) translateY(100px);
@@ -469,12 +592,12 @@ onMounted(() => {
 
 .action-content {
   background-color: #fff;
-  border-radius: 30px; /* 胶囊形状 */
+  border-radius: 30px;
   padding: 10px 20px;
   display: flex;
   align-items: center;
   gap: 15px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15); /* 明确要求白色阴影悬浮胶囊 */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   border: 1px solid #f0f0f0;
 }
 
@@ -489,21 +612,6 @@ onMounted(() => {
   font-size: 16px;
 }
 
-.batch-delete-btn {
-  color: #666;
-}
-.batch-delete-btn:hover {
-  color: #f44336;
-}
-
-.close-action-btn {
-  color: #999;
-}
-.close-action-btn:hover {
-  color: #000;
-}
-
-/* 空状态绝对居中 */
 .empty-state-centered {
   position: absolute;
   top: 50%;

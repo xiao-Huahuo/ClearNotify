@@ -1,0 +1,1 @@
+readme里面谈到会使用nginx进行调动，但是现在我看没有nginx呢

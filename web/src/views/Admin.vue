@@ -1,14 +1,17 @@
 <template>
   <div class="admin-page">
     <div class="admin-header">
-      <h1 class="page-title">管理员控制台</h1>
+      <div class="header-left">
+        <h1 class="page-title">管理员控制台</h1>
+        <span class="live-badge" :class="{ connected: streamConnected }">
+          {{ streamConnected ? '实时监测中' : '实时连接断开' }}
+        </span>
+      </div>
       <button class="refresh-btn" @click="loadAll">刷新</button>
     </div>
 
     <div v-if="!isAdmin" class="no-permission">无权限访问</div>
     <template v-else>
-
-      <!-- 统计概览 -->
       <div class="stats-row">
         <div class="stat-card">
           <span class="stat-num">{{ stats.total_users ?? '-' }}</span>
@@ -24,7 +27,6 @@
         </div>
       </div>
 
-      <!-- 管理员专属4卡片 -->
       <div class="time-cards-row">
         <div class="time-card personal">
           <span class="tc-label">个人平均节省</span>
@@ -44,7 +46,6 @@
         </div>
       </div>
 
-      <!-- 节省时间趋势（双曲线） -->
       <div class="section">
         <div class="section-label-row">
           <span class="section-label">节省时间趋势</span>
@@ -56,7 +57,6 @@
         <div ref="timeChartRef" class="chart-area"></div>
       </div>
 
-      <!-- 图表切换区（个人/全体） -->
       <div class="section">
         <div class="section-label-row">
           <span class="section-label">分布分析</span>
@@ -72,7 +72,7 @@
           </div>
           <div>
             <div class="chart-sub-label">高频材料分析</div>
-            <div ref="scatterChartRef" class="chart-area-sm"></div>
+            <div ref="materialsComboChartRef" class="chart-area-sm"></div>
           </div>
           <div>
             <div class="chart-sub-label">核心材料 Top5</div>
@@ -85,7 +85,6 @@
         </div>
       </div>
 
-      <!-- 用户列表 -->
       <div class="section">
         <div class="section-label-row">
           <span class="section-label">用户管理</span>
@@ -94,7 +93,7 @@
         <table v-else class="user-table">
           <thead>
             <tr>
-              <th>头像</th><th>UID</th><th>用户名</th><th>邮箱</th><th>注册时间</th><th>身份</th><th>操作</th>
+              <th>头像</th><th>UID</th><th>用户名</th><th>邮箱</th><th>验证</th><th>注册时间</th><th>身份</th><th>操作</th>
             </tr>
           </thead>
           <tbody>
@@ -108,6 +107,7 @@
               <td>{{ u.uid }}</td>
               <td>{{ u.uname }}</td>
               <td>{{ u.email }}</td>
+              <td>{{ u.email_verified ? '已验证' : '未验证' }}</td>
               <td>{{ u.created_time?.slice(0, 10) }}</td>
               <td>
                 <span :class="u.is_admin ? 'badge-admin' : 'badge-user'">
@@ -125,7 +125,6 @@
         </table>
       </div>
 
-      <!-- 用户解析量图表 -->
       <div class="section">
         <span class="section-label">各用户解析量</span>
         <div class="bar-list">
@@ -138,21 +137,20 @@
           </div>
         </div>
       </div>
-
     </template>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
+import * as echarts from 'echarts/core';
+import { BarChart, LineChart, PieChart } from 'echarts/charts';
+import { GridComponent, LegendComponent, TitleComponent, TooltipComponent } from 'echarts/components';
+import { CanvasRenderer } from 'echarts/renderers';
 import { apiClient, API_ROUTES } from '@/router/api_routes.js';
 import { useUserStore } from '@/stores/auth.js';
-import * as echarts from 'echarts/core';
-import { LineChart, BarChart, PieChart, GraphChart } from 'echarts/charts';
-import { TitleComponent, TooltipComponent, GridComponent, LegendComponent } from 'echarts/components';
-import { CanvasRenderer } from 'echarts/renderers';
 
-echarts.use([LineChart, BarChart, PieChart, GraphChart, TitleComponent, TooltipComponent, GridComponent, LegendComponent, CanvasRenderer]);
+echarts.use([LineChart, BarChart, PieChart, TitleComponent, TooltipComponent, GridComponent, LegendComponent, CanvasRenderer]);
 
 const userStore = useUserStore();
 const isAdmin = computed(() => userStore.user?.is_admin);
@@ -165,17 +163,22 @@ const allStats = ref(null);
 const usersLoading = ref(true);
 const timeChartType = ref('line');
 const distScope = ref('personal');
+const streamConnected = ref(false);
 
 const timeChartRef = ref(null);
 const roseChartRef = ref(null);
-const scatterChartRef = ref(null);
+const materialsComboChartRef = ref(null);
 const barChartRef = ref(null);
 const diffChartRef = ref(null);
 
-let timeChart = null, roseChart = null, scatterChart = null, barChart = null, diffChart = null;
+let timeChart = null;
+let roseChart = null;
+let materialsComboChart = null;
+let barChart = null;
+let diffChart = null;
+let statsEventSource = null;
 
-onMounted(() => { if (isAdmin.value) loadAll(); });
-onUnmounted(() => { [timeChart, roseChart, scatterChart, barChart, diffChart].forEach(c => c?.dispose()); });
+const getDistData = () => (distScope.value === 'personal' ? myStats.value : allStats.value);
 
 async function loadAll() {
   usersLoading.value = true;
@@ -192,6 +195,7 @@ async function loadAll() {
     allStats.value = allRes.data;
     await nextTick();
     renderAllCharts();
+    connectRealtimeStream();
   } catch (e) {
     console.warn('管理员数据加载失败', e);
   } finally {
@@ -199,9 +203,31 @@ async function loadAll() {
   }
 }
 
+function connectRealtimeStream() {
+  if (!userStore.token || statsEventSource) return;
+  const url = `/api${API_ROUTES.ADMIN_STATS_STREAM}?token=${encodeURIComponent(userStore.token)}`;
+  statsEventSource = new EventSource(url);
+  statsEventSource.onopen = () => {
+    streamConnected.value = true;
+  };
+  statsEventSource.onmessage = (event) => {
+    try {
+      const payload = JSON.parse(event.data);
+      stats.value = payload;
+    } catch (error) {
+      console.warn('实时数据解析失败', error);
+    }
+  };
+  statsEventSource.onerror = () => {
+    streamConnected.value = false;
+    statsEventSource?.close();
+    statsEventSource = null;
+  };
+}
+
 function renderAllCharts() {
   renderTimeChart();
-  renderDistCharts();
+  renderDistributionCharts();
 }
 
 function renderTimeChart() {
@@ -218,79 +244,106 @@ function renderTimeChart() {
     yAxis: { type: 'value', name: '分钟' },
     series: [
       {
-        name: '个人节省', type: timeChartType.value,
-        data: keys.map(k => myDist[k] || 0),
-        itemStyle: { color: '#c0392b' }, smooth: true,
+        name: '个人节省',
+        type: timeChartType.value,
+        data: keys.map((key) => myDist[key] || 0),
+        itemStyle: { color: '#c0392b' },
+        smooth: true,
         areaStyle: timeChartType.value === 'line' ? { color: 'rgba(192,57,43,0.1)' } : undefined,
       },
       {
-        name: '全体节省', type: timeChartType.value,
-        data: keys.map(k => allDist[k] || 0),
-        itemStyle: { color: '#2980b9' }, smooth: true,
+        name: '全体节省',
+        type: timeChartType.value,
+        data: keys.map((key) => allDist[key] || 0),
+        itemStyle: { color: '#2980b9' },
+        smooth: true,
         areaStyle: timeChartType.value === 'line' ? { color: 'rgba(41,128,185,0.1)' } : undefined,
-      }
-    ]
+      },
+    ],
   }, true);
 }
 
-function getDistData() {
-  return distScope.value === 'personal' ? myStats.value : allStats.value;
-}
+function renderDistributionCharts() {
+  const distData = getDistData();
+  if (!distData) return;
 
-function renderDistCharts() {
-  const d = getDistData();
-  if (!d) return;
-
-  // 玫瑰图
   if (roseChartRef.value) {
     if (!roseChart) roseChart = echarts.init(roseChartRef.value);
-    const roseData = Object.entries(d.notice_type_distribution || {}).map(([name, value]) => ({ name, value }));
+    const roseData = Object.entries(distData.notice_type_distribution || {}).map(([name, value]) => ({ name, value }));
     roseChart.setOption({
       color: ['#c0392b', '#e67e22', '#f1c40f', '#7f8c8d', '#95a5a6'],
       tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
-      series: [{ type: 'pie', roseType: 'radius', radius: ['15%', '75%'], center: ['50%', '55%'],
+      series: [{
+        type: 'pie',
+        roseType: 'radius',
+        radius: ['15%', '75%'],
+        center: ['50%', '55%'],
         itemStyle: { borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
         label: { show: true, formatter: '{b}\n{c}', fontSize: 10 },
-        animationType: 'expansion', animationEasing: 'cubicOut', startAngle: 90, clockwise: true,
-        data: roseData.sort((a, b) => a.value - b.value) }]
+        animationType: 'expansion',
+        animationEasing: 'cubicOut',
+        startAngle: 90,
+        clockwise: true,
+        data: roseData.sort((a, b) => a.value - b.value),
+      }],
     }, true);
   }
 
-  // 点云
-  if (scatterChartRef.value) {
-    if (!scatterChart) scatterChart = echarts.init(scatterChartRef.value);
-    const nodes = Object.entries(d.materials_freq || {}).slice(0, 15).map(([name, value], i) => ({
-      name, value,
-      symbolSize: Math.max(36, 28 + Math.sqrt(value) * 12),
-      itemStyle: { color: ['#c0392b','#e67e22','#f1c40f','#7f8c8d','#922b21'][i % 5] },
-      label: { show: true, position: 'bottom', formatter: '{b}', fontSize: 10 }
-    }));
-    scatterChart.setOption({
-      tooltip: { formatter: p => p.dataType === 'node' ? `${p.name}: ${p.value}次` : '' },
-      series: [{ type: 'graph', layout: 'force', data: nodes,
-        force: { repulsion: 200, gravity: 0.08, layoutAnimation: true }, roam: false, draggable: true }]
+  if (materialsComboChartRef.value) {
+    if (!materialsComboChart) materialsComboChart = echarts.init(materialsComboChartRef.value);
+    const topMaterials = Object.entries(distData.materials_freq || {}).slice(0, 8);
+    materialsComboChart.setOption({
+      tooltip: { trigger: 'axis' },
+      legend: { data: ['材料频次', '变化曲线'], top: 0, textStyle: { fontSize: 10 } },
+      grid: { top: 30, bottom: 35, left: 35, right: 10 },
+      xAxis: {
+        type: 'category',
+        data: topMaterials.map(([name]) => name),
+        axisLabel: { interval: 0, rotate: 25, fontSize: 9 },
+      },
+      yAxis: { type: 'value' },
+      series: [
+        {
+          name: '材料频次',
+          type: 'bar',
+          barWidth: '42%',
+          data: topMaterials.map(([, value]) => value),
+          itemStyle: { color: '#c0392b' },
+        },
+        {
+          name: '变化曲线',
+          type: 'line',
+          smooth: true,
+          data: topMaterials.map(([, value]) => value),
+          itemStyle: { color: '#2980b9' },
+          lineStyle: { width: 2 },
+        },
+      ],
     }, true);
   }
 
-  // Top5柱状
   if (barChartRef.value) {
     if (!barChart) barChart = echarts.init(barChartRef.value);
-    const top5 = Object.entries(d.materials_freq || {}).sort((a,b) => b[1]-a[1]).slice(0,5);
+    const top5 = Object.entries(distData.materials_freq || {}).sort((a, b) => b[1] - a[1]).slice(0, 5);
     barChart.setOption({
       tooltip: { trigger: 'axis' },
       grid: { top: 10, bottom: 30, left: 60, right: 10 },
       xAxis: { type: 'value' },
-      yAxis: { type: 'category', data: top5.map(i=>i[0]), axisLabel: { fontSize: 10 } },
-      series: [{ type: 'bar', data: top5.map(i=>i[1]),
-        itemStyle: { color: p => ['#c0392b','#e67e22','#f1c40f','#7f8c8d','#922b21'][p.dataIndex % 5] } }]
+      yAxis: { type: 'category', data: top5.map((item) => item[0]), axisLabel: { fontSize: 10 } },
+      series: [{
+        type: 'bar',
+        data: top5.map((item) => item[1]),
+        itemStyle: {
+          color: (params) => ['#c0392b', '#e67e22', '#f1c40f', '#7f8c8d', '#922b21'][params.dataIndex % 5],
+        },
+      }],
     }, true);
   }
 
-  // 难度
   if (diffChartRef.value) {
     if (!diffChart) diffChart = echarts.init(diffChartRef.value);
-    const cd = d.complexity_distribution || {};
-    const cats = [...new Set(Object.keys(cd).map(k => k.split('-')[0]))];
+    const cd = distData.complexity_distribution || {};
+    const cats = [...new Set(Object.keys(cd).map((key) => key.split('-')[0]))];
     const levels = ['高', '中', '低'];
     diffChart.setOption({
       tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
@@ -298,42 +351,60 @@ function renderDistCharts() {
       grid: { top: 30, bottom: 24, left: 50, right: 10 },
       xAxis: { type: 'category', data: cats, axisLabel: { fontSize: 9 } },
       yAxis: { type: 'value' },
-      series: levels.map((lv, i) => ({
-        name: lv, type: 'bar', stack: 'total',
-        data: cats.map(c => cd[`${c}-${lv}`] || 0),
-        itemStyle: { color: ['#c0392b','#e67e22','#27ae60'][i] }
-      }))
+      series: levels.map((level, index) => ({
+        name: level,
+        type: 'bar',
+        stack: 'total',
+        data: cats.map((cat) => cd[`${cat}-${level}`] || 0),
+        itemStyle: { color: ['#c0392b', '#e67e22', '#27ae60'][index] },
+      })),
     }, true);
   }
 }
 
 watch(timeChartType, () => renderTimeChart());
-watch(distScope, () => renderDistCharts());
+watch(distScope, () => renderDistributionCharts());
 
 async function toggleAdmin(uid) {
   try {
-    const res = await apiClient.patch(`/admin/users/${uid}/toggle-admin`);
-    const u = users.value.find(u => u.uid === uid);
-    if (u) u.is_admin = res.data.is_admin;
-  } catch (e) { console.warn(e); }
+    const res = await apiClient.patch(`${API_ROUTES.ADMIN_USERS}/${uid}/toggle-admin`);
+    const user = users.value.find((item) => item.uid === uid);
+    if (user) user.is_admin = res.data.is_admin;
+  } catch (e) {
+    console.warn(e);
+  }
 }
 
 async function deleteUser(uid) {
   if (!confirm('确认删除该用户？此操作不可撤销。')) return;
   try {
-    await apiClient.delete(`/admin/users/${uid}`);
-    users.value = users.value.filter(u => u.uid !== uid);
-  } catch (e) { console.warn(e); }
+    await apiClient.delete(`${API_ROUTES.ADMIN_USERS}/${uid}`);
+    users.value = users.value.filter((item) => item.uid !== uid);
+  } catch (e) {
+    console.warn(e);
+  }
 }
 
-const maxCount = computed(() => Math.max(...(stats.value.user_message_counts || []).map(i => i.count), 1));
-const barWidth = (count) => Math.round((count / maxCount.value) * 100) + '%';
+const maxCount = computed(() => Math.max(...(stats.value.user_message_counts || []).map((item) => item.count), 1));
+const barWidth = (count) => `${Math.round((count / maxCount.value) * 100)}%`;
+
+onMounted(() => {
+  if (isAdmin.value) loadAll();
+});
+
+onUnmounted(() => {
+  [timeChart, roseChart, materialsComboChart, barChart, diffChart].forEach((chart) => chart?.dispose());
+  statsEventSource?.close();
+});
 </script>
 
 <style scoped>
 .admin-page { display: flex; flex-direction: column; gap: 16px; padding: 20px; overflow-y: auto; height: 100%; box-sizing: border-box; }
 .admin-header { display: flex; align-items: center; justify-content: space-between; }
+.header-left { display: flex; align-items: center; gap: 12px; }
 .page-title { font-size: 20px; font-weight: 800; color: #111; margin: 0; }
+.live-badge { font-size: 12px; padding: 4px 10px; background: #eee; color: #666; }
+.live-badge.connected { background: #c0392b; color: #fff; }
 .no-permission { text-align: center; color: #aaa; padding: 60px 0; font-size: 14px; }
 
 .stats-row { display: flex; gap: 12px; }
@@ -341,7 +412,6 @@ const barWidth = (count) => Math.round((count / maxCount.value) * 100) + '%';
 .stat-num { font-size: 28px; font-weight: 800; color: #c0392b; line-height: 1; }
 .stat-label { font-size: 12px; color: #888; }
 
-/* 4卡片 */
 .time-cards-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 .time-card { background: #fff; border: 1px solid #eee; padding: 16px; display: flex; flex-direction: column; gap: 6px; }
 .time-card.personal { border-top: 3px solid #c0392b; }

@@ -1,28 +1,58 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from fastapi import Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from dotenv import load_dotenv
-from app.core.cors import CorsMiddleWare
+import threading
+import logging
+
 # 使用动态绝对路径加载环境变量
 from app.core.config import GlobalConfig
-load_dotenv(dotenv_path=GlobalConfig.ENV_PATH)
+# load_dotenv(dotenv_path=GlobalConfig.ENV_PATH) # 已经在 GlobalConfig 内部加载
 
 from app.api.routes import user, login, chat_message, stats_analysis, settings, upload, news, todo, favorite, admin
 from app.services.init_db import init_db_and_admin
+from app.services.worker import start_worker, stop_worker # 导入 worker 的启动和停止函数
+from app.core.cors import CorsMiddleWare
+from app.core.logging_config import setup_logging
+
+setup_logging()
+logger = logging.getLogger(__name__)
 
 # 确保上传目录存在 (基于绝对路径)
 GlobalConfig.AVATAR_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 GlobalConfig.DOCS_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+GlobalConfig.IMAGES_UPLOAD_DIR.mkdir(parents=True, exist_ok=True) # 确保图片上传目录也存在
+GlobalConfig.CHAT_EXPORT_DIR.mkdir(parents=True, exist_ok=True)
+GlobalConfig.LOG_DIR.mkdir(parents=True, exist_ok=True)
+GlobalConfig.MAIL_OUTBOX_DIR.mkdir(parents=True, exist_ok=True)
+
+# 用于存储 worker 线程
+worker_thread: threading.Thread = None
 
 # 定义生命周期管理器
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    global worker_thread
     # 应用启动前执行：初始化数据库和管理员
     init_db_and_admin()
     
+    # 启动 Redis Worker 线程
+    logger.info("Starting Redis worker thread...")
+    worker_thread = threading.Thread(target=start_worker, daemon=True) # daemon=True 确保主程序退出时线程也会退出
+    worker_thread.start()
+    logger.info("Redis worker thread started.")
+    
     yield
-    # 应用关闭后执行：这里暂时没有清理工作
+    
+    # 应用关闭后执行：停止 Redis Worker 线程
+    logger.info("Stopping Redis worker thread...")
+    stop_worker()
+    if worker_thread.is_alive():
+        worker_thread.join(timeout=5) # 等待 worker 线程结束，最多等待5秒
+        if worker_thread.is_alive():
+            logger.warning("Worker thread did not terminate gracefully.")
+    logger.info("Redis worker thread stopped.")
 
 # 将 lifespan 传入 FastAPI
 app = FastAPI(lifespan=lifespan)
@@ -35,6 +65,13 @@ app=CorsMiddleWare(app).add_cors_middleware(
     allow_headers=["*"]
 )
 
+
+@app.middleware("http")
+async def log_request_middleware(request: Request, call_next):
+    logger.info("HTTP %s %s", request.method, request.url.path)
+    response = await call_next(request)
+    logger.info("HTTP %s %s -> %s", request.method, request.url.path, response.status_code)
+    return response
 # 挂载静态文件目录，使得前端可以通过 /media/... 访问上传的文件 (使用绝对路径)
 app.mount("/media", StaticFiles(directory=str(GlobalConfig.UPLOAD_DIR)), name="media")
 

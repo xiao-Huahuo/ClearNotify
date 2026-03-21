@@ -46,7 +46,7 @@
 
 <script setup>
 import { ref } from 'vue';
-import { register } from '@/api/user';
+import { register, verifyEmail } from '@/api/user';
 import { useUserStore } from '@/stores/auth.js';
 
 const emit = defineEmits(['success', 'switch-to-login']);
@@ -59,6 +59,11 @@ const errorMessage = ref('');
 const loading = ref(false);
 const userStore = useUserStore();
 
+const askForCode = (previewCode) => {
+  const prefix = previewCode ? `当前为本地预览模式，验证码：${previewCode}\n` : '';
+  return window.prompt(`${prefix}请输入邮箱收到的验证码`);
+};
+
 const handleRegister = async () => {
   if (password.value !== confirmPassword.value) {
     errorMessage.value = '两次输入的密码不一致';
@@ -68,16 +73,20 @@ const handleRegister = async () => {
   loading.value = true;
   errorMessage.value = '';
   try {
-    await register({
+    const registerRes = await register({
       uname: username.value,
       email: email.value,
       pwd: password.value,
     });
 
-    // 注册成功后自动登录
-    await userStore.login(username.value, password.value);
+    const code = askForCode(registerRes.data.preview_code);
+    if (!code) {
+      errorMessage.value = '注册成功，但尚未完成邮箱验证';
+      return;
+    }
 
-    // 直接通知父组件(Home.vue / Modal.vue)关闭弹窗/销毁表单，而不是转回登录页面
+    await verifyEmail(email.value, code.trim());
+    await userStore.login(username.value, password.value);
     emit('success');
   } catch (error) {
     errorMessage.value = error.response?.data?.detail || 'Registration failed';
@@ -88,7 +97,6 @@ const handleRegister = async () => {
 </script>
 
 <style scoped>
-/* 这里的样式复用了独立登录页的样式，但去除了背景和外框，因为外框由外层的 modal 容器提供 */
 .form {
   display: flex;
   flex-direction: column;
@@ -101,29 +109,29 @@ const handleRegister = async () => {
 }
 
 ::placeholder {
-  color: #aaa;
+  color: #a5a5a5;
 }
 
 .flex-column > label {
-  color: white;
+  color: #f1f1f1;
   font-weight: 600;
   font-size: 13px;
 }
 
 .inputForm {
-  border: 1.5px solid #ecedec;
+  border: 1.5px solid #a85c5c;
   border-radius: 10em;
   height: 45px;
   display: flex;
   align-items: center;
   padding-left: 15px;
   transition: 0.2s ease-in-out;
-  background-color: white;
+  background-color: #f6f6f6;
   margin-bottom: 5px;
 }
 
 .input-icon {
-  color: #666;
+  color: #a85c5c;
 }
 
 .input {
@@ -134,6 +142,7 @@ const handleRegister = async () => {
   height: 100%;
   font-size: 14px;
   background: transparent;
+  color: #2f2f2f;
 }
 
 .input:focus {
@@ -141,7 +150,7 @@ const handleRegister = async () => {
 }
 
 .inputForm:focus-within {
-  border: 1.5px solid #00e2dc;
+  border: 1.5px solid #e14b4b;
 }
 
 .flex-row {
@@ -155,7 +164,7 @@ const handleRegister = async () => {
 .span {
   font-size: 14px;
   margin-left: 5px;
-  color: white;
+  color: #f2d3d3;
   font-weight: 500;
   cursor: pointer;
   transition: opacity 0.2s;
@@ -175,11 +184,11 @@ const handleRegister = async () => {
   text-decoration: none;
   background: transparent;
   transition: ease-out 0.5s;
-  border: 2px solid white;
+  border: 2px solid #f0b0b0;
   border-radius: 10em;
-  box-shadow: inset 0 0 0 0 white;
+  box-shadow: inset 0 0 0 0 #f0b0b0;
   margin: 10px 0;
-  color: white;
+  color: #f6eaea;
   font-size: 16px;
   font-weight: bold;
   height: 50px;
@@ -188,8 +197,8 @@ const handleRegister = async () => {
 }
 
 .button-submit:hover {
-  color: darkblue;
-  box-shadow: inset 0 -100px 0 0 white;
+  color: #3a1a1a;
+  box-shadow: inset 0 -100px 0 0 #f0b0b0;
 }
 
 .button-submit:active {
@@ -202,7 +211,7 @@ const handleRegister = async () => {
 }
 
 .error-msg {
-  color: #ffcccc;
+  color: #ffb3b3;
   text-align: center;
   font-size: 13px;
   margin: 0;

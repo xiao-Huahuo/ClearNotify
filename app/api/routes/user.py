@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from app.core.database import get_session
@@ -5,12 +7,14 @@ from app.models.user import User
 from app.schemas.user import *
 from app.core.security import get_password_hash
 from app.api.deps import get_current_user
+from app.core.config import GlobalConfig
+from app.services import email_service
 
 # 创建路由器
 router = APIRouter()  #在main中被登记为"/user"
 
 #用户注册
-@router.post("/", response_model=UserRead) #最后返回字段是基于响应DTO(UserRead)过滤后的
+@router.post("/", response_model=UserRegisterResponse) #最后返回字段是基于响应DTO(UserRead)过滤后的
 def create_user(user: UserCreate, session: Session = Depends(get_session)): #接收注册DTO(UserCreate)
     """
     创建新用户
@@ -18,23 +22,100 @@ def create_user(user: UserCreate, session: Session = Depends(get_session)): #接
     :param session:
     :return:
     """
-    # 1. 检查邮箱是否已存在 (可选，但推荐)
-    # ... (先略过，为了简单，以后再加)
+    existing_email = session.exec(select(User).where(User.email == user.email)).first()
+    if existing_email:
+        raise HTTPException(status_code=400, detail="该邮箱已被注册")
 
-    # 2. 加密密码
+    existing_name = session.exec(select(User).where(User.uname == user.uname)).first()
+    if existing_name:
+        raise HTTPException(status_code=400, detail="该用户名已存在")
+
     hashed_pwd = get_password_hash(user.pwd)
+    verification_code = email_service.generate_verification_code()
 
-    # 3. 创建数据库模型实例
-    # 用User.model_validate方法(继承SQLModel),接收UserCreate的全部字段并输出给新的User模型,同时更新hashed_pwd字段为加密后的密码
-    db_user = User.model_validate(user, update={"hashed_pwd": hashed_pwd})
+    db_user = User.model_validate(
+        user,
+        update={
+            "hashed_pwd": hashed_pwd,
+            "email_verified": False,
+            "email_verification_code": verification_code,
+            "email_verification_sent_at": datetime.now(),
+        },
+    )
 
-    # 4. 存入数据库
     session.add(db_user)
     session.commit()
-    session.refresh(db_user) # 刷新以获取生成的 uid 和 created_time
+    session.refresh(db_user)
 
-    # 5. 返回
-    return db_user #最后返回User模型,然后基于"response_model=UserRead"过滤,返回一个UserRead给前端
+    delivery = email_service.send_verification_email(db_user)
+    return UserRegisterResponse(
+        user=UserRead(
+            uid=db_user.uid,
+            uname=db_user.uname,
+            email=db_user.email,
+            phone=db_user.phone,
+            avatar_url=db_user.avatar_url,
+            is_admin=db_user.is_admin,
+            created_time=db_user.created_time,
+            last_login=db_user.last_login,
+            email_verified=db_user.email_verified,
+        ),
+        verification_required=True,
+        delivery_channel=delivery["delivery_channel"],
+        preview_code=delivery.get("preview_code"),
+    )
+
+
+@router.post("/verify-email")
+def verify_email(
+    payload: EmailVerificationRequest,
+    session: Session = Depends(get_session),
+):
+    user = session.exec(select(User).where(User.email == payload.email)).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="用户不存在")
+    if user.email_verified:
+        return {"message": "邮箱已验证"}
+    if not user.email_verification_code or not user.email_verification_sent_at:
+        raise HTTPException(status_code=400, detail="验证码不存在，请重新发送")
+    if datetime.now() - user.email_verification_sent_at > timedelta(
+        minutes=GlobalConfig.EMAIL_VERIFICATION_EXPIRE_MINUTES
+    ):
+        raise HTTPException(status_code=400, detail="验证码已过期，请重新发送")
+    if payload.code != user.email_verification_code:
+        raise HTTPException(status_code=400, detail="验证码错误")
+
+    user.email_verified = True
+    user.email_verification_code = None
+    user.email_verification_sent_at = None
+    session.add(user)
+    session.commit()
+    return {"message": "邮箱验证成功"}
+
+
+@router.post("/resend-verification")
+def resend_verification_email(
+    payload: EmailVerificationResendRequest,
+    session: Session = Depends(get_session),
+):
+    user = session.exec(select(User).where(User.email == payload.email)).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="用户不存在")
+    if user.email_verified:
+        return {"message": "邮箱已验证", "delivery_channel": "none"}
+
+    user.email_verification_code = email_service.generate_verification_code()
+    user.email_verification_sent_at = datetime.now()
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+
+    delivery = email_service.send_verification_email(user)
+    return {
+        "message": "验证码已重新发送",
+        "delivery_channel": delivery["delivery_channel"],
+        "preview_code": delivery.get("preview_code"),
+    }
 
 #查询个人信息
 #Header格式:  Authorization: bearer <你的Access Token>
@@ -93,7 +174,7 @@ def request_permission_upgrade(
     admins = session.exec(select(User).where(User.is_admin == True)).all()
     if not admins:
         raise HTTPException(status_code=404, detail="暂无管理员可处理申请")
-    # TODO: 接入邮件系统后，向每位管理员发送邮件通知
+    email_service.send_upgrade_request_email(current_user, admins)
     return {"message": f"申请已提交，已通知 {len(admins)} 位管理员"}
 
 
@@ -109,5 +190,5 @@ def request_permission_downgrade(
     session.add(current_user)
     session.commit()
     session.refresh(current_user)
-    # TODO: 接入邮件系统后，发送降级确认邮件
+    email_service.send_role_change_email(current_user, "普通用户")
     return {"message": "已成功降级为普通用户"}

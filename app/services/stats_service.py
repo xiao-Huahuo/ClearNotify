@@ -86,6 +86,7 @@ def estimate_time_saved(messages: List[ChatMessage]) -> Dict[str, Any]:
         word_count = len(message.original_text) if message.original_text else 0
         read_time_original = max(word_count / 150, 3)
         saved = max(int(read_time_original - 1), 2)
+        saved = min(saved, 30)
 
         total_saved += saved
         distribution[f"第{idx}次"] = saved

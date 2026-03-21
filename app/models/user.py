@@ -22,6 +22,9 @@ class User(UserBase, table=True):
     hashed_pwd: str
     created_time: datetime = Field(default_factory=datetime.now)
     last_login: datetime = Field(default_factory=datetime.now)
+    email_verified: bool = Field(default=False)
+    email_verification_code: Optional[str] = Field(default=None)
+    email_verification_sent_at: Optional[datetime] = Field(default=None)
 
     chat_messages: List["ChatMessage"] = Relationship(back_populates="user")
     stats_analyses: List["StatsAnalysis"] = Relationship(back_populates="user")

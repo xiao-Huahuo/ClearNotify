@@ -10,22 +10,57 @@ import xml.etree.ElementTree as ET
 from typing import Optional
 import urllib.request
 import urllib.error
+import json
+import redis
+import os
+from app.core.config import GlobalConfig # 从全局配置导入
 
 logger = logging.getLogger(__name__)
 today = time.strftime("%Y-%m-%d")
+
+# 初始化 Redis 客户端
+# decode_responses=True 会自动将 Redis 返回的字节解码为字符串
+redis_client = None
+try:
+    redis_client = redis.Redis(
+        host=GlobalConfig.REDIS_HOST,
+        port=GlobalConfig.REDIS_PORT,
+        db=GlobalConfig.REDIS_DB_CACHE, # 使用缓存专用的DB
+        decode_responses=True
+    )
+    redis_client.ping() # 尝试连接，如果失败会抛出异常
+    logger.info("Successfully connected to Redis for caching.")
+except redis.exceptions.ConnectionError as e:
+    logger.error(f"Could not connect to Redis for caching: {e}. Falling back to in-memory cache.")
+    redis_client = None # 如果连接失败，将 redis_client 设置为 None，以便后续使用内存缓存
+
 # ── 缓存 ──────────────────────────────────────────────────────────────────────
-# TODO:转换为Redis缓存
-_cache: dict = {}
+_cache: dict = {} # 内存缓存，作为 Redis 不可用时的备用
 CACHE_TTL = 600  # 10 分钟
 
 def _get_cache(key: str):
-    entry = _cache.get(key)
-    if entry and time.time() - entry["ts"] < CACHE_TTL:
-        return entry["data"]
-    return None
+    if redis_client:
+        data = redis_client.get(key)
+        if data:
+            logger.debug(f"Redis cache hit for key: {key}")
+            return json.loads(data) # 反序列化
+        logger.debug(f"Redis cache miss for key: {key}")
+        return None
+    else: # Fallback to in-memory cache
+        entry = _cache.get(key)
+        if entry and time.time() - entry["ts"] < CACHE_TTL:
+            logger.debug(f"In-memory cache hit for key: {key}")
+            return entry["data"]
+        logger.debug(f"In-memory cache miss for key: {key}")
+        return None
 
 def _set_cache(key: str, data):
-    _cache[key] = {"data": data, "ts": time.time()}
+    if redis_client:
+        redis_client.setex(key, CACHE_TTL, json.dumps(data)) # 序列化
+        logger.debug(f"Redis cache set for key: {key} with TTL: {CACHE_TTL}")
+    else: # Fallback to in-memory cache
+        _cache[key] = {"data": data, "ts": time.time()}
+        logger.debug(f"In-memory cache set for key: {key}")
 
 # ── HTTP 工具 ─────────────────────────────────────────────────────────────────
 HEADERS = {

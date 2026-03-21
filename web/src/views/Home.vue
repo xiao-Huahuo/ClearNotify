@@ -3,68 +3,122 @@
     <!-- ═══════════════════════════════════════════════════════════
          三栏布局：左(时事热点) | 中(文件处理) | 右(红头文件)
     ═══════════════════════════════════════════════════════════ -->
-    <div class="three-col-layout">
+    <div class="three-col-layout" :class="{ 'focus-mode': focusMode }">
 
       <!-- ── 左栏：时事热点 ─────────────────────────────────────── -->
-      <aside class="left-panel panel-card">
-        <div class="panel-header">
-          <span class="panel-dot dot-blue"></span>
-          <h3 class="panel-title">时事热点</h3>
-          <span class="panel-badge">实时</span>
-        </div>
-
-        <!-- 轮播图 -->
-        <div class="carousel-wrap">
-          <transition name="carousel-fade" mode="out-in">
-            <div class="carousel-slide" :key="carouselIndex">
-              <div class="carousel-content">
-                <span class="carousel-num">{{ String(carouselIndex + 1).padStart(2, '0') }}</span>
-                <p class="carousel-text">{{ hotNews[carouselIndex]?.title || '加载中...' }}</p>
+      <div class="left-stack">
+        <aside class="left-panel panel-card history-panel">
+          <div class="panel-header">
+            <span class="panel-dot dot-blue"></span>
+            <h3 class="panel-title">最近解析</h3>
+            <span class="panel-badge">历史</span>
+          </div>
+          <div class="history-section">
+            <div class="history-header">
+              <span class="history-title">最近解析</span>
+              <button class="history-refresh" @click="fetchRecentHistory" :disabled="historyLoading">刷新</button>
+            </div>
+            <div v-if="!userStore.token" class="history-empty">登录后查看最近解析</div>
+            <div v-else class="history-list">
+              <div
+                v-for="item in recentMessages"
+                :key="item.id"
+                class="history-item"
+                :class="{ active: selectedHistoryId === item.id }"
+                @click="selectHistory(item)"
+              >
+                <div class="history-main">
+                  <span class="history-item-title">{{ item.handling_matter || '未命名事项' }}</span>
+                  <span class="history-item-date">{{ formatHistoryDate(item.created_time) }}</span>
+                </div>
+                <button
+                  class="history-fav"
+                  :class="{ active: isHistoryFavorited(item.id) }"
+                  @click.stop="toggleHistoryFavorite(item)"
+                  title="收藏"
+                >
+                  <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" :fill="isHistoryFavorited(item.id) ? '#f1c40f' : 'none'">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                  </svg>
+                </button>
               </div>
-              <div class="carousel-dots">
-                <span
-                  v-for="(_, i) in Math.min(hotNews.length, 5)"
-                  :key="i"
-                  class="dot"
-                  :class="{ active: i === carouselIndex % Math.min(hotNews.length, 5) }"
-                  @click="carouselIndex = i"
-                ></span>
+              <div v-if="historyLoading" class="loading-placeholder">
+                <div v-for="i in 3" :key="i" class="skeleton-line"></div>
               </div>
             </div>
-          </transition>
-        </div>
+            <div v-if="selectedHistoryDetail" class="history-detail">
+              <div class="history-detail-title">{{ selectedHistoryDetail.handling_matter || '未命名事项' }}</div>
+              <p class="history-detail-text">{{ selectedHistoryDetail.original_text || '暂无详情' }}</p>
+              <button class="history-restore-btn" @click="restoreHistory(selectedHistoryDetail)">恢复该解析</button>
+            </div>
+            <div v-else-if="userStore.token && !historyLoading" class="history-empty">暂无记录</div>
+          </div>
+        </aside>
 
-        <!-- Top 10 列表 -->
-        <div class="news-list">
-          <div
-            v-for="(item, idx) in hotNews"
-            :key="idx"
-            class="news-item"
-            @click="openLink(item.link)"
-          >
-            <span class="news-rank" :class="idx < 3 ? 'rank-top' : ''">{{ idx + 1 }}</span>
-            <span class="news-title">{{ item.title }}</span>
-            <svg class="news-arrow" viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        <aside class="left-panel panel-card news-panel">
+          <div class="panel-header">
+            <span class="panel-dot dot-blue"></span>
+            <h3 class="panel-title">时事热点</h3>
+            <span class="panel-badge">实时</span>
           </div>
-          <div v-if="newsLoading" class="loading-placeholder">
-            <div v-for="i in 5" :key="i" class="skeleton-line"></div>
+          <div class="carousel-wrap">
+            <transition name="carousel-fade" mode="out-in">
+              <div class="carousel-slide" :key="carouselIndex">
+                <div class="carousel-content">
+                  <span class="carousel-num">{{ String(carouselIndex + 1).padStart(2, '0') }}</span>
+                  <p class="carousel-text">{{ hotNews[carouselIndex]?.title || '加载中...' }}</p>
+                </div>
+                <div class="carousel-dots">
+                  <span
+                    v-for="(_, i) in Math.min(hotNews.length, 5)"
+                    :key="i"
+                    class="dot"
+                    :class="{ active: i === carouselIndex % Math.min(hotNews.length, 5) }"
+                    @click="carouselIndex = i"
+                  ></span>
+                </div>
+              </div>
+            </transition>
           </div>
-        </div>
-      </aside>
+          <div class="news-list">
+            <div
+              v-for="(item, idx) in hotNews"
+              :key="idx"
+              class="news-item"
+              @click="openLink(item.link)"
+            >
+              <span class="news-rank" :class="idx < 3 ? 'rank-top' : ''">{{ idx + 1 }}</span>
+              <span class="news-title">{{ item.title }}</span>
+              <svg class="news-arrow" viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
+            </div>
+            <div v-if="newsLoading" class="loading-placeholder">
+              <div v-for="i in 5" :key="i" class="skeleton-line"></div>
+            </div>
+          </div>
+        </aside>
+      </div>
 
       <!-- ── 中栏：文件处理（原有逻辑） ────────────────────────── -->
       <main class="center-panel">
         <!-- 标题区域 -->
         <div class="hero-section" v-if="!showResult">
-          <h1 class="main-title">文档解析</h1>
-          <p class="sub-title">全格式兼容 · 精准提取 · 详细输出</p>
+          <div class="hero-header-row">
+            <div>
+              <h1 class="main-title">文档解析</h1>
+              <p class="sub-title">全格式兼容 · 精准提取 · 详细输出</p>
+            </div>
+            <div class="hero-actions">
+              <button class="hero-action-btn" @click="triggerImportConversation">导入会话</button>
+            </div>
+          </div>
         </div>
+        <input ref="importInput" type="file" hidden accept=".json,application/json" @change="handleImportConversation" />
 
         <!-- 初始视图：上传区 -->
         <div v-if="!showResult" class="initial-view">
           <div
             class="upload-area"
-            @click="triggerFileUpload"
+            @click.self="triggerFileUpload"
             @dragover.prevent
             @drop.prevent="handleDrop"
             :class="{ 'disabled': loading }"
@@ -74,9 +128,24 @@
               <button class="action-btn" @click.stop="handleUrlUpload" :disabled="loading">URL上传</button>
               <button class="action-btn" @click.stop="handleScreenshot" :disabled="loading">截图</button>
             </div>
-            <p class="upload-hint">点击或拖拽上传 (支持 TXT, PDF, Word, Excel)</p>
-            <input type="file" ref="fileInput" style="display:none" @change="handleFileUpload" accept=".txt,.pdf,.doc,.docx,.xls,.xlsx" />
-            <input type="file" ref="screenshotInput" style="display:none" @change="handleScreenshotUpload" accept="image/jpeg,image/png,image/webp,application/pdf" />
+            <p class="upload-hint">点击或拖拽上传 (支持文档、图片、PDF)</p>
+            <div v-if="showUrlInput" class="url-float" @click.stop>
+              <div class="url-float-title">URL 上传</div>
+              <input
+                ref="urlInputRef"
+                v-model="urlInputValue"
+                class="url-float-input"
+                type="text"
+                placeholder="https://example.com/file.pdf"
+                @keydown.enter.prevent="submitUrlUpload"
+              />
+              <div class="url-float-actions">
+                <button class="url-float-btn primary" @click="submitUrlUpload">确定</button>
+                <button class="url-float-btn" @click="cancelUrlUpload">取消</button>
+              </div>
+            </div>
+            <input type="file" ref="fileInput" style="display:none" @change="handleFileUpload" accept=".txt,.pdf,.doc,.docx,.xls,.xlsx,image/jpeg,image/png,image/webp,image/bmp,image/tiff" />
+            <input type="file" ref="screenshotInput" style="display:none" @change="handleScreenshotUpload" accept="image/jpeg,image/png,image/webp,image/bmp,image/tiff" />
           </div>
 
           <div v-if="loading" class="loading-banner"><span>正在智能解读中...</span></div>
@@ -128,6 +197,9 @@
           <div class="result-header">
             <button @click="resetView" class="back-btn"><span class="icon">←</span> 返回</button>
             <h2>解读结果</h2>
+            <div class="result-header-actions">
+              <button class="result-header-btn" @click="triggerImportConversation">导入会话</button>
+            </div>
           </div>
           <div class="response-section" v-if="aiResponse">
             <div class="fixed-result-header">
@@ -155,8 +227,18 @@
                     <svg viewBox="0 0 24 24" width="16" height="16" :stroke="isFavorited ? '#c0392b' : 'currentColor'" stroke-width="2" :fill="isFavorited ? '#c0392b' : 'none'"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
                     {{ isFavorited ? '已收藏' : '收藏' }}
                   </button>
+                  <button class="result-action-btn" @click="handleExportConversation" :disabled="!aiResponse?.id" title="导出会话 JSON">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    导出
+                  </button>
                 </div>
               </div>
+              <span
+                v-if="aiResponse?.chat_analysis?.parse_mode"
+                class="parse-mode-badge"
+              >
+                {{ aiResponse.chat_analysis.parse_mode === 'fallback' ? '兜底解析' : '原版解析' }}
+              </span>
             </div>
             <div class="scrollable-content">
               <div class="result-grid">
@@ -189,12 +271,12 @@
                       </div>
                     </div>
                   </div>
-                </div>
-                <div class="right-panel">
                   <div class="warning-panel">
                     <div class="warning-box" v-if="aiResponse.precautions"><h4>注意事项</h4><p>{{ aiResponse.precautions }}</p></div>
                     <div class="warning-box" v-if="aiResponse.risk_warnings"><h4>风险提醒</h4><p>{{ aiResponse.risk_warnings }}</p></div>
                   </div>
+                </div>
+                <div class="right-panel">
                   <div class="analysis-dashboard" v-if="aiResponse.chat_analysis">
                     <div class="dashboard-item"><span class="label">语言复杂度: </span><span class="value text-only" :class="getComplexityClass(aiResponse.chat_analysis.language_complexity)">{{ aiResponse.chat_analysis.language_complexity || '未知' }}</span></div>
                     <div class="dashboard-item"><span class="label">办理复杂度: </span><span class="value text-only" :class="getComplexityClass(aiResponse.chat_analysis.handling_complexity)">{{ aiResponse.chat_analysis.handling_complexity || '未知' }}</span></div>
@@ -303,11 +385,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, nextTick } from 'vue';
+import { ref, onMounted, onUnmounted, nextTick, computed, watch } from 'vue';
 import * as echarts from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
 import { useUserStore } from '@/stores/auth.js';
-import { createChatMessage, createChatMessageWithFile, uploadAndExtractDocument, rewriteChatMessage } from '@/api/ai';
+import { createChatMessage, createChatMessageWithFile, exportChatMessage, importChatMessage, uploadAndExtractDocument, rewriteChatMessage, getChatMessages, getChatMessage } from '@/api/ai';
 import { getHotNews, getCentralDocs, getHotKeywords, getNewsWithImages } from '@/api/news';
 import { useRouter } from 'vue-router';
 import Modal from '@/components/common/Modal.vue';
@@ -330,6 +412,11 @@ const loading = ref(false);
 const isRewriting = ref(false);
 const showResult = ref(false);
 const fileInput = ref(null);
+const importInput = ref(null);
+const showUrlInput = ref(false);
+const urlInputValue = ref('');
+const urlInputRef = ref(null);
+const focusMode = computed(() => loading.value || showResult.value);
 
 // ── 登录弹窗 ──────────────────────────────────────────────────────────────────
 const showModal = ref(false);
@@ -341,6 +428,13 @@ const hotNews = ref([]);
 const newsLoading = ref(true);
 const carouselIndex = ref(0);
 let carouselTimer = null;
+
+// 最近解析记录
+const recentMessages = ref([]);
+const historyLoading = ref(false);
+const selectedHistoryId = ref(null);
+const selectedHistoryDetail = ref(null);
+const favoritesMap = ref({});
 
 // ── 右栏：中央文件 ────────────────────────────────────────────────────────────
 const centralDocs = ref([]);
@@ -373,6 +467,8 @@ onMounted(async () => {
 
   // 并行加载新闻和文件
   await Promise.all([loadHotNews(), loadCentralDocs(), loadNewsImages()]);
+  await fetchRecentHistory();
+  await fetchFavorites();
 
   // 启动轮播
   carouselTimer = setInterval(() => {
@@ -384,12 +480,36 @@ onMounted(async () => {
   // 初始化词云
   await nextTick();
   initWordCloud();
+
+   const restoredMessage = sessionStorage.getItem('restoredChatMessage');
+   if (restoredMessage) {
+     try {
+       aiResponse.value = JSON.parse(restoredMessage);
+       showResult.value = true;
+     } catch (error) {
+       console.warn('恢复会话失败', error);
+     } finally {
+       sessionStorage.removeItem('restoredChatMessage');
+     }
+   }
 });
 
 onUnmounted(() => {
   clearInterval(carouselTimer);
   wordCloudChart?.dispose();
   window.removeEventListener('open-login-modal', openLoginModal);
+});
+
+watch(() => userStore.token, async (val) => {
+  if (val) {
+    await fetchRecentHistory();
+    await fetchFavorites();
+  } else {
+    recentMessages.value = [];
+    selectedHistoryId.value = null;
+    selectedHistoryDetail.value = null;
+    favoritesMap.value = {};
+  }
 });
 
 // ── 数据加载 ──────────────────────────────────────────────────────────────────
@@ -475,6 +595,97 @@ const stripHtml = (html) => {
   return html.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').trim();
 };
 
+const formatHistoryDate = (value) => {
+  if (!value) return '';
+  const dt = new Date(value);
+  if (Number.isNaN(dt.getTime())) return '';
+  return dt.toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+};
+
+const fetchRecentHistory = async () => {
+  if (!userStore.token) {
+    recentMessages.value = [];
+    selectedHistoryId.value = null;
+    selectedHistoryDetail.value = null;
+    return;
+  }
+  historyLoading.value = true;
+  try {
+    const res = await getChatMessages({ limit: 6, sort_by: 'created_time', sort_order: 'desc' });
+    recentMessages.value = res.data || [];
+    if (recentMessages.value.length === 0) {
+      selectedHistoryId.value = null;
+      selectedHistoryDetail.value = null;
+    } else if (!selectedHistoryId.value) {
+      await selectHistory(recentMessages.value[0]);
+    }
+  } catch (error) {
+    console.warn('加载历史记录失败', error);
+  } finally {
+    historyLoading.value = false;
+  }
+};
+
+const selectHistory = async (item) => {
+  if (!item?.id) return;
+  selectedHistoryId.value = item.id;
+  try {
+    const res = await getChatMessage(item.id);
+    selectedHistoryDetail.value = res.data;
+  } catch (error) {
+    selectedHistoryDetail.value = item;
+  }
+};
+
+const restoreHistory = (item) => {
+  if (!item) return;
+  aiResponse.value = item;
+  showResult.value = true;
+  isFavorited.value = Boolean(favoritesMap.value[item.id]);
+};
+
+const fetchFavorites = async () => {
+  if (!userStore.token) {
+    favoritesMap.value = {};
+    return;
+  }
+  try {
+    const res = await apiClient.get(API_ROUTES.FAVORITE);
+    const map = {};
+    (res.data || []).forEach((fav) => {
+      map[fav.chat_message_id] = fav;
+    });
+    favoritesMap.value = map;
+    if (aiResponse.value?.id) {
+      isFavorited.value = Boolean(map[aiResponse.value.id]);
+    }
+  } catch (error) {
+    console.warn('加载收藏失败', error);
+  }
+};
+
+const isHistoryFavorited = (id) => Boolean(favoritesMap.value[id]);
+
+const toggleHistoryFavorite = async (item) => {
+  if (!item?.id) return;
+  const existing = favoritesMap.value[item.id];
+  try {
+    if (existing) {
+      await apiClient.delete(`${API_ROUTES.FAVORITE}${existing.id}`);
+      const nextMap = { ...favoritesMap.value };
+      delete nextMap[item.id];
+      favoritesMap.value = nextMap;
+      if (aiResponse.value?.id === item.id) isFavorited.value = false;
+    } else {
+      const res = await apiClient.post(`${API_ROUTES.FAVORITE}?chat_message_id=${item.id}`);
+      favoritesMap.value = { ...favoritesMap.value, [item.id]: res.data };
+      if (aiResponse.value?.id === item.id) isFavorited.value = true;
+    }
+  } catch (error) {
+    console.warn('收藏操作失败', error);
+  }
+};
+
 // ── 登录弹窗逻辑 ──────────────────────────────────────────────────────────────
 const onBeforeEnter = (el) => { el.style.opacity = 0; };
 const onEnter = (el, done) => {
@@ -491,7 +702,15 @@ const handleLoginSuccess = () => closeModal();
 const triggerFileUpload = () => {
   if (loading.value) return;
   if (!userStore.token) { openLoginModal(); return; }
-  fileInput.value.click();
+  if (fileInput.value) {
+    fileInput.value.value = '';
+    fileInput.value.click();
+  }
+};
+
+const triggerImportConversation = () => {
+  if (!userStore.token) { openLoginModal(); return; }
+  importInput.value?.click();
 };
 
 const handleFileUpload = (event) => processFile(event.target.files[0]);
@@ -512,6 +731,8 @@ const processFile = async (file) => {
     const chatRes = await createChatMessageWithFile(extracted_text, file_url);
     aiResponse.value = chatRes.data;
     showResult.value = true;
+    await fetchRecentHistory();
+    await fetchFavorites();
   } catch (error) {
     if (error.response?.status === 401) { userStore.logout(); openLoginModal(); }
     else alert('文件处理失败: ' + (error.response?.data?.detail || error.message));
@@ -524,14 +745,34 @@ const processFile = async (file) => {
 const handleUrlUpload = () => {
   if (loading.value) return;
   if (!userStore.token) { openLoginModal(); return; }
-  const url = prompt('请输入 URL:');
-  if (url) { inputText.value = `URL: ${url}`; submitToAI(); }
+  showUrlInput.value = true;
+  nextTick(() => urlInputRef.value?.focus());
+};
+
+const submitUrlUpload = () => {
+  const url = urlInputValue.value.trim();
+  if (!url) {
+    showUrlInput.value = false;
+    return;
+  }
+  inputText.value = `URL: ${url}`;
+  showUrlInput.value = false;
+  urlInputValue.value = '';
+  submitToAI();
+};
+
+const cancelUrlUpload = () => {
+  showUrlInput.value = false;
+  urlInputValue.value = '';
 };
 
 const handleScreenshot = () => {
+  if (loading.value) return;
   if (!userStore.token) { openLoginModal(); return; }
-  // 触发隐藏的图片文件选择器
-  screenshotInput.value?.click();
+  if (screenshotInput.value) {
+    screenshotInput.value.value = '';
+    screenshotInput.value.click();
+  }
 };
 
 const screenshotInput = ref(null);
@@ -539,6 +780,11 @@ const screenshotInput = ref(null);
 const handleScreenshotUpload = async (event) => {
   const file = event.target.files?.[0];
   if (!file) return;
+  if (!file.type.startsWith('image/')) {
+    alert('截图仅支持图片格式');
+    event.target.value = '';
+    return;
+  }
   loading.value = true;
   aiResponse.value = null;
   try {
@@ -552,12 +798,33 @@ const handleScreenshotUpload = async (event) => {
       alert('未能识别出文字，请尝试更清晰的图片。');
       return;
     }
-    const response = await createChatMessage(extractedText);
-    aiResponse.value = { ...response.data, file_url: ocrRes.data.file_url };
+    const response = await createChatMessageWithFile(extractedText, ocrRes.data.file_url);
+    aiResponse.value = response.data;
     showResult.value = true;
+    await fetchRecentHistory();
+    await fetchFavorites();
   } catch (error) {
     console.error('截图OCR失败:', error);
     alert('截图识别失败，请重试。');
+  } finally {
+    loading.value = false;
+    event.target.value = '';
+  }
+};
+
+const handleImportConversation = async (event) => {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  loading.value = true;
+  try {
+    const res = await importChatMessage(file);
+    aiResponse.value = res.data;
+    showResult.value = true;
+    isFavorited.value = false;
+    await fetchRecentHistory();
+    await fetchFavorites();
+  } catch (error) {
+    alert(error.response?.data?.detail || '导入会话失败');
   } finally {
     loading.value = false;
     event.target.value = '';
@@ -573,6 +840,8 @@ const submitToAI = async () => {
     const response = await createChatMessage(inputText.value);
     aiResponse.value = response.data;
     showResult.value = true;
+    await fetchRecentHistory();
+    await fetchFavorites();
   } catch (error) {
     if (error.response?.status === 401) { userStore.logout(); openLoginModal(); }
     else alert('解析失败: ' + (error.response?.data?.detail || error.message));
@@ -599,7 +868,30 @@ const resetView = () => {
   aiResponse.value = null;
   showResult.value = false;
   isFavorited.value = false;
+  showUrlInput.value = false;
+  urlInputValue.value = '';
   if (fileInput.value) fileInput.value.value = '';
+};
+
+const downloadBlob = (blob, filename) => {
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+};
+
+const handleExportConversation = async () => {
+  if (!aiResponse.value?.id) return;
+  try {
+    const res = await exportChatMessage(aiResponse.value.id);
+    downloadBlob(res.data, `chat_${aiResponse.value.id}.json`);
+  } catch (error) {
+    alert(error.response?.data?.detail || '导出失败');
+  }
 };
 
 // ── TTS ──────────────────────────────────────────────────────────────────────
@@ -624,15 +916,18 @@ const isFavorited = ref(false);
 async function addFavorite() {
   if (!aiResponse.value?.id || isFavorited.value) return;
   try {
-    await apiClient.post(API_ROUTES.FAVORITE + '?chat_message_id=' + aiResponse.value.id);
+    const res = await apiClient.post(API_ROUTES.FAVORITE + '?chat_message_id=' + aiResponse.value.id);
     isFavorited.value = true;
+    if (res?.data) {
+      favoritesMap.value = { ...favoritesMap.value, [aiResponse.value.id]: res.data };
+    }
   } catch (e) { console.warn('收藏失败', e); }
 }
 
 const parseProcessSteps = (text) => {
   if (!text) return [];
   // 尝试按数字序号、换行、分号等分割
-  const byNum = text.split(/\d+[.、。）)]\s*/);
+  const byNum = text.split(/\d+[.、。)\]]\s*/);
   if (byNum.length > 2) return byNum.filter(s => s.trim()).map(s => s.trim());
   const byNewline = text.split(/[\n；;]+/);
   if (byNewline.length > 1) return byNewline.filter(s => s.trim()).map(s => s.trim());
@@ -664,6 +959,38 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
   flex: 1;
   overflow: hidden;
   min-height: 0;
+  transition: grid-template-columns 0.4s ease, gap 0.4s ease, padding 0.4s ease;
+}
+
+.three-col-layout.focus-mode {
+  grid-template-columns: 0 1fr 0;
+  gap: 0;
+  padding: 0;
+}
+
+.left-panel,
+.right-panel-col {
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+.left-stack {
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+.three-col-layout.focus-mode .left-stack {
+  transform: translateX(-120%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.three-col-layout.focus-mode .right-panel-col {
+  transform: translateX(120%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.three-col-layout.focus-mode .center-panel {
+  padding: 16px;
 }
 
 /* ── 通用面板卡片 ─────────────────────────────────────────────────────────── */
@@ -715,6 +1042,158 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
   background: rgba(192,57,43,0.3);
   color: #fff;
 }
+
+.left-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+}
+
+.history-panel,
+.news-panel {
+  flex: 1;
+  min-height: 0;
+}
+
+.history-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px 12px;
+  min-height: 0;
+}
+
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.history-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #222;
+}
+
+.history-refresh {
+  border: 1px solid #ddd;
+  background: #fff;
+  font-size: 11px;
+  padding: 2px 8px;
+  cursor: pointer;
+  color: #666;
+}
+
+.history-refresh:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 6px 8px;
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.history-item.active {
+  background: #fff5f5;
+  border-color: #f5c6c6;
+}
+
+.history-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.history-item-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.history-item-date {
+  font-size: 10px;
+  color: #999;
+}
+
+.history-fav {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #bbb;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.history-fav.active {
+  color: #f1c40f;
+}
+
+.history-detail {
+  border-top: 1px dashed #eee;
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.history-detail-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #222;
+}
+
+.history-detail-text {
+  font-size: 11px;
+  color: #666;
+  line-height: 1.5;
+  max-height: 72px;
+  overflow: hidden;
+}
+
+.history-restore-btn {
+  align-self: flex-start;
+  background: #c0392b;
+  color: #fff;
+  border: none;
+  padding: 4px 10px;
+  font-size: 11px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.history-empty {
+  font-size: 11px;
+  color: #999;
+  padding: 6px 0;
+}
+
 
 /* ── 左栏：轮播 ──────────────────────────────────────────────────────────── */
 .carousel-wrap {
@@ -841,6 +1320,30 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
   padding: 20px 0 12px;
   flex-shrink: 0;
 }
+.hero-header-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.hero-actions {
+  display: flex;
+  gap: 10px;
+}
+.hero-action-btn,
+.result-header-btn {
+  background: #fff;
+  border: 1px solid #ddd;
+  color: #333;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.hero-action-btn:hover,
+.result-header-btn:hover {
+  border-color: #c0392b;
+  color: #c0392b;
+}
 .main-title {
   font-size: 28px;
   font-weight: 800;
@@ -872,6 +1375,7 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
   transition: all 0.2s;
   margin-bottom: 16px;
   flex-shrink: 0;
+  position: relative;
 }
 .upload-area:hover { border-color: #c0392b; background: #fdf5f5; }
 .upload-area.disabled { opacity: 0.6; cursor: not-allowed; pointer-events: none; }
@@ -895,6 +1399,59 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
 }
 .action-btn:hover { background: #e74c3c; }
 .upload-hint { font-size: 13px; color: #999; margin: 0; }
+
+.url-float {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 260px;
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 5;
+}
+
+.url-float-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #333;
+  text-align: left;
+}
+
+.url-float-input {
+  border: 1px solid #ddd;
+  padding: 6px 8px;
+  font-size: 12px;
+  outline: none;
+}
+
+.url-float-input:focus {
+  border-color: #c0392b;
+}
+
+.url-float-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.url-float-btn {
+  border: 1px solid #ddd;
+  background: #fff;
+  padding: 4px 10px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.url-float-btn.primary {
+  background: #c0392b;
+  border-color: #c0392b;
+  color: #fff;
+}
 
 .loading-banner {
   background: #fff0f0;
@@ -1028,6 +1585,9 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
   margin-bottom: 14px;
   flex-shrink: 0;
 }
+.result-header-actions {
+  margin-left: auto;
+}
 .back-btn {
   background: none;
   border: 1px solid #ccc;
@@ -1054,7 +1614,15 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
   flex: 1;
   overflow: hidden;
 }
-.fixed-result-header { padding: 16px 24px; border-bottom: 1px solid #eee; flex-shrink: 0; }
+.fixed-result-header { padding: 16px 24px; border-bottom: 1px solid #eee; flex-shrink: 0; position: relative; }
+.parse-mode-badge {
+  position: absolute;
+  right: 16px;
+  bottom: 6px;
+  font-size: 10px;
+  color: #888;
+  opacity: 0.7;
+}
 .header-top-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
 .result-title { margin: 0; font-size: 20px; color: #000; font-weight: bold; }
 .tags-container { display: flex; gap: 8px; flex: 1; }
@@ -1278,7 +1846,7 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
   flex-direction: column;
   align-items: center;
   padding: 40px 0 0;
-  background: linear-gradient(45deg, skyblue, darkblue);
+  background: linear-gradient(140deg, #5a1e1e 0%, #7f8c8d 55%, #2c2c2c 100%);
   border-radius: 20px;
   width: 480px;
   min-height: 450px;
@@ -1294,4 +1862,3 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
 .form-slide-enter-from { opacity: 0; transform: translateY(30px); }
 .form-slide-leave-to { opacity: 0; transform: translateY(-30px); }
 </style>
-

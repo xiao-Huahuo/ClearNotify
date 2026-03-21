@@ -109,7 +109,8 @@ ClearNotify/
 │   │   └── config.py           # 【配置中心】全局变量管理、安全算法及 SMTP 配置
 │   ├── models/                 # 【模型】基于 SQLModel 的数据库实体与 Pydantic 模式
 │   ├── services/               # 【业务层】核心逻辑实现、复杂统计计算与邮件发送服务
-│   └── db/                     # 【数据库】存储引擎初始化、连接池与 Session 管理
+│   ├── db/                     # 【数据库】存储引擎初始化、连接池与 Session 管理
+│   └── Dockerfile              # 后台Dockerfile配置
 ├── web/                        # 前端核心 (Vue3)
 │   ├── src/
 │   │   ├── main.js             # 【入口】前端初始化、全局插件与样式挂载
@@ -124,7 +125,9 @@ ClearNotify/
 │   │   │   └── tts.js          # 【工具】Web Speech API 语音播报封装
 │   │   ├── components/         # 模块化组件（含 Analysis 图表、Home 登录、common 公共件）
 │   │   └── views/              # 页面视图（智能解析、发现页、数据中心、管理后台）
-│   └── vite.config.js          # 【构建】Vite 配置：开发代理设置与打包性能优化
+│   ├── vite.config.js          # 【构建】Vite 配置：开发代理设置与打包性能优化
+│   ├── nginx.conf              # 【网关】Nginx配置
+│   └── Dockerfile              # 网页端Dockerfile配置
 ├── .env                        # 【变量】环境变量：存储 API Keys、数据库路径及邮件服务器私密信息
 ├── .gitignore                  # 【版本控制】Git 忽略清单，排除敏感配置与临时文件
 ├── README.md                   # 【文档】项目说明书、技术架构与启动指南
@@ -132,18 +135,11 @@ ClearNotify/
 ├── database.db                 # 【存储】本地 SQLite 数据库文件
 ├── requirements.txt            # 【环境】后端 Python 核心依赖库清单
 ├── admin_original_data.json    # 【预置数据】系统初始化的政务公告测试数据集
+├── docker-compose.yml          # Docker-Compose自动部署配置
 └── project_tree.md             # 【结构】当前项目最新的目录树记录
 ```
 
 
-
----
-
-## 技术亮点
-
-这一部分是 README 的“肌肉”所在。为了展现 **ClearNotify** 的技术深度，我将原本零散的亮点整合为四大**核心技术集群**。
-
-这里的描述剥离了基础的功能陈述，转而深入到**架构设计、算法实现以及工程化实践**的底层逻辑。
 
 ---
 
@@ -205,14 +201,82 @@ $$
 该指数通过 **ECharts 5.0** 渲染为红蓝双线趋势图，直观展现了 **ClearNotify** 在跨越数字鸿沟、提升民生办事效率方面的宏观贡献。
 ### 5. 高内聚、低耦合的工程化实践 (Engineering Excellence)
 * **状态与安全中枢**：前端利用 **Pinia** 实现了复杂的跨页面状态同步（如鉴权状态、UI 主题、持久化设置）；后端则通过 **JWT (JSON Web Token)** 与自定义装饰器构建了严密的安全闸口，实现了 SaaS 级别的多租户数据隔离。
-* **自动化运维链路**：项目支持 **Docker** 容器化一键编排，集成了 **Redis** 异步任务队列用于处理大规模的邮件通知（SMTP）分发，确保在高频并发场景下系统的极高稳健性。
+* **自动化运维链路**：项目支持 **Docker** 容器化一键编排，集成了 **Redis** 异步任务队列用于处理大规模的邮件通知（SMTP）分发，确保在高频并发场景下系统的极高稳健性。本项目采用 Docker 容器化技术，通过 Docker Compose 实现一键环境部署，确保了在不同操作系统（Windows/macOS/Linux）下运行环境的高度一致性。
 
 
 
 
 ---
-## 启动与部署
-### 快速启动
+## 启动与部署 
+
+### Docker 部署 (推荐)
+
+使用 Docker 可以极大地简化环境配置和项目启动过程。请确保您的系统已安装 Docker 和 Docker Compose。
+并在Docker Desktop - Settings - Docker Engine中配置镜像源:
+``` json
+{
+  "builder": {
+    "gc": {
+      "defaultKeepStorage": "20GB",
+      "enabled": true
+    }
+  },
+  "experimental": false,
+  "registry-mirrors": [
+    "https://docker.xuanyuan.me",
+    "https://xuanyuan.cloud",
+    "https://mirror.ccs.tencentyun.com",
+    "https://docker.1panel.live",
+    "https://docker.nju.edu.cn"
+  ]
+}
+```
+1.  **配置环境变量**:
+    在项目根目录创建 `.env` 文件（如果尚未创建），并根据您的实际情况填写以下环境变量：
+    ```
+    # 生产环境建议关闭调试模式
+    DEBUG=False
+
+    # 必须更换为强随机字符串
+    JWT_SECRET_KEY=your_random_secret_string_here
+
+    # 确保 SMTP 授权码正确以维持邮件系统运转
+    MAIL_PASSWORD=your_smtp_auth_code
+
+    # 你的KIMI-API_KEY 
+    MOONSHOT_API_KEY=your_kimi_api_key
+
+    # 自定义管理员账户 (可选，如果数据库不存在，后台会优先使用这些信息初始化管理员)
+    # ADMIN_USERNAME=your_admin_username
+    # ADMIN_PASSWORD=your_admin_password
+    ```
+    **重要提示**: 请务必替换 `JWT_SECRET_KEY`, `MAIL_PASSWORD` 和 `MOONSHOT_API_KEY` 为您自己的值。
+
+2.  **启动服务**:
+    在项目根目录执行以下命令：
+    ```bash
+    docker-compose up --build -d
+    ```
+    *   `--build`: 首次运行时或当 Dockerfile 有更新时，用于重新构建镜像。
+    *   `-d`: 在后台运行服务。
+
+3.  **访问应用**:
+    *   前端应用将通过 Nginx 运行在 `http://localhost:80`。
+    *   后端 API 将在 Docker 内部运行于 `http://app:8000`，并通过前端 Nginx 代理访问。
+
+4.  **停止服务**:
+    在项目根目录执行：
+    ```bash
+    docker-compose down
+    ```
+
+5.  **查看日志**:
+    ```bash
+    docker-compose logs -f
+    ```
+
+### 手动部署 (传统方式)
+
 #### 前端(web):
 ```shell
 cd web
@@ -221,38 +285,58 @@ npm run dev
 ```
 
 #### 后端(app)
-```shell
-echo MOONSHOT_API_KEY=你的KIMI-API-KEY > .env
+0. 启动之前:部署好Redis,可采用docker进行部署.
+    1. 未安装Redis时: 开启Docker Desktop后,在终端输入: `docker run --name redis -p 6379:6379 -d redis`
+    2. 安装后:
+    - 停止 Redis： `docker stop redis`
+    - 启动 Redis： `docker start redis`
+1. 配置环境变量:在根目录创建`.env`,写入:
+```
+MOONSHOT_API_KEY=你的KIMI-API-KEY
+```
+2. 创建虚拟环境:
+Windows:     ```python -m venv .venv```
+macOS/Linux: ```python3 -m venv .venv```
+
+3. 激活虚拟环境:
+Windows:     `.venv\Scripts\activate`
+macOS/Linux: `source .venv/bin/activate`
+
+4. 安装依赖:
+```
 pip install -r requirements.txt
-python app/main.py
+```
+5. 启动后台服务:
+```
+uvicorn app.main:app --reload
 ```
 ### 打包与部署
-1. 构建可执行文件：
-```shell
-# 安装打包工具
-pip install pyinstaller
-
-# 执行打包指令
-pyinstaller --onefile --noconsole --name ClearNotifyServer \
---add-data "app/core;app/core" \
---add-data "database.db;." \
-app/main.py
+1. 安装打包工具:
 ```
-构建完成后,在`ClearNotify/dist/ClearNotifyServer.exe`（Windows 系统）或 `ClearNotifyServer`（Linux/macOS 系统）生成可执行文件.
+pip install pyinstaller
+```
+2. 执行打包指令:
+Windows:     ```pyinstaller --onefile --noconsole --name ClearNotifyServer --add-data "app/core;app/core" app/main.py```
+macOS/Linux: ```pyinstaller --onefile --name ClearNotifyServer --add-data "app/core:app/core" app/main.py```
+构建完成后,在`ClearNotify/dist/`生成可执行文件`ClearNotifyServer.exe`（Windows 系统）或`ClearNotifyServer`（Linux/macOS 系统）.
 2. 前端生产环境构建：
 ```shell 
 cd web
 npm install --verbose
 npm run build
 ```
-构建完成后，将在 `web/dist` 目录下生成静态文件 , 可以直接将其部署至 Nginx 或集成到后端静态目录中.
+构建完成后，将在 `web/dist` 目录下生成静态文件 , 可以直接将其部署至 Nginx 的`html/`目录.
+**若集成到后端**: 将 `dist` 内的所有内容拷贝至后端项目的静态文件目录，并在 FastAPI 中挂载：
+app.mount("/", StaticFiles(directory="dist", html=True), name="static")
 3. Docker 一键部署：
 ```shell
 `docker-compose up -d --build`
 ```
 4. 环境与安全:
-务必检查 .env 文件中的配置，确保生产环境的安全性;
-生产环境下的跨域由 Nginx 处理，请确保 vite.config.js 中的代理路径与 Nginx 配置一致。
+- 务必检查 .env 文件中的配置，确保生产环境的安全性.
+- 打包后的可执行文件需与 .env 文件放在同一目录下运行.
+- 生产环境下的跨域由 Nginx 处理，请确保 vite.config.js 中的代理路径与 Nginx 配置一致.
+- 使用 Docker 部署时，请确保 `docker-compose.yml` 中已配置 volumes 挂载，以持久化存储数据库文件.
 ```toml
 # 生产环境建议关闭调试模式
 DEBUG=False

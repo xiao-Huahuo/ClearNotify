@@ -1,5 +1,6 @@
 import os
 import shutil
+import logging
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from app.models.user import User
 from app.api.deps import get_current_user
@@ -8,11 +9,20 @@ from app.services.document_extractor import extract_text_from_docx, extract_text
 from app.ai.document_parser import extract_pdf_with_ai
 import uuid
 import mimetypes
+from app.services.ocr_service import perform_kimi_ocr # Import the new service
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 # 允许的图片格式
-ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
+ALLOWED_IMAGE_TYPES = {
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/gif",
+    "image/bmp",
+    "image/tiff",
+}
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5MB
 
 @router.post("/avatar")
@@ -73,7 +83,7 @@ ALLOWED_DOC_TYPES = {
 MAX_DOC_SIZE = 10 * 1024 * 1024  # 10MB
 
 @router.post("/document")
-async def upload_document(
+async def upload_document( # Made async
     file: UploadFile = File(...),
     current_user: User = Depends(get_current_user)
 ):
@@ -123,7 +133,7 @@ async def upload_document(
     try:
         if ext == ".pdf":
             # PDF 包含 AI 处理逻辑，放在 ai 目录下
-            extracted_text = extract_pdf_with_ai(file_path)
+            extracted_text = await extract_pdf_with_ai(file_path) # Added await
         elif ext in [".docx", ".doc"]:
             # Word 使用常规 python 库解析
             extracted_text = extract_text_from_docx(file_path)
@@ -139,7 +149,7 @@ async def upload_document(
         raise HTTPException(status_code=500, detail=f"文件保存成功，但解析文本失败: {str(e)}")
 
     if not extracted_text or not extracted_text.strip():
-        extracted_text = "提示：系统未能从该文件中提取到任何有效文字，这可能是一个扫描件或纯图片。当前版本暂不支持图片 OCR 识别。"
+        extracted_text = "提示：系统未能从该文件中提取到任何有效文字，这可能是一个扫描件或纯图片。请尝试使用 OCR 接口进行识别。"
 
     # 5. 返回提取的文本和文件的静态 URL
     return {
@@ -151,7 +161,7 @@ async def upload_document(
 
 # 允许的 OCR 输入格式（图片 + 扫描 PDF）
 ALLOWED_OCR_TYPES = {
-    "image/jpeg", "image/png", "image/webp", "image/gif",
+    "image/jpeg", "image/png", "image/webp", "image/gif", "image/bmp", "image/tiff",
     "application/pdf"
 }
 MAX_OCR_SIZE = 20 * 1024 * 1024  # 20MB
@@ -174,10 +184,16 @@ async def ocr_image(
             content_type = "image/jpeg"
         elif filename.endswith(".png"):
             content_type = "image/png"
+        elif filename.endswith(".webp"):
+            content_type = "image/webp"
+        elif filename.endswith(".bmp"):
+            content_type = "image/bmp"
+        elif filename.endswith((".tif", ".tiff")):
+            content_type = "image/tiff"
         elif filename.endswith(".pdf"):
             content_type = "application/pdf"
         else:
-            raise HTTPException(status_code=400, detail="不支持的文件类型，仅支持图片（JPG/PNG/WEBP）和 PDF。")
+            raise HTTPException(status_code=400, detail="不支持的文件类型，仅支持图片（JPG/PNG/WEBP/BMP/TIFF）和 PDF。")
 
     file.file.seek(0, 2)
     file_size = file.file.tell()
@@ -194,52 +210,21 @@ async def ocr_image(
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
     except Exception as e:
+        logger.error(f"Failed to save OCR file {new_filename}: {e}")
         raise HTTPException(status_code=500, detail=f"保存文件失败: {str(e)}")
     finally:
         file.file.close()
 
-    # 调用 Kimi 文件上传 OCR
-    try:
-        from app.ai.request_llm import RequestLLM
-        kimi = RequestLLM()
+    # Call the new OCR service
+    extracted_text = await perform_kimi_ocr(file_path, content_type, file.filename)
 
-        # 使用 Kimi 文件上传接口
-        with open(file_path, "rb") as f:
-            upload_resp = kimi.client.files.create(file=(new_filename, f, content_type), purpose="file-extract")
-
-        file_id = upload_resp.id
-
-        # 获取文件内容
-        file_content_resp = kimi.client.files.content(file_id)
-        extracted_text = file_content_resp.text
-
-        # 清理上传的文件（可选）
+    # Clean up the local temporary file after OCR processing
+    if file_path.exists():
         try:
-            kimi.client.files.delete(file_id)
-        except Exception:
-            pass
-
-        if not extracted_text or not extracted_text.strip():
-            # 降级：用视觉模型直接识别图片
-            import base64
-            with open(file_path, "rb") as f:
-                img_b64 = base64.b64encode(f.read()).decode()
-            kimi.system_prompt = "你是一个OCR识别助手，请将图片中的所有文字原样提取出来，保持原有格式和段落结构。"
-            completion = kimi.client.chat.completions.create(
-                model="moonshot-v1-8k",
-                messages=[{
-                    "role": "user",
-                    "content": [
-                        {"type": "image_url", "image_url": {"url": f"data:{content_type};base64,{img_b64}"}},
-                        {"type": "text", "text": "请提取图片中的所有文字内容。"}
-                    ]
-                }],
-                temperature=0.1
-            )
-            extracted_text = completion.choices[0].message.content
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"OCR 识别失败: {str(e)}")
+            os.remove(file_path)
+            logger.info(f"Local temporary OCR file {file_path} deleted.")
+        except Exception as e:
+            logger.error(f"Failed to delete local temporary OCR file {file_path}: {e}")
 
     return {
         "file_url": f"/media/docs/{new_filename}",

@@ -30,17 +30,32 @@
                  @click="timeChartType = 'bar'"
                >柱状</span>
             </div>
+            <div class="widget-actions scope-toggle" v-if="isAdmin">
+              <span class="action-tag" :class="{ active: materialsScope === 'me' }" @click="materialsScope = 'me'">个人</span>
+              <span class="action-tag" :class="{ active: materialsScope === 'all' }" @click="materialsScope = 'all'">全体</span>
+            </div>
           </div>
           <div class="chart-content">
-            <TimeSavedChart :chartData="statsData?.time_saved_distribution" :chartType="timeChartType" />
+            <TimeSavedChart
+              :chartData="statsData?.time_saved_distribution"
+              :compareData="isAdmin ? statsAll?.time_saved_distribution : null"
+              :chartType="timeChartType"
+            />
           </div>
         </div>
 
         <!-- 通知类型玫瑰图 -->
         <div class="widget widget-rose-pie">
+          <div class="widget-header">
+            <h3 class="widget-title">通知类型分布</h3>
+            <div class="widget-actions" v-if="isAdmin">
+              <span class="action-tag" :class="{ active: noticeScope === 'me' }" @click="noticeScope = 'me'">个人</span>
+              <span class="action-tag" :class="{ active: noticeScope === 'all' }" @click="noticeScope = 'all'">全体</span>
+            </div>
+          </div>
           <h3 class="widget-title">通知类型分布</h3>
           <div class="chart-content">
-            <NoticeTypeRoseChart :chartData="statsData?.notice_type_distribution" />
+            <NoticeTypeRoseChart :chartData="noticeChartData" />
           </div>
         </div>
       </div>
@@ -70,15 +85,33 @@
             </div>
           </div>
           <div class="chart-content">
-            <MaterialsPieChart v-if="materialsChartType === 'pie'" :chartData="statsData?.materials_freq" />
-            <MaterialsScatterChart v-else-if="materialsChartType === 'scatter'" :chartData="statsData?.materials_freq" />
-            <MaterialsWordCloud v-else-if="materialsChartType === 'wordCloud'" :chartData="statsData?.materials_freq" />
+            <MaterialsPieChart v-if="materialsChartType === 'pie'" :chartData="materialsChartData" />
+            <MaterialsScatterChart v-else-if="materialsChartType === 'scatter'" :chartData="materialsChartData" />
+            <MaterialsWordCloud v-else-if="materialsChartType === 'wordCloud'" :chartData="materialsChartData" />
           </div>
         </div>
 
         <!-- 节省时间叠放卡片 -->
         <div class="widget widget-time-cards">
-          <div class="time-cards-container">
+          <div v-if="isAdmin" class="time-cards-grid">
+            <div class="time-card-grid card-personal-avg">
+              <span class="card-label">个人平均节省时间</span>
+              <span class="card-value">{{ statsData?.avg_time_saved_minutes || 0 }} <small>分钟/篇</small></span>
+            </div>
+            <div class="time-card-grid card-personal-total">
+              <span class="card-label">个人总计节省时间</span>
+              <span class="card-value">{{ statsData?.total_time_saved_minutes || 0 }} <small>分钟</small></span>
+            </div>
+            <div class="time-card-grid card-all-avg">
+              <span class="card-label">全体用户平均节省时间</span>
+              <span class="card-value">{{ statsAll?.avg_time_saved_minutes || 0 }} <small>分钟/篇</small></span>
+            </div>
+            <div class="time-card-grid card-all-total">
+              <span class="card-label">全体用户总计节省时间</span>
+              <span class="card-value">{{ statsAll?.total_time_saved_minutes || 0 }} <small>分钟</small></span>
+            </div>
+          </div>
+          <div v-else class="time-cards-container">
             <div class="time-card card-bottom">
               <span class="card-label">总计节省时间</span>
               <span class="card-value">{{ statsData?.total_time_saved_minutes || 0 }} <small>分钟</small></span>
@@ -101,17 +134,25 @@
                 <svg v-if="!isMaterialsExpanded" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><polyline points="6 9 12 15 18 9"></polyline></svg>
                 <svg v-else viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" class="css-i6dzq1"><polyline points="18 15 12 9 6 15"></polyline></svg>
              </button>
+             <div class="widget-actions" v-if="isAdmin">
+               <span class="action-tag" :class="{ active: topMaterialsScope === 'me' }" @click="topMaterialsScope = 'me'">个人</span>
+               <span class="action-tag" :class="{ active: topMaterialsScope === 'all' }" @click="topMaterialsScope = 'all'">全体</span>
+             </div>
           </div>
           <div class="chart-content-expandable">
-            <TopMaterialsBarChart :chartData="statsData?.materials_freq" :isExpanded="isMaterialsExpanded" />
+            <TopMaterialsBarChart :chartData="topMaterialsData" :isExpanded="isMaterialsExpanded" />
           </div>
         </div>
 
         <!-- 通知难度分布 -->
         <div class="widget widget-difficulty-bar" v-show="!isMaterialsExpanded">
           <h3 class="widget-title">通知难度评估</h3>
+          <div class="widget-actions scope-toggle" v-if="isAdmin">
+             <span class="action-tag" :class="{ active: difficultyScope === 'me' }" @click="difficultyScope = 'me'">个人</span>
+             <span class="action-tag" :class="{ active: difficultyScope === 'all' }" @click="difficultyScope = 'all'">全体</span>
+          </div>
           <div class="chart-content">
-             <DifficultyBarChart :chartData="statsData?.complexity_distribution" />
+             <DifficultyBarChart :chartData="difficultyChartData" />
           </div>
         </div>
 
@@ -135,7 +176,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useUserStore } from '@/stores/auth.js';
 import { apiClient, API_ROUTES } from '@/router/api_routes';
 import TimeSavedChart from '@/components/Analysis/TimeSavedChart.vue';
@@ -149,7 +190,34 @@ import DifficultyBarChart from '@/components/Analysis/DifficultyBarChart.vue';
 const userStore = useUserStore();
 const loading = ref(true);
 const statsData = ref(null);
+const statsAll = ref(null);
 const recentHistory = ref(null);
+const isAdmin = computed(() => !!userStore.user?.is_admin);
+
+const noticeScope = ref('me');
+const materialsScope = ref('me');
+const topMaterialsScope = ref('me');
+const difficultyScope = ref('me');
+
+const noticeChartData = computed(() => {
+  if (noticeScope.value === 'all' && statsAll.value) return statsAll.value.notice_type_distribution;
+  return statsData.value?.notice_type_distribution;
+});
+
+const materialsChartData = computed(() => {
+  if (materialsScope.value === 'all' && statsAll.value) return statsAll.value.materials_freq;
+  return statsData.value?.materials_freq;
+});
+
+const topMaterialsData = computed(() => {
+  if (topMaterialsScope.value === 'all' && statsAll.value) return statsAll.value.materials_freq;
+  return statsData.value?.materials_freq;
+});
+
+const difficultyChartData = computed(() => {
+  if (difficultyScope.value === 'all' && statsAll.value) return statsAll.value.complexity_distribution;
+  return statsData.value?.complexity_distribution;
+});
 
 // 图表类型控制
 const timeChartType = ref('line'); // 默认曲线图
@@ -175,9 +243,13 @@ onMounted(async () => {
   }
 
   try {
-    // 获取统计数据
-    const res = await apiClient.get(API_ROUTES.ANALYSIS_ME);
-    statsData.value = res.data;
+    const tasks = [apiClient.get(API_ROUTES.ANALYSIS_ME)];
+    if (isAdmin.value) {
+      tasks.push(apiClient.get(API_ROUTES.ADMIN_ANALYSIS_ALL));
+    }
+    const [meRes, allRes] = await Promise.all(tasks);
+    statsData.value = meRes.data;
+    if (allRes) statsAll.value = allRes.data;
 
     // 获取最近一条历史记录
     const historyRes = await apiClient.get(API_ROUTES.CHAT_MESSAGE, { params: { limit: 1 } });
@@ -277,6 +349,8 @@ onMounted(async () => {
   align-items: flex-start;
   margin-bottom: 10px;
   flex-shrink: 0;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .widget-title {
@@ -294,6 +368,14 @@ onMounted(async () => {
   padding: 4px;
   border-radius: 8px;
   z-index: 10;
+}
+.widget-actions.scope-toggle {
+  background: transparent;
+  padding: 0;
+}
+
+.widget-rose-pie > .widget-title {
+  display: none;
 }
 
 .action-tag {
@@ -382,6 +464,32 @@ onMounted(async () => {
   width: 100%;
   height: 100%;
 }
+
+.time-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.time-card-grid {
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #eee;
+  border-left: 3px solid #c0392b;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 100px;
+}
+
+.card-personal-avg { background: #fff0f0; border-left-color: #c0392b; }
+.card-personal-total { background: #111; color: #fff; border-left-color: #111; }
+.card-all-avg { background: #ecf5ff; border-left-color: #2980b9; }
+.card-all-total { background: #0b2233; color: #fff; border-left-color: #0b2233; }
+
+.time-card-grid .card-label { font-size: 12px; font-weight: 700; }
+.time-card-grid .card-value { font-size: 22px; font-weight: 900; }
 
 .time-card {
   position: absolute;

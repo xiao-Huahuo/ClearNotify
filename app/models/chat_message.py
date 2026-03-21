@@ -37,6 +37,8 @@ class ChatMessage(ChatMessageBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     created_time: datetime = Field(default_factory=datetime.now)
     is_deleted: bool = Field(default=False)
+    source_chat_id: Optional[int] = Field(default=None, foreign_key="chatmessage.id")
+    session_json_path: Optional[str] = Field(default=None, description="会话快照JSON路径")
 
     # 建立与 User 的多对一关系
     user: Optional["User"] = Relationship(back_populates="chat_messages")

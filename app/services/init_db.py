@@ -1,5 +1,6 @@
 import os
 import json
+import logging
 from sqlmodel import Session, select
 from app.core.database import create_db_and_tables, engine
 from app.models.user import User
@@ -9,16 +10,33 @@ from app.models.todo import TodoItem
 from app.core.security import get_password_hash
 from app.core.config import GlobalConfig
 
+logger = logging.getLogger(__name__)
+
 def init_db_and_admin():
     # 1. 创建数据库表
     create_db_and_tables()
+
+    for path in (
+        GlobalConfig.AVATAR_UPLOAD_DIR,
+        GlobalConfig.DOCS_UPLOAD_DIR,
+        GlobalConfig.IMAGES_UPLOAD_DIR,
+        GlobalConfig.CHAT_EXPORT_DIR,
+        GlobalConfig.LOG_DIR,
+        GlobalConfig.MAIL_OUTBOX_DIR,
+        GlobalConfig.KNOWLEDGE_DIR,
+    ):
+        path.mkdir(parents=True, exist_ok=True)
 
     # 2. 迁移旧库：补充新列
     from sqlalchemy import text
     with engine.connect() as conn:
         for sql in [
             "ALTER TABLE user ADD COLUMN is_admin BOOLEAN NOT NULL DEFAULT 0",
+            "ALTER TABLE user ADD COLUMN email_verified BOOLEAN NOT NULL DEFAULT 0",
+            "ALTER TABLE user ADD COLUMN email_verification_code VARCHAR",
+            "ALTER TABLE user ADD COLUMN email_verification_sent_at DATETIME",
             "ALTER TABLE chatmessage ADD COLUMN source_chat_id INTEGER REFERENCES chatmessage(id)",
+            "ALTER TABLE chatmessage ADD COLUMN session_json_path VARCHAR",
         ]:
             try:
                 conn.execute(text(sql))
@@ -40,18 +58,24 @@ def init_db_and_admin():
         if existing_user:
             if not existing_user.is_admin:
                 existing_user.is_admin = True
+                existing_user.email_verified = True
                 session.add(existing_user)
                 session.commit()
                 print(f"Migrated admin flag for {existing_user.email}")
             else:
                 print(f"Admin user check: {existing_user.email} already exists.")
+            if not existing_user.email_verified:
+                existing_user.email_verified = True
+                session.add(existing_user)
+                session.commit()
         else:
             print(f"Initializing admin user: {admin_username} ({admin_email})")
             new_admin = User(
                 uname=admin_username,
                 email=admin_email,
                 hashed_pwd=get_password_hash(admin_password),
-                is_admin=True
+                is_admin=True,
+                email_verified=True,
             )
             session.add(new_admin)
             session.commit()

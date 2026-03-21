@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:latest
+    container_name: ClearNotify_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: always
+
+  app:
+    build: ./app
+    container_name: ClearNotify_app
+    ports:
+      - "8000:8000"
+    environment:
+      # 生产环境建议关闭调试模式
+      DEBUG: ${DEBUG}
+      # 必须更换为强随机字符串
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      # 确保 SMTP 授权码正确以维持邮件系统运转
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      # 你的KIMI-API-KEY
+      MOONSHOT_API_KEY: ${MOONSHOT_API_KEY}
+      # 自定义管理员账户 (可选)
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+    volumes:
+      - ./app/app:/app/app # 挂载 app 目录，方便开发时代码修改
+      - ./database.db:/app/database.db # 挂载数据库文件
+    depends_on:
+      - redis
+    restart: always
+
+  web:
+    build: ./web
+    container_name: ClearNotify_web
+    ports:
+      - "80:80"
+    depends_on:
+      - app
+    restart: always
+
+volumes:
+  redis_data:

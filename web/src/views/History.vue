@@ -11,15 +11,19 @@
 
       <div class="top-bar">
         <div class="filter-section">
-          <span class="filter-label">排序方式:</span>
+          <span class="filter-label">记录类型:</span>
           <div class="tags-group">
+            <span class="sort-tag" :class="{ active: historyMode === 'document' }" @click="switchMode('document')">通知解析</span>
+            <span class="sort-tag" :class="{ active: historyMode === 'agent' }" @click="switchMode('agent')">智能体对话</span>
+          </div>
+          <div class="tags-group" v-if="historyMode === 'document'">
             <span class="sort-tag" :class="{ active: sortBy === 'created_time' && sortOrder === 'desc' }" @click="applySort('created_time', 'desc')">按时间降序</span>
             <span class="sort-tag" :class="{ active: sortBy === 'difficulty' }" @click="applySort('difficulty', sortOrder === 'asc' ? 'desc' : 'asc')">按复杂度</span>
             <span class="sort-tag" :class="{ active: handlingOnly }" @click="toggleHandlingOnly">仅看办理类</span>
           </div>
         </div>
 
-        <div class="multi-select-actions">
+        <div class="multi-select-actions" v-if="historyMode === 'document'">
           <button class="batch-action-btn" @click="toggleSelectMode" :class="{ active: isSelectMode }">
             <span v-if="!isSelectMode">多选</span>
             <span v-else>取消多选</span>
@@ -27,7 +31,7 @@
         </div>
       </div>
 
-      <div class="table-header">
+      <div class="table-header" v-if="historyMode === 'document'">
         <div class="col-checkbox" v-show="isSelectMode">
           <div class="custom-checkbox" :class="{ checked: isAllSelected }" @click="toggleSelectAll">
             <svg v-if="isAllSelected" viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
@@ -39,17 +43,26 @@
         <div class="col-time">创建时间</div>
         <div class="col-actions">操作</div>
       </div>
+      <div class="table-header" v-else>
+        <div class="col-name">对话标题</div>
+        <div class="col-type">类型</div>
+        <div class="col-time">最近更新</div>
+        <div class="col-actions">操作</div>
+      </div>
     </div>
 
     <div class="table-container scrollable-area">
       <div v-if="loading" class="empty-state-centered">
         <span>加载中...</span>
       </div>
-      <div v-else-if="messages.length === 0" class="empty-state-centered">
+      <div v-else-if="historyMode === 'document' && messages.length === 0" class="empty-state-centered">
         <span>无记录</span>
       </div>
+      <div v-else-if="historyMode === 'agent' && agentConversations.length === 0" class="empty-state-centered">
+        <span>暂无智能体对话</span>
+      </div>
 
-      <div v-else class="table-body">
+      <div v-else-if="historyMode === 'document'" class="table-body">
         <div
           v-for="msg in messages"
           :key="msg.id"
@@ -85,9 +98,29 @@
           </div>
         </div>
       </div>
+
+      <div v-else class="table-body">
+        <div
+          v-for="item in agentConversations"
+          :key="item.id"
+          class="table-row"
+          @click="openAgentConversation(item.id)"
+        >
+          <div class="col-name text-ellipsis" :title="item.title">
+            {{ item.title }}
+          </div>
+          <div class="col-type">
+            <span class="type-text">智能体对话</span>
+          </div>
+          <div class="col-time">{{ formatDate(item.updated_time) }}</div>
+          <div class="col-actions" @click.stop>
+            <button class="icon-btn" title="进入对话" @click="openAgentConversation(item.id)">进入</button>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="floating-action-bar" :class="{ show: isSelectMode && selectedIds.length > 0 }">
+    <div class="floating-action-bar" v-if="historyMode === 'document'" :class="{ show: isSelectMode && selectedIds.length > 0 }">
       <div class="action-content">
         <span class="selected-count">已选择 {{ selectedIds.length }} 项</span>
         <span class="divider">|</span>
@@ -122,6 +155,8 @@ const sortOrder = ref('desc');
 const handlingOnly = ref(false);
 const importInput = ref(null);
 const favoritesMap = ref({});
+const historyMode = ref('document');
+const agentConversations = ref([]);
 
 const isAllSelected = computed(() => {
   return messages.value.length > 0 && selectedIds.value.length === messages.value.length;
@@ -173,6 +208,18 @@ const fetchMessages = async () => {
   }
 };
 
+const fetchAgentConversations = async () => {
+  loading.value = true;
+  try {
+    const res = await apiClient.get(API_ROUTES.AGENT_CONVERSATIONS);
+    agentConversations.value = res.data || [];
+  } catch (error) {
+    console.error('获取智能体对话失败:', error);
+  } finally {
+    loading.value = false;
+  }
+};
+
 const fetchFavorites = async () => {
   try {
     const res = await apiClient.get(API_ROUTES.FAVORITE);
@@ -215,6 +262,17 @@ const applySort = (nextSortBy, nextOrder) => {
 const toggleHandlingOnly = () => {
   handlingOnly.value = !handlingOnly.value;
   fetchMessages();
+};
+
+const switchMode = (mode) => {
+  historyMode.value = mode;
+  isSelectMode.value = false;
+  clearSelection();
+  if (mode === 'agent') {
+    fetchAgentConversations();
+  } else {
+    fetchMessages();
+  }
 };
 
 const triggerImport = () => {
@@ -328,6 +386,10 @@ const handleBatchDelete = async () => {
   } catch (error) {
     alert(error.response?.data?.detail || '批量删除失败');
   }
+};
+
+const openAgentConversation = (id) => {
+  router.push({ path: '/agent', query: { conversation_id: id } });
 };
 
 onMounted(() => {

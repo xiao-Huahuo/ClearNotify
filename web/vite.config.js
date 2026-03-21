@@ -20,6 +20,7 @@ export default defineConfig({
       '/api': {
         target: 'http://127.0.0.1:8080',
         changeOrigin: true,
+        ws: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
       // 新增代理：将前端的 /media 路由转发到后端的 /media

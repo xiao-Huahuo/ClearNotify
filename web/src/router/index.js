@@ -12,6 +12,7 @@ import Register from '../views/Register.vue'
 import Settings from '../views/Settings.vue'
 import TodoList from '../views/TodoList.vue'
 import Admin from '../views/Admin.vue'
+import Agent from '../views/Agent.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -29,6 +30,7 @@ const router = createRouter({
     { path: '/register', name: 'register', component: Register },
     { path: '/todo', name: 'todo', component: TodoList },
     { path: '/admin', name: 'admin', component: Admin },
+    { path: '/agent', name: 'agent', component: Agent },
   ],
 })
 

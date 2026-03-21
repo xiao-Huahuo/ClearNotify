@@ -1,5 +1,6 @@
 fastapi
 uvicorn
+websockets
 sqlmodel
 python-jose[cryptography]
 passlib[bcrypt]
@@ -16,3 +17,6 @@ jieba==0.42.1
 openpyxl==3.1.2
 xlrd==2.0.1
 redis
+langgraph
+langchain-openai
+langchain-core

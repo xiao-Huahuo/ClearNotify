@@ -8,6 +8,9 @@ from app.models.chat_message import ChatMessage
 from app.models.favorite import Favorite
 from app.models.todo import TodoItem
 from app.models.rag_usage import RagUsage
+from app.models.agent_conversation import AgentConversation
+from app.models.agent_message import AgentMessage
+from app.models.agent_memory import AgentMemory
 from app.core.security import get_password_hash
 from app.core.config import GlobalConfig
 
@@ -38,6 +41,7 @@ def init_db_and_admin():
             "ALTER TABLE user ADD COLUMN email_verification_sent_at DATETIME",
             "ALTER TABLE chatmessage ADD COLUMN source_chat_id INTEGER REFERENCES chatmessage(id)",
             "ALTER TABLE chatmessage ADD COLUMN session_json_path VARCHAR",
+            "ALTER TABLE agentmemory ADD COLUMN updated_time DATETIME",
         ]:
             try:
                 conn.execute(text(sql))

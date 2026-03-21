@@ -30,6 +30,9 @@ export const API_ROUTES = {
   ADMIN_LOGS: '/admin/logs',
   ADMIN_RAG_STATUS: '/admin/rag/status',
   ADMIN_RAG_SEARCH: '/admin/rag/search',
+  AGENT_RUN: '/agent/run',
+  AGENT_CONVERSATIONS: '/agent/conversations',
+  AGENT_MESSAGES: (id) => `/agent/conversations/${id}/messages`,
   REQUEST_PERMISSION_UPGRADE: '/user/request-upgrade',
   REQUEST_PERMISSION_DOWNGRADE: '/user/request-downgrade',
 };

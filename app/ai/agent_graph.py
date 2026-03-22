@@ -7,6 +7,7 @@ from langchain_openai import ChatOpenAI
 from langgraph.prebuilt import create_react_agent
 
 from app.ai.document_parser import parse_document
+from app.core.config import GlobalConfig
 from app.services import rag_service
 from app.services.agent_memory_service import (
     build_session_summary,
@@ -16,11 +17,11 @@ from app.services.agent_memory_service import (
 
 
 def _build_llm() -> ChatOpenAI:
-    api_key = os.getenv("MOONSHOT_API_KEY")
+    api_key = GlobalConfig.MOONSHOT_API_KEY
     if not api_key:
         raise ValueError("MOONSHOT_API_KEY is not set in environment variables (check .env file)")
-    timeout = float(os.getenv("MOONSHOT_API_TIMEOUT", "60"))
-    model = os.getenv("MOONSHOT_MODEL", "moonshot-v1-8k")
+    timeout = float(GlobalConfig.MOONSHOT_API_TIMEOUT)
+    model = os.getenv(GlobalConfig.MOONSHOT_MODEL)
     return ChatOpenAI(
         api_key=api_key,
         base_url="https://api.moonshot.cn/v1",

@@ -105,7 +105,7 @@ def run_agent(
     save_to_history: bool = True,
     conversation_id: Optional[int] = None,
     trace_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
-) -> Dict[str, Any]:
+user_audience_label=None) -> Dict[str, Any]:
     graph_reply = ""
     tool_state: Dict[str, Any] = {}
     safe_text = original_text
@@ -336,7 +336,7 @@ def build_agent_reply(result: Dict[str, Any], user_text: str | None = None) -> s
     risks = _clean_items(list(result.get("risks", []) or []))[:4]
 
     lines: List[str] = []
-    lines.append("## 结论概览")
+    lines.append("## 概览")
     lines.append(f"- 办理事项：{handling_matter}")
     lines.append(f"- 适用对象：{target}")
     lines.append(f"- 关键时间：{time_deadline}")
@@ -346,29 +346,18 @@ def build_agent_reply(result: Dict[str, Any], user_text: str | None = None) -> s
 
     lines.append("## 你需要做什么")
     lines.extend(_format_list(steps, "先确认办理渠道与提交方式（线上/线下）"))
-    lines.append("说明：以上步骤会结合通知原文持续细化。")
     lines.append("")
 
     lines.append("## 材料与准备")
     lines.extend(_format_list(materials, "准备身份与申请相关的基础材料"))
-    lines.append("建议：如材料不齐，先补齐关键材料再提交，以避免退回。")
     lines.append("")
 
     lines.append("## 时间节点")
     lines.append(f"- 主要截止或关键节点：{time_deadline}")
-    lines.append("- 如原文存在多个时间点，我会在结构化区给出时间线。")
     lines.append("")
 
     lines.append("## 注意事项与风险")
     lines.extend(_format_list(notices, "核对信息完整性，避免填写错误"))
     lines.extend(_format_list(risks, "材料缺失或超期可能导致退回/失效"))
     lines.append("")
-
-    lines.append("## 我需要你确认的内容")
-    lines.append("- 是否必须本人办理？是否允许代办或线上办理？")
-    lines.append("- 是否有明确的提交窗口、网址或线下地点？")
-    lines.append("- 是否存在特殊人群或豁免条件（如年龄、户籍、行业）？")
-    lines.append("")
-
-    lines.append("如果你希望我继续完善，请补充通知原文或截图，我会把结构化结果和清单细化到可直接执行。")
     return "\n".join(lines)

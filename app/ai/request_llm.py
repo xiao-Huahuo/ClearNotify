@@ -1,23 +1,18 @@
 import os
 from openai import OpenAI
-from dotenv import load_dotenv
 
-load_dotenv()
-# 环境变量现在由 main.py 统一加载，此处仅在单独测试时加载
-# load_dotenv()
+from app.core.config import GlobalConfig
+
 
 class RequestLLM:
     def __init__(self):
-        self.api_key = os.getenv("MOONSHOT_API_KEY")
+        self.api_key = GlobalConfig.MOONSHOT_API_KEY
         if not self.api_key:
             raise ValueError("MOONSHOT_API_KEY is not set in environment variables (check .env file)")
         
-        # 从环境变量获取超时设置，默认为 60 秒
-        timeout_str = os.getenv("MOONSHOT_API_TIMEOUT", "60")
-        try:
-            self.timeout = float(timeout_str)
-        except ValueError:
-            self.timeout = 60.0 # 如果转换失败，使用默认值
+        # 从环境变量获取超时设置
+        timeout_str = GlobalConfig.MOONSHOT_API_TIMEOUT
+        self.timeout=float(timeout_str)
 
         self.client = OpenAI(
             api_key=self.api_key,
@@ -26,7 +21,7 @@ class RequestLLM:
         )
         self.system_prompt = "你是 Kimi，由 Moonshot AI 提供的人工智能助手，你更擅长中文和英文的对话。你会为用户提供安全，有帮助，准确的回答。同时，你会拒绝一切涉及恐怖主义，种族歧视，黄色暴力等问题的回答。Moonshot AI 为专有名词，不可翻译成其他语言。"
 
-    def get_response(self, content: str, model: str = "moonshot-v1-8k", temperature: float = 0.3, response_format: dict = None) -> str:
+    def get_response(self, content: str, model: str = GlobalConfig.MOONSHOT_MODEL, temperature: float = 0.3, response_format: dict = None) -> str:
         """
         发送请求并获取 Kimi 的回复
         :param content: 用户输入的内容

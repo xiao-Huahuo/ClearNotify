@@ -6,10 +6,7 @@ from fastapi.staticfiles import StaticFiles
 import threading
 import logging
 
-# 使用动态绝对路径加载环境变量
 from app.core.config import GlobalConfig
-# load_dotenv(dotenv_path=GlobalConfig.ENV_PATH) # 已经在 GlobalConfig 内部加载
-
 from app.api.routes import user, login, chat_message, stats_analysis, settings, upload, news, todo, favorite, admin, agent
 from app.services.init_db import init_db_and_admin
 from app.services.worker import start_worker, stop_worker # 导入 worker 的启动和停止函数
@@ -18,7 +15,15 @@ from app.core.logging_config import setup_logging
 
 setup_logging()
 logger = logging.getLogger(__name__)
-
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
+    # 确保同时有控制台和文件输出
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler(GlobalConfig.APP_LOG_PATH, encoding="utf-8")
+    ]
+)
 # 确保上传目录存在 (基于绝对路径)
 GlobalConfig.AVATAR_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 GlobalConfig.DOCS_UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
@@ -65,7 +70,6 @@ app=CorsMiddleWare(app).add_cors_middleware(
     allow_headers=["*"]
 )
 
-
 @app.middleware("http")
 async def log_request_middleware(request: Request, call_next):
     logger.info("HTTP %s %s", request.method, request.url.path)
@@ -96,3 +100,4 @@ if __name__ == "__main__":
     import uvicorn
     # 传app,且reload=True(热重载),改代码后可以直接改后端,无需重启
     uvicorn.run("app.main:app", host=GlobalConfig.HOST, port=GlobalConfig.PORT, reload=True, timeout_keep_alive=60)
+

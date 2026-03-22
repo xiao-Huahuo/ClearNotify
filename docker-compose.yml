@@ -9,13 +9,16 @@ services:
     restart: always
 
   app:
-    build: ./app
-    working_dir: /app
+    build:
+      context: .
+      dockerfile: ./app/Dockerfile
+    working_dir: /server
     command: uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload
     container_name: ClearNotify_app
     ports:
       - "${PORT:-8080}:8080"
     environment:
+      DOCKER_DEPLOYMENT: true
       DEBUG: false
       HOST: 0.0.0.0
       PORT: ${PORT}
@@ -26,6 +29,7 @@ services:
       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
       ADMIN_EMAIL: ${ADMIN_EMAIL}
       ADMIN_PHONE: ${ADMIN_PHONE}
+      REALTIME_STREAM_INTERVAL_SECONDS: ${REALTIME_STREAM_INTERVAL_SECONDS}
       SMTP_HOST: ${SMTP_HOST}
       SMTP_PORT: ${SMTP_PORT}
       SMTP_USERNAME: ${SMTP_USERNAME}
@@ -36,8 +40,8 @@ services:
       SMTP_USE_TLS: ${SMTP_USE_TLS}
       EMAIL_VERIFICATION_CODE_LENGTH: ${EMAIL_VERIFICATION_CODE_LENGTH}
       EMAIL_VERIFICATION_EXPIRE_MINUTES: ${EMAIL_VERIFICATION_EXPIRE_MINUTES}
-      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL} # 生产环境这个必须是真实域名/公网IP
-      FRONTEND_BASE_URL: ${FRONTEND_BASE_URL}
+      PUBLIC_BASE_URL: http://10.133.130.115:8080 # 部署环境写本机局域网IP, 生产环境这个必须是真实域名/公网IP
+      FRONTEND_BASE_URL: http://10.133.130.115:5173 # 部署环境写本机局域网IP
       REDIS_HOST: redis
       REDIS_PORT: ${REDIS_PORT}
       REDIS_DB_CACHE: ${REDIS_DB_CACHE}
@@ -46,13 +50,15 @@ services:
       CRAWLER_RATE_LIMIT: ${CRAWLER_RATE_LIMIT}
       CRAWLER_RATE_WINDOW_SECONDS: ${CRAWLER_RATE_WINDOW_SECONDS}
       MOONSHOT_API_KEY: ${MOONSHOT_API_KEY}
+      MOONSHOT_API_TIMEOUT: ${MOONSHOT_API_TIMEOUT}
+      MOONSHOT_MODEL: ${MOONSHOT_MODEL}
     volumes:
-      - ./app:/app/app/
-      - ./database.db:/app/database.db
-      - ./uploads:/app/uploads
-      - ./.env:/app/.env
-      - ./logs:/app/logs
-      - ./mail_outbox:/app/mail_outbox
+      - ./app:/server/app/
+      - ./database.db:/server/database.db
+      - ./uploads:/server/uploads
+      - ./.env:/server/.env
+      - ./logs:/server/logs
+      - ./mail_outbox:/server/mail_outbox
     depends_on:
       - redis
     restart: always

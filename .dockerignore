@@ -1,0 +1,9 @@
+**/dist
+**/build
+**/__pycache__
+.git
+.vscode
+.idea
+*.pyc
+.pytest_cache
+web/node_modules

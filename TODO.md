@@ -1,6 +1,19 @@
 # TODO
 ### 客户端UI
 ##### 进行中
+- [ ] 美化智能体页面Agent回答的markdown,让它看起来不那么诡异:
+```md
+引入 GitHub 风格样式（最快）
+在你的 HTML 中引入 github-markdown-css。
+
+安装：npm install github-markdown-css
+
+包裹：给你的 Markdown 容器加上 markdown-body 这个类名。
+
+HTML
+<div class="markdown-body">
+  </div>
+```
 ##### 人力完成
 - [ ] 明暗切换的精细化UI调整,保证每个白色在黑暗切换时都变为灰色或者黑色或者红色,暗色下文字变为白色或灰色.
 

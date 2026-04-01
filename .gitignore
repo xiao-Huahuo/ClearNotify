@@ -6,7 +6,9 @@ database.db
 web/node_modules
 build
 dist
-**/__pycache__
+**/__pycache__/
+*.py[cod]
+*$py.class
 # 上传的文件目录
 uploads
 mail_outbox

@@ -82,7 +82,7 @@
 
 ### 项目结构与文件职责
 ```shell
-ClearNotify/
+CloudPolicy/
 ├── app/                        # 后端核心 (FastAPI)
 │   ├── main.py                 # 【入口】程序主入口，FastAPI 初始化与路由挂载
 │   ├── ai/                     # 智能中枢层
@@ -153,7 +153,7 @@ ClearNotify/
 * **数据可视化体系**：前端深度定制 **ECharts 5.0** 渲染引擎。通过复杂的 Canvas 绘图实现了红蓝双线动态趋势图、多维度通知难度雷达图。管理员可实时洞察社会化办公效率的波动，通过数据看板辅助决策，锁定政务服务的阻塞点。
 #### 核心算法：效率增益模型 (Efficiency Gain Model)
 
-**ClearNotify** 的核心价值在于将非结构化的长文本转化为高密度的结构化卡片。为了量化这一过程带来的“获得感”，我们构建了基于人类阅读速率与信息熵损失的效率评估模型。
+**云枢观策** 的核心价值在于将非结构化的长文本转化为高密度的结构化卡片。为了量化这一过程带来的“获得感”，我们构建了基于人类阅读速率与信息熵损失的效率评估模型。
 
 ##### 1. 节省时间估算算法 (Time-Saving Estimation)
 系统通过对比原始文本阅读成本与 AI 结构化卡片阅读成本，实时计算用户的效率增益：
@@ -185,7 +185,7 @@ $$
 \mathcal{E} = \sum_{i=1}^{n} T_{saved, i} \cdot \omega_{user}
 $$
 
-该指数通过 **ECharts 5.0** 渲染为红蓝双线趋势图，直观展现了 **ClearNotify** 在跨越数字鸿沟、提升民生办事效率方面的宏观贡献。
+该指数通过 **ECharts 5.0** 渲染为红蓝双线趋势图，直观展现了 **云枢观策** 在跨越数字鸿沟、提升民生办事效率方面的宏观贡献。
 ### 5. 高内聚、低耦合的工程化实践 (Engineering Excellence)
 * **状态与安全中枢**：前端利用 **Pinia** 实现了复杂的跨页面状态同步（如鉴权状态、UI 主题、持久化设置）；后端则通过 **JWT (JSON Web Token)** 与自定义装饰器构建了严密的安全闸口，实现了 SaaS 级别的多租户数据隔离。
 * **自动化运维链路**：项目支持 **Docker** 容器化一键编排，集成了 **Redis** 异步任务队列用于处理大规模的邮件通知（SMTP）分发，确保在高频并发场景下系统的极高稳健性。本项目采用 Docker 容器化技术，通过 Docker Compose 实现一键环境部署，确保了在不同操作系统（Windows/macOS/Linux）下运行环境的高度一致性。
@@ -218,7 +218,7 @@ SMTP_PORT=465
 SMTP_USERNAME=your_smtp_user
 SMTP_PASSWORD=your_smtp_password
 SMTP_SENDER=your_sender@example.com
-SMTP_SENDER_NAME=ClearNotify
+SMTP_SENDER_NAME=CloudPolicy
 SMTP_USE_SSL=true
 SMTP_USE_TLS=false
 
@@ -287,9 +287,9 @@ uvicorn app.main:app --reload
 pip install pyinstaller
 ```
 2. 执行打包指令:
-Windows:     ```pyinstaller --onefile --noconsole --name ClearNotifyServer --add-data "app/core;app/core" app/main.py```
-macOS/Linux: ```pyinstaller --onefile --name ClearNotifyServer --add-data "app/core:app/core" app/main.py```
-构建完成后,在`ClearNotify/dist/`生成可执行文件`ClearNotifyServer.exe`（Windows 系统）或`ClearNotifyServer`（Linux/macOS 系统）.
+Windows:     ```pyinstaller --onefile --noconsole --name CloudPolicyServer --add-data "app/core;app/core" app/main.py```
+macOS/Linux: ```pyinstaller --onefile --name CloudPolicyServer --add-data "app/core:app/core" app/main.py```
+构建完成后,在`CloudPolicy/dist/`生成可执行文件`CloudPolicyServer.exe`（Windows 系统）或`CloudPolicyServer`（Linux/macOS 系统）.
 3. 前端生产环境构建：
 ```shell 
 cd web
@@ -350,7 +350,7 @@ docker pull python:3.12-slim-bullseye
 2. **访问应用**:
     *   前端应用将通过 Nginx 运行在 `http://localhost:80`。
     *   后端 API 将在 Docker 内部运行于 `http://app:8080`，并通过前端 Nginx 代理访问。
-    *   也可以打开Docker Desktop找到clearnotify容器,即可运行,点击web的链接即可打开网页.
+    *   也可以打开Docker Desktop找到CloudPolicy容器,即可运行,点击web的链接即可打开网页.
 3. **停止服务**:
     在项目根目录执行：
     ```bash

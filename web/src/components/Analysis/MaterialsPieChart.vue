@@ -39,6 +39,9 @@ const props = defineProps({
 
 const chartRef = ref(null);
 let myChart = null;
+let themeObserver = null;
+
+const isDarkTheme = () => document.documentElement.getAttribute('data-theme') === 'dark';
 
 // 初始化 ECharts
 const initChart = () => {
@@ -54,6 +57,7 @@ const initChart = () => {
 // 更新图表配置
 const updateChart = () => {
   if (!myChart) return;
+  const dark = isDarkTheme();
 
   // 取前 8 个，防止饼图太碎
   let dataArray = Object.entries(props.chartData || {})
@@ -73,9 +77,9 @@ const updateChart = () => {
     tooltip: {
       trigger: 'item',
       formatter: '{b}: {c} 次 ({d}%)',
-      backgroundColor: 'rgba(255, 255, 255, 0.9)',
-      borderColor: '#eee',
-      textStyle: { color: '#333' }
+      backgroundColor: dark ? 'rgba(20, 20, 20, 0.95)' : 'rgba(255, 255, 255, 0.9)',
+      borderColor: dark ? '#3a3a3a' : '#eee',
+      textStyle: { color: dark ? '#f3f3f3' : '#333' }
     },
     legend: {
       orient: 'vertical',
@@ -83,7 +87,7 @@ const updateChart = () => {
       top: 'middle',
       icon: 'circle',
       textStyle: {
-        color: '#666'
+        color: dark ? '#f3f3f3' : '#666'
       }
     },
     series: [
@@ -96,8 +100,8 @@ const updateChart = () => {
         avoidLabelOverlap: false,
         itemStyle: {
           borderRadius: 10,
-          borderColor: '#fff',
-          borderWidth: 2
+          borderColor: 'transparent',
+          borderWidth: 0
         },
         label: {
           show: false,
@@ -108,6 +112,7 @@ const updateChart = () => {
             show: true,
             fontSize: 16,
             fontWeight: 'bold',
+            color: dark ? '#ffffff' : '#333',
             formatter: '{b}\n{d}%'
           }
         },
@@ -141,11 +146,19 @@ const handleResize = () => {
 
 onMounted(() => {
   initChart();
+  themeObserver = new MutationObserver(() => {
+    updateChart();
+  });
+  themeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['data-theme'],
+  });
   window.addEventListener('resize', handleResize);
 });
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize);
+  themeObserver?.disconnect();
   if (myChart) {
     myChart.dispose();
   }

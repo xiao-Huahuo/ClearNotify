@@ -69,7 +69,7 @@
                 </div>
               </div>
               <div class="setting-control">
-                <div class="toggle-group">
+                <div class="toggle-group theme-mode-toggle">
                   <button class="toggle-btn" :class="{ active: settingsStore.settings.theme_mode === 'light' }" @click="handleThemeChange('light')">浅色</button>
                   <button class="toggle-btn" :class="{ active: settingsStore.settings.theme_mode === 'dark' }" @click="handleThemeChange('dark')">深色</button>
                   <button class="toggle-btn" :class="{ active: settingsStore.settings.theme_mode === 'system' }" @click="handleThemeChange('system')">跟随系统</button>
@@ -597,6 +597,33 @@ input:checked + .slider:before {
   padding: 10px 24px;
   border-radius: 24px;
   cursor: pointer;
+}
+
+:global([data-theme="dark"]) .settings-container .page-title,
+:global([data-theme="dark"]) .settings-container .section-title,
+:global([data-theme="dark"]) .settings-container .username,
+:global([data-theme="dark"]) .settings-container .name,
+:global([data-theme="dark"]) .settings-container .user-email,
+:global([data-theme="dark"]) .settings-container .desc {
+  color: #f5f5f5 !important;
+}
+
+:global([data-theme="dark"]) .settings-container .danger-text {
+  color: #ff4d4f !important;
+}
+
+:global([data-theme="dark"]) .settings-container .theme-mode-toggle {
+  background: #111 !important;
+}
+
+:global([data-theme="dark"]) .settings-container .theme-mode-toggle .toggle-btn {
+  color: #f0f0f0 !important;
+}
+
+:global([data-theme="dark"]) .settings-container .theme-mode-toggle .toggle-btn.active {
+  background: #c0392b !important;
+  color: #fff !important;
+  box-shadow: none !important;
 }
 
 </style>

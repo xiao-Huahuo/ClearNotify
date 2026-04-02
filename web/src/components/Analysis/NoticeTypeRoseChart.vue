@@ -39,6 +39,9 @@ const props = defineProps({
 
 const chartRef = ref(null);
 let myChart = null;
+let themeObserver = null;
+
+const isDarkTheme = () => document.documentElement.getAttribute('data-theme') === 'dark';
 
 // 初始化 ECharts
 const initChart = () => {
@@ -54,6 +57,7 @@ const initChart = () => {
 // 更新图表配置
 const updateChart = () => {
   if (!myChart) return;
+  const dark = isDarkTheme();
 
   // 将后端的 Object { "类型A": 10, "类型B": 5 } 转换为 ECharts 需要的 Array [{name: '类型A', value: 10}]
   const dataArray = Object.entries(props.chartData || {}).map(([name, value]) => ({
@@ -72,10 +76,10 @@ const updateChart = () => {
     tooltip: {
       trigger: 'item',
       formatter: '{b} : {c} 份 ({d}%)',
-      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-      borderColor: '#eee',
+      backgroundColor: dark ? 'rgba(20, 20, 20, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+      borderColor: dark ? '#3a3a3a' : '#eee',
       textStyle: {
-        color: '#333'
+        color: dark ? '#f3f3f3' : '#333'
       }
     },
     // 将图例放在左上角或隐藏，这里选择隐藏，让图表主体更大
@@ -92,13 +96,13 @@ const updateChart = () => {
         center: ['50%', '55%'],
         itemStyle: {
           borderRadius: 8, // 叶片圆角，柔和边缘
-          borderColor: '#fff',
-          borderWidth: 2
+          borderColor: 'transparent',
+          borderWidth: 0
         },
         label: {
           show: true,
           formatter: '{b}\n{c} 份',
-          color: '#333',
+          color: dark ? '#ffffff' : '#333',
           fontWeight: 'bold',
           lineHeight: 20
         },
@@ -109,7 +113,7 @@ const updateChart = () => {
           length2: 30,   // 第二段引导线长度（水平线）
           smooth: 0.2,   // 稍微带一点平滑
           lineStyle: {
-            color: '#ccc',
+            color: dark ? '#8a8a8a' : '#ccc',
             width: 1.5
           }
         },
@@ -143,11 +147,19 @@ const handleResize = () => {
 
 onMounted(() => {
   initChart();
+  themeObserver = new MutationObserver(() => {
+    updateChart();
+  });
+  themeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['data-theme'],
+  });
   window.addEventListener('resize', handleResize);
 });
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize);
+  themeObserver?.disconnect();
   if (myChart) {
     myChart.dispose();
   }

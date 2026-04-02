@@ -40,6 +40,9 @@ const props = defineProps({
 
 const chartRef = ref(null);
 let myChart = null;
+let themeObserver = null;
+
+const isDarkTheme = () => document.documentElement.getAttribute('data-theme') === 'dark';
 
 // 初始化 ECharts
 const initChart = () => {
@@ -55,6 +58,7 @@ const initChart = () => {
 // 更新图表配置
 const updateChart = () => {
   if (!myChart) return;
+  const dark = isDarkTheme();
 
   const dataArray = Object.entries(props.chartData || {})
     .sort((a, b) => b[1] - a[1]) // 按词频降序
@@ -74,9 +78,9 @@ const updateChart = () => {
           return `${param.name}: ${param.value} 次`;
         }
       },
-      backgroundColor: 'rgba(255, 255, 255, 0.9)',
-      borderColor: '#eee',
-      textStyle: { color: '#333' }
+      backgroundColor: dark ? 'rgba(20, 20, 20, 0.95)' : 'rgba(255, 255, 255, 0.9)',
+      borderColor: dark ? '#3a3a3a' : '#eee',
+      textStyle: { color: dark ? '#f3f3f3' : '#333' }
     },
     animationDuration: 1500,
     animationEasingUpdate: 'quinticInOut',
@@ -97,7 +101,7 @@ const updateChart = () => {
             show: true,
             position: 'bottom',
             formatter: '{b}',
-            color: '#666',
+            color: dark ? '#ffffff' : '#666',
             fontSize: 12,
             distance: 5
           }
@@ -132,11 +136,19 @@ const handleResize = () => {
 
 onMounted(() => {
   initChart();
+  themeObserver = new MutationObserver(() => {
+    updateChart();
+  });
+  themeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['data-theme'],
+  });
   window.addEventListener('resize', handleResize);
 });
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize);
+  themeObserver?.disconnect();
   if (myChart) {
     myChart.dispose();
   }

@@ -78,7 +78,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/auth.js';
 import { useSettingsStore } from '@/stores/settings';
@@ -88,7 +88,12 @@ const router = useRouter();
 const userStore = useUserStore();
 const settingsStore = useSettingsStore();
 
-const isDark = computed(() => settingsStore.settings.theme_mode === 'dark');
+const isDark = ref(false);
+
+let themeObserver = null;
+const syncThemeFromDom = () => {
+  isDark.value = document.documentElement.getAttribute('data-theme') === 'dark';
+};
 
 const toggleTheme = async () => {
   const newTheme = isDark.value ? 'light' : 'dark';
@@ -97,6 +102,7 @@ const toggleTheme = async () => {
   if (userStore.token) {
     await settingsStore.updateSettings({ theme_mode: newTheme });
   }
+  syncThemeFromDom();
 };
 
 const toggleColorScheme = (event) => {
@@ -152,6 +158,21 @@ const toggleNotification = async () => {
       system_notifications: settingsStore.settings.system_notifications
   });
 };
+
+onMounted(() => {
+  syncThemeFromDom();
+  themeObserver = new MutationObserver(() => {
+    syncThemeFromDom();
+  });
+  themeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['data-theme'],
+  });
+});
+
+onBeforeUnmount(() => {
+  themeObserver?.disconnect();
+});
 </script>
 
 <style scoped>

@@ -1,14 +1,20 @@
 import { apiClient, API_ROUTES } from '@/router/api_routes';
 
-export const createChatMessage = (original_text) => {
-  return apiClient.post(API_ROUTES.CHAT_MESSAGE, { original_text });
+export const createChatMessage = (original_text, parse_task_id = null) => {
+  const params = parse_task_id ? { parse_task_id } : undefined;
+  return apiClient.post(API_ROUTES.CHAT_MESSAGE, { original_text }, { params });
 };
 
-export const createChatMessageWithFile = (original_text, file_url) => {
+export const createChatMessageWithFile = (original_text, file_url, parse_task_id = null) => {
+  const params = parse_task_id ? { parse_task_id } : undefined;
   return apiClient.post(API_ROUTES.CHAT_MESSAGE, {
     original_text,
     file_url,
-  });
+  }, { params });
+};
+
+export const startChatProgressTask = () => {
+  return apiClient.post(API_ROUTES.CHAT_PROGRESS_START);
 };
 
 export const uploadAndExtractDocument = (file) => {

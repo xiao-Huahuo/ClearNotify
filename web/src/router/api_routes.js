@@ -8,6 +8,8 @@ export const API_ROUTES = {
   RESEND_VERIFICATION: '/user/resend-verification',
   GET_ME: '/user/me',
   CHAT_MESSAGE: '/chat/',
+  CHAT_PROGRESS_START: '/chat/progress/start',
+  CHAT_PROGRESS_STREAM: '/chat/progress/stream',
   CHAT_IMPORT: '/chat/import',
   ANALYSIS_ME: '/analysis/me',
   SETTINGS_ME: '/settings/me',

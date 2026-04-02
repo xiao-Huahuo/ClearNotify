@@ -148,7 +148,16 @@
             <input type="file" ref="screenshotInput" style="display:none" @change="handleScreenshotUpload" accept="image/jpeg,image/png,image/webp,image/bmp,image/tiff" />
           </div>
 
-          <div v-if="loading" class="loading-banner"><span>正在智能解读中...</span></div>
+          <div v-if="loading" class="loading-banner">
+            <div class="loading-banner-head">
+              <span class="loading-title">正在智能解读中...</span>
+              <span class="loading-elapsed">{{ parseElapsedSec }}s</span>
+            </div>
+            <div class="loading-stage">{{ parseStageLabel }}</div>
+            <div class="loading-progress-track">
+              <div class="loading-progress-fill" :style="{ width: `${parseProgress}%` }"></div>
+            </div>
+          </div>
 
           <!-- 示例区域 -->
           <div class="examples-section">
@@ -237,7 +246,7 @@
                 v-if="aiResponse?.chat_analysis?.parse_mode"
                 class="parse-mode-badge"
               >
-                {{ aiResponse.chat_analysis.parse_mode === 'fallback' ? '兜底解析' : '原版解析' }}
+                {{ String(aiResponse.chat_analysis.parse_mode).startsWith('fallback') ? '快速容错解析' : '自由结构解析' }}
               </span>
             </div>
             <div class="scrollable-content">
@@ -327,7 +336,7 @@ import { ref, onMounted, onUnmounted, nextTick, computed, watch } from 'vue';
 import * as echarts from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
 import { useUserStore } from '@/stores/auth.js';
-import { createChatMessage, createChatMessageWithFile, exportChatMessage, importChatMessage, uploadAndExtractDocument, rewriteChatMessage, getChatMessages, getChatMessage } from '@/api/ai';
+import { createChatMessage, createChatMessageWithFile, exportChatMessage, importChatMessage, uploadAndExtractDocument, rewriteChatMessage, getChatMessages, getChatMessage, startChatProgressTask } from '@/api/ai';
 import { getHotNews, getCentralDocs, getHotKeywords, getNewsWithImages } from '@/api/news';
 import { useRouter } from 'vue-router';
 import { toggleSpeak, isSpeaking } from '@/utils/tts.js';
@@ -345,6 +354,9 @@ const router = useRouter();
 const inputText = ref('');
 const aiResponse = ref(null);
 const loading = ref(false);
+const parseProgress = ref(0);
+const parseStage = ref('');
+const parseElapsedSec = ref(0);
 const isRewriting = ref(false);
 const showResult = ref(false);
 const fileInput = ref(null);
@@ -353,6 +365,10 @@ const showUrlInput = ref(false);
 const urlInputValue = ref('');
 const urlInputRef = ref(null);
 const focusMode = computed(() => loading.value || showResult.value);
+const parseStageLabel = computed(() => {
+  if (parseStage.value) return parseStage.value;
+  return '准备解析';
+});
 
 // ── 左栏：时事热点 ────────────────────────────────────────────────────────────
 const hotNews = ref([]);
@@ -488,6 +504,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   clearInterval(carouselTimer);
+  stopParseProgress();
   wordCloudChart?.dispose();
 });
 
@@ -681,6 +698,79 @@ const requestLoginModal = () => {
   window.dispatchEvent(new CustomEvent('open-login-modal'));
 };
 
+let parseTicker = null;
+let parseStartedAt = 0;
+let parseEventSource = null;
+
+const stopParseProgress = () => {
+  if (parseTicker) {
+    clearInterval(parseTicker);
+    parseTicker = null;
+  }
+  if (parseEventSource) {
+    parseEventSource.close();
+    parseEventSource = null;
+  }
+};
+
+const startParseProgress = () => {
+  stopParseProgress();
+  parseStartedAt = Date.now();
+  parseProgress.value = 4;
+  parseElapsedSec.value = 0;
+  parseStage.value = '初始化任务';
+  parseTicker = setInterval(() => {
+    parseElapsedSec.value = Math.max(0, Math.floor((Date.now() - parseStartedAt) / 1000));
+    const cap = 92;
+    if (parseProgress.value < cap) {
+      parseProgress.value += parseProgress.value < 40 ? 2 : 1;
+    }
+  }, 450);
+};
+
+const markParseStage = (label, targetProgress) => {
+  parseStage.value = label;
+  parseProgress.value = Math.max(parseProgress.value, Math.min(targetProgress, 96));
+};
+
+const finishParseProgress = () => {
+  parseProgress.value = 100;
+  stopParseProgress();
+};
+
+const startRealParseProgress = async () => {
+  if (!userStore.token) return null;
+  try {
+    const startRes = await startChatProgressTask();
+    const taskId = startRes?.data?.task_id;
+    if (!taskId) return null;
+    const streamUrl = `/api${API_ROUTES.CHAT_PROGRESS_STREAM}?task_id=${encodeURIComponent(taskId)}&token=${encodeURIComponent(userStore.token)}`;
+    parseEventSource = new EventSource(streamUrl);
+    parseEventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data || '{}');
+        if (typeof data.progress === 'number') {
+          parseProgress.value = Math.max(parseProgress.value, Math.min(100, data.progress));
+        }
+        if (data.stage) parseStage.value = data.stage;
+        if (data.status === 'completed' || data.status === 'failed' || data.status === 'not_found') {
+          parseEventSource?.close();
+          parseEventSource = null;
+        }
+      } catch (_) {
+        // ignore malformed SSE payload
+      }
+    };
+    parseEventSource.onerror = () => {
+      parseEventSource?.close();
+      parseEventSource = null;
+    };
+    return taskId;
+  } catch (_) {
+    return null;
+  }
+};
+
 // ── 文件处理逻辑 ──────────────────────────────────────────────────────────────
 const triggerFileUpload = () => {
   if (loading.value) return;
@@ -707,12 +797,17 @@ const handleDrop = (event) => {
 const processFile = async (file) => {
   if (!file) return;
   loading.value = true;
+  startParseProgress();
   aiResponse.value = null;
+  const taskId = await startRealParseProgress();
   try {
+    markParseStage('上传与文本提取中', 26);
     const uploadRes = await uploadAndExtractDocument(file);
     const { extracted_text, file_url } = uploadRes.data;
-    const chatRes = await createChatMessageWithFile(extracted_text, file_url);
+    markParseStage('LLM 自由解析中', 68);
+    const chatRes = await createChatMessageWithFile(extracted_text, file_url, taskId);
     aiResponse.value = chatRes.data;
+    markParseStage('图谱构建与结果整理', 94);
     showResult.value = true;
     await fetchRecentHistory();
     await fetchFavorites();
@@ -720,6 +815,7 @@ const processFile = async (file) => {
     if (error.response?.status === 401) { userStore.logout(); requestLoginModal(); }
     else alert('文件处理失败: ' + (error.response?.data?.detail || error.message));
   } finally {
+    finishParseProgress();
     loading.value = false;
     if (fileInput.value) fileInput.value.value = '';
   }
@@ -769,8 +865,11 @@ const handleScreenshotUpload = async (event) => {
     return;
   }
   loading.value = true;
+  startParseProgress();
   aiResponse.value = null;
+  const taskId = await startRealParseProgress();
   try {
+    markParseStage('截图上传与OCR识别', 30);
     const formData = new FormData();
     formData.append('file', file);
     const ocrRes = await apiClient.post(API_ROUTES.UPLOAD_OCR, formData, {
@@ -781,8 +880,10 @@ const handleScreenshotUpload = async (event) => {
       alert('未能识别出文字，请尝试更清晰的图片。');
       return;
     }
-    const response = await createChatMessageWithFile(extractedText, ocrRes.data.file_url);
+    markParseStage('LLM 自由解析中', 70);
+    const response = await createChatMessageWithFile(extractedText, ocrRes.data.file_url, taskId);
     aiResponse.value = response.data;
+    markParseStage('图谱构建与结果整理', 94);
     showResult.value = true;
     await fetchRecentHistory();
     await fetchFavorites();
@@ -790,6 +891,7 @@ const handleScreenshotUpload = async (event) => {
     console.error('截图OCR失败:', error);
     alert('截图识别失败，请重试。');
   } finally {
+    finishParseProgress();
     loading.value = false;
     event.target.value = '';
   }
@@ -799,7 +901,9 @@ const handleImportConversation = async (event) => {
   const file = event.target.files?.[0];
   if (!file) return;
   loading.value = true;
+  startParseProgress();
   try {
+    markParseStage('导入会话与结构恢复', 80);
     const res = await importChatMessage(file);
     aiResponse.value = res.data;
     showResult.value = true;
@@ -809,6 +913,7 @@ const handleImportConversation = async (event) => {
   } catch (error) {
     alert(error.response?.data?.detail || '导入会话失败');
   } finally {
+    finishParseProgress();
     loading.value = false;
     event.target.value = '';
   }
@@ -818,10 +923,14 @@ const submitToAI = async () => {
   if (!userStore.token) { requestLoginModal(); return; }
   if (!inputText.value.trim()) return;
   loading.value = true;
+  startParseProgress();
   aiResponse.value = null;
+  const taskId = await startRealParseProgress();
   try {
-    const response = await createChatMessage(inputText.value);
+    markParseStage('LLM 自由解析中', 72);
+    const response = await createChatMessage(inputText.value, taskId);
     aiResponse.value = response.data;
+    markParseStage('图谱构建与结果整理', 94);
     showResult.value = true;
     await fetchRecentHistory();
     await fetchFavorites();
@@ -829,6 +938,7 @@ const submitToAI = async () => {
     if (error.response?.status === 401) { userStore.logout(); requestLoginModal(); }
     else alert('解析失败: ' + (error.response?.data?.detail || error.message));
   } finally {
+    finishParseProgress();
     loading.value = false;
   }
 };
@@ -1448,6 +1558,43 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
   font-weight: bold;
   font-size: 14px;
   animation: fadeIn 0.5s;
+  gap: 6px;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.loading-banner-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.loading-title {
+  font-weight: bold;
+}
+
+.loading-elapsed {
+  font-size: 12px;
+  color: #7f8c8d;
+}
+
+.loading-stage {
+  font-size: 12px;
+  color: #7a2f28;
+}
+
+.loading-progress-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: #f5d9d6;
+  overflow: hidden;
+}
+
+.loading-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #c0392b 0%, #e67e22 100%);
+  transition: width 0.35s ease;
 }
 
 @keyframes fadeIn {

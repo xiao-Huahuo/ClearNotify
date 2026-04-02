@@ -1,6 +1,7 @@
-﻿import json
+import json
 import logging
 import re
+import time
 from pathlib import Path
 from typing import Any
 
@@ -19,7 +20,7 @@ def _normalize_text(text: str) -> str:
     return re.sub(r"[ \t]+", " ", text.replace("\r\n", "\n").replace("\r", "\n")).strip()
 
 
-def _clean_json_response(response_text: str) -> dict:
+def _clean_json_response(response_text: str) -> Any:
     response_text = (response_text or "").strip()
     if response_text.startswith("```json"):
         response_text = response_text[7:]
@@ -35,10 +36,18 @@ def _extract_first_json_object(text: str) -> str | None:
     s = (text or "").strip()
     if not s:
         return None
-    start = s.find("{")
-    if start < 0:
+    first_obj = s.find("{")
+    first_arr = s.find("[")
+    if first_obj < 0 and first_arr < 0:
         return None
-    depth = 0
+    if first_obj < 0:
+        start = first_arr
+    elif first_arr < 0:
+        start = first_obj
+    else:
+        start = min(first_obj, first_arr)
+
+    stack: list[str] = []
     in_str = False
     esc = False
     for i in range(start, len(s)):
@@ -53,22 +62,26 @@ def _extract_first_json_object(text: str) -> str | None:
             continue
         if ch == '"':
             in_str = True
-        elif ch == "{":
-            depth += 1
-        elif ch == "}":
-            depth -= 1
-            if depth == 0:
+        elif ch in "{[":
+            stack.append(ch)
+        elif ch in "}]":
+            if not stack:
+                return None
+            top = stack.pop()
+            if (top == "{" and ch != "}") or (top == "[" and ch != "]"):
+                return None
+            if not stack:
                 return s[start : i + 1]
     return None
 
 
-def _try_parse_json_loose(text: str) -> dict | None:
+def _try_parse_json_loose(text: str) -> Any | None:
     if not text:
         return None
     candidates = []
     try:
         cleaned = _clean_json_response(text)
-        if isinstance(cleaned, dict):
+        if cleaned is not None:
             return cleaned
     except Exception:
         pass
@@ -88,14 +101,26 @@ def _try_parse_json_loose(text: str) -> dict | None:
     for c in candidates:
         try:
             parsed = json.loads(c)
-            if isinstance(parsed, dict):
+            if parsed is not None:
                 return parsed
         except Exception:
             continue
     return None
 
 
-def _repair_json_via_llm(raw_text: str) -> dict | None:
+def _normalize_payload_object(raw: Any) -> dict | None:
+    if raw is None:
+        return None
+    if isinstance(raw, dict):
+        return raw
+    if isinstance(raw, list):
+        return {"items": raw}
+    if isinstance(raw, (str, int, float, bool)):
+        return {"value": raw}
+    return {"value": str(raw)}
+
+
+def _repair_json_via_llm(raw_text: str) -> Any | None:
     """
     DO NOT CHANGE:
     This is a repair-only stage. It must preserve freeform semantics
@@ -210,6 +235,41 @@ def _slug(text: str) -> str:
     return re.sub(r"[^0-9a-zA-Z\u4e00-\u9fa5]+", "_", str(text or "").strip()).strip("_") or "node"
 
 
+def _pick_payload_title(payload: Any) -> str:
+    seen: set[int] = set()
+
+    def walk(value: Any, depth: int = 0) -> str:
+        if depth > 4:
+            return ""
+        if isinstance(value, str):
+            t = value.strip()
+            if t and len(t) >= 2:
+                return t[:80]
+            return ""
+        if isinstance(value, list):
+            for item in value[:20]:
+                hit = walk(item, depth + 1)
+                if hit:
+                    return hit
+            return ""
+        if isinstance(value, dict):
+            oid = id(value)
+            if oid in seen:
+                return ""
+            seen.add(oid)
+            for k, v in list(value.items())[:40]:
+                key_text = str(k).strip()
+                if key_text and len(key_text) >= 2:
+                    return key_text[:80]
+                hit = walk(v, depth + 1)
+                if hit:
+                    return hit
+        return ""
+
+    title = walk(payload)
+    return title or "文档"
+
+
 def _build_graph_from_payload(payload: dict, max_nodes: int = 220) -> tuple[list[dict], list[dict]]:
     """
     核心原则（禁止动摇）：
@@ -260,7 +320,7 @@ def _build_graph_from_payload(payload: dict, max_nodes: int = 220) -> tuple[list
         )
 
     root_id = "payload_root"
-    root_label = "Payload"
+    root_label = _pick_payload_title(payload)
     add_node(root_id, root_label, 0, 0.98)
 
     def walk(value: Any, parent_id: str, key_hint: str, depth: int) -> None:
@@ -271,7 +331,7 @@ def _build_graph_from_payload(payload: dict, max_nodes: int = 220) -> tuple[list
             for k, v in list(value.items())[:40]:
                 child_id = f"{parent_id}_{_slug(k)}_{depth}"
                 if add_node(child_id, str(k), depth, 0.82 - depth * 0.08):
-                    add_edge(parent_id, child_id, "展开", 0.7 - depth * 0.06)
+                    add_edge(parent_id, child_id, "", 0.7 - depth * 0.06)
                 walk(v, child_id, str(k), depth + 1)
             return
 
@@ -280,7 +340,7 @@ def _build_graph_from_payload(payload: dict, max_nodes: int = 220) -> tuple[list
                 title = f"{key_hint}#{idx}" if key_hint else f"item_{idx}"
                 child_id = f"{parent_id}_item_{idx}_{depth}"
                 if add_node(child_id, title, depth, 0.78 - depth * 0.08):
-                    add_edge(parent_id, child_id, "包含", 0.66 - depth * 0.06)
+                    add_edge(parent_id, child_id, "", 0.66 - depth * 0.06)
                 walk(item, child_id, key_hint, depth + 1)
             return
 
@@ -289,7 +349,7 @@ def _build_graph_from_payload(payload: dict, max_nodes: int = 220) -> tuple[list
             return
         leaf_id = f"{parent_id}_{_slug(text[:36])}_{depth}"
         if add_node(leaf_id, text[:120], depth, 0.72 - depth * 0.08):
-            add_edge(parent_id, leaf_id, "值", 0.6 - depth * 0.05)
+            add_edge(parent_id, leaf_id, "", 0.6 - depth * 0.05)
 
     walk(payload, root_id, "payload", 1)
     for item in nodes:
@@ -329,7 +389,7 @@ def generate_dynamic_payload_freeform(original_text: str) -> dict:
         return {}
     kimi = RequestLLM()
     kimi.system_prompt = _freeform_prompt()
-    for _ in range(2):
+    for _ in range(1):
         try:
             response = kimi.get_response(
                 content=text[:MAX_PARSE_CHARS],
@@ -339,15 +399,18 @@ def generate_dynamic_payload_freeform(original_text: str) -> dict:
             )
             if not response or str(response).strip().startswith("Error:"):
                 continue
-            payload = _try_parse_json_loose(response) or _repair_json_via_llm(response)
+            raw = _try_parse_json_loose(response)
+            if raw is None:
+                raw = _repair_json_via_llm(response)
+            payload = _normalize_payload_object(raw)
             if isinstance(payload, dict) and payload:
                 return payload
         except Exception:
             continue
-    return {}
+    return {"text": text[:MAX_PARSE_CHARS]}
 
 
-def parse_document(original_text: str, user_id: int) -> tuple[dict, str]:
+def parse_document(original_text: str, user_id: int, progress_cb=None) -> tuple[dict, str]:
     """
     核心原则（禁止动摇）：
     - 不做任何固定业务字段筛选/抽取。
@@ -356,6 +419,12 @@ def parse_document(original_text: str, user_id: int) -> tuple[dict, str]:
     text = _normalize_text(original_text)
     kimi = RequestLLM()
     kimi.system_prompt = _freeform_prompt()
+    started = time.perf_counter()
+    if callable(progress_cb):
+        try:
+            progress_cb(25, "LLM 自由解析中")
+        except Exception:
+            pass
 
     try:
         response = kimi.get_response(
@@ -367,24 +436,55 @@ def parse_document(original_text: str, user_id: int) -> tuple[dict, str]:
         if not response or str(response).strip().startswith("Error:"):
             raise ValueError(str(response))
 
-        raw = _try_parse_json_loose(response) or _repair_json_via_llm(response)
-        if not isinstance(raw, dict):
-            raise ValueError("LLM payload is not object")
+        raw = _try_parse_json_loose(response)
+        if raw is None:
+            if callable(progress_cb):
+                try:
+                    progress_cb(45, "JSON 修复中")
+                except Exception:
+                    pass
+            raw = _repair_json_via_llm(response)
+        normalized = _normalize_payload_object(raw)
+        if not isinstance(normalized, dict):
+            raise ValueError("LLM payload cannot be normalized")
 
-        content = _normalize_text(str(raw.get("content") or text))
-        nodes = _safe_nodes(raw.get("nodes"))
+        raw_dict = normalized if isinstance(raw, dict) else {}
+        content = _normalize_text(str(raw_dict.get("content") or text))
+        nodes = _safe_nodes(raw_dict.get("nodes"))
         node_ids = {item["id"] for item in nodes}
-        links = _safe_links(raw.get("links"), node_ids)
+        links = _safe_links(raw_dict.get("links"), node_ids)
         top_level_keys = {"content", "nodes", "links", "dynamic_payload", "visual_config"}
-        dynamic_payload = raw.get("dynamic_payload") if isinstance(raw.get("dynamic_payload"), dict) else {
-            k: v for k, v in raw.items() if k not in top_level_keys
-        }
+        dynamic_payload = (
+            raw_dict.get("dynamic_payload")
+            if isinstance(raw_dict.get("dynamic_payload"), dict)
+            else {k: v for k, v in raw_dict.items() if k not in top_level_keys}
+        )
+        if not dynamic_payload and not raw_dict:
+            dynamic_payload = normalized
         if not isinstance(dynamic_payload, dict):
             dynamic_payload = {}
 
+        if callable(progress_cb):
+            try:
+                progress_cb(65, "图谱构建中")
+            except Exception:
+                pass
+
         if not nodes and dynamic_payload:
             nodes, links = _build_graph_from_payload(dynamic_payload)
-        visual_config = _basic_visual_config(raw.get("visual_config"), nodes)
+        visual_config = _basic_visual_config(raw_dict.get("visual_config"), nodes)
+        if callable(progress_cb):
+            try:
+                progress_cb(80, "结果整理中")
+            except Exception:
+                pass
+        elapsed = time.perf_counter() - started
+        logger.info(
+            "Freeform parse completed in %.2fs (nodes=%d, links=%d, mode=ai)",
+            elapsed,
+            len(nodes),
+            len(links),
+        )
 
         return {
             "original_text": original_text,
@@ -396,18 +496,27 @@ def parse_document(original_text: str, user_id: int) -> tuple[dict, str]:
             "visual_config": visual_config,
         }, "ai"
     except Exception as e:
-        logger.error(f"Freeform parse failed: {e}")
-        dynamic_payload = generate_dynamic_payload_freeform(text)
-        nodes, links = _build_graph_from_payload(dynamic_payload) if isinstance(dynamic_payload, dict) else ([], [])
+        elapsed = time.perf_counter() - started
+        logger.error("Freeform parse failed in %.2fs: %s", elapsed, e)
+        if callable(progress_cb):
+            try:
+                progress_cb(82, "主解析失败，自由重试中")
+            except Exception:
+                pass
+        dynamic_payload = generate_dynamic_payload_freeform(text) if text else {}
+        if not isinstance(dynamic_payload, dict) or not dynamic_payload:
+            dynamic_payload = {"text": text[:MAX_PARSE_CHARS]} if text else {}
+        nodes, links = _build_graph_from_payload(dynamic_payload) if dynamic_payload else ([], [])
+        parse_mode = "fallback_recovered" if dynamic_payload and "text" not in dynamic_payload else "fallback_fast"
         return {
             "original_text": original_text,
             "user_id": user_id,
             "content": text,
             "nodes": nodes,
             "links": links,
-            "dynamic_payload": dynamic_payload if isinstance(dynamic_payload, dict) else {},
+            "dynamic_payload": dynamic_payload,
             "visual_config": {"focus_node": (nodes[0]["id"] if nodes else None), "initial_zoom": 1.0, "text_mapping": {}},
-        }, "fallback"
+        }, parse_mode
 
 
 def rewrite_document(original_text: str, target_audience: str, user_id: int) -> ChatMessageBase:

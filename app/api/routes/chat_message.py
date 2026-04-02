@@ -1,19 +1,17 @@
+﻿import asyncio
+import json
 from typing import List, Optional
 
 from fastapi import APIRouter, Body, Depends, File, HTTPException, Query, UploadFile
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from sqlmodel import Session
 
-from app.ai.document_parser import (
-    parse_document,
-    generate_dynamic_payload_freeform,
-    build_graph_from_dynamic_payload,
-)
-from app.api.deps import get_current_user
+from app.ai.document_parser import parse_document, build_graph_from_dynamic_payload
+from app.api.deps import get_current_user, get_current_user_from_token_value
 from app.core.database import get_session
 from app.models.user import User
 from app.schemas.chat_message import ChatMessageCreate, ChatMessageRead, ChatMessageUpdate
-from app.services import chat_message_service
+from app.services import chat_message_service, parse_progress_service
 
 
 router = APIRouter()
@@ -56,13 +54,31 @@ def _to_payload_dict(parsed_payload, original_text: str, user_id: int) -> dict:
 @router.post("/", response_model=ChatMessageRead)
 def create_chat_message(
     chat_in: ChatMessageCreate,
+    parse_task_id: Optional[str] = Query(default=None),
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ):
+    def emit(progress: int, stage: str, status: Optional[str] = None, message: Optional[str] = None):
+        if not parse_task_id:
+            return
+        parse_progress_service.update_task(
+            parse_task_id,
+            current_user.uid,
+            progress=progress,
+            stage=stage,
+            status=status,
+            message=message,
+        )
+
+    emit(10, "请求已接收", "running")
     try:
-        parsed_raw, parse_mode = parse_document(chat_in.original_text, current_user.uid)
-    except Exception:
-        # 核心原则（禁止改动）：异常时只保留最小通用载荷，禁止注入任何固定业务字段。
+        parsed_raw, parse_mode = parse_document(
+            chat_in.original_text,
+            current_user.uid,
+            progress_cb=lambda p, s: emit(p, s, "running"),
+        )
+    except Exception as e:
+        emit(100, "解析失败", "failed", str(e))
         parsed_raw, parse_mode = {
             "original_text": chat_in.original_text,
             "content": chat_in.original_text,
@@ -70,14 +86,12 @@ def create_chat_message(
             "links": [],
             "dynamic_payload": {},
             "visual_config": {"focus_node": None, "initial_zoom": 1.0, "text_mapping": {}},
-        }, "fallback"
+        }, "fallback_fast"
 
     parsed_payload = _to_payload_dict(parsed_raw, chat_in.original_text, current_user.uid)
-    if not parsed_payload.get("dynamic_payload"):
-        # 核心原则（禁止改动）：当解析器未给出 dynamic_payload，只允许让 LLM 自由生成，不允许后端拼模板字段。
-        free_payload = generate_dynamic_payload_freeform(chat_in.original_text)
-        if isinstance(free_payload, dict) and free_payload:
-            parsed_payload["dynamic_payload"] = free_payload
+    emit(84, "写入结果中", "running")
+    if not isinstance(parsed_payload.get("dynamic_payload"), dict):
+        parsed_payload["dynamic_payload"] = {}
     if (not parsed_payload.get("nodes")) and isinstance(parsed_payload.get("dynamic_payload"), dict) and parsed_payload["dynamic_payload"]:
         nodes, links = build_graph_from_dynamic_payload(parsed_payload["dynamic_payload"])
         parsed_payload["nodes"] = nodes
@@ -107,7 +121,49 @@ def create_chat_message(
         chat_message_service.get_rag_context_for_message(db_message, top_k=3)
     except Exception:
         pass
+    emit(100, "解析完成", "completed")
     return ChatMessageRead(**chat_message_service.serialize_message(db_message))
+
+
+@router.post("/progress/start")
+def start_chat_progress_task(current_user: User = Depends(get_current_user)):
+    task_id = parse_progress_service.create_task(current_user.uid)
+    return {"task_id": task_id}
+
+
+@router.get("/progress/stream")
+async def stream_chat_progress(
+    task_id: str = Query(...),
+    token: str = Query(...),
+    session: Session = Depends(get_session),
+):
+    user = get_current_user_from_token_value(session, token)
+
+    async def event_generator():
+        last_payload = None
+        while True:
+            snapshot = parse_progress_service.get_task(task_id, user.uid)
+            if snapshot is None:
+                missing = {
+                    "task_id": task_id,
+                    "status": "not_found",
+                    "progress": 100,
+                    "stage": "任务不存在",
+                    "message": "",
+                }
+                yield f"data: {json.dumps(missing, ensure_ascii=False)}\n\n"
+                break
+
+            payload = json.dumps(snapshot, ensure_ascii=False)
+            if payload != last_payload:
+                yield f"data: {payload}\n\n"
+                last_payload = payload
+
+            if snapshot.get("status") in {"completed", "failed"}:
+                break
+            await asyncio.sleep(0.35)
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
 @router.get("/", response_model=List[ChatMessageRead])

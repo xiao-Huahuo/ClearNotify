@@ -298,6 +298,38 @@ const hashSeed = (text) => {
   return Math.abs(hash >>> 0);
 };
 
+const refresh2DStyles = () => {
+  if (!chart2D) return;
+  const option = chart2D.getOption?.();
+  const series = option?.series?.[0];
+  if (!series?.data) return;
+  const dark = isDark();
+  const rootId = rootNodeId.value;
+  const nextData = series.data.map((item) => {
+    const id = String(item?.id || '');
+    const src = safeNodes.value.find((n) => n.id === id);
+    const isRoot = id === rootId;
+    return {
+      ...item,
+      name: isRoot ? documentTitle.value : (src?.label || item?.name || ''),
+      itemStyle: {
+        ...(item?.itemStyle || {}),
+        color: id === activeNodeId.value ? '#e74c3c' : typeColor(src?.type || '实体', dark),
+      },
+      label: {
+        ...(item?.label || {}),
+        show: shouldShowNodeLabel(src || { id, importance: 0.5 }),
+        color: dark ? '#f2f2f2' : '#333',
+        fontSize: isRoot ? 14 : 12,
+        fontWeight: isRoot ? 700 : 400,
+      },
+    };
+  });
+  chart2D.setOption({
+    series: [{ id: 'kg_main_graph', data: nextData }],
+  });
+};
+
 const buildTreeLayout = (nodes, links, rootId) => {
   const map = new Map();
   if (!nodes.length || !rootId) return map;
@@ -401,8 +433,9 @@ const render2DGraph = () => {
       value: node.type,
       x: pos.x,
       y: pos.y,
-      fixed: true,
+      fixed: isRoot,
       symbolSize,
+      draggable: false,
       itemStyle: {
         color: node.id === activeNodeId.value ? '#e74c3c' : typeColor(node.type, dark),
       },
@@ -451,14 +484,21 @@ const render2DGraph = () => {
       {
         id: 'kg_main_graph',
         type: 'graph',
-        layout: 'none',
-        layoutAnimation: false,
+        layout: 'force',
+        layoutAnimation: true,
         roam: true,
         zoom: clamp(graphZoom.value || 1, 0.2, 2.8),
         data: nodeData,
         links: edgeData,
         edgeSymbol: ['none', 'arrow'],
         edgeSymbolSize: 8,
+        force: {
+          repulsion: [160, 340],
+          gravity: 0.06,
+          edgeLength: [90, 175],
+          friction: 0.86,
+          layoutAnimation: true,
+        },
       },
     ],
   });
@@ -577,7 +617,7 @@ const setActiveNode = (nodeId) => {
       document.getElementById(`kg-anchor-${nodeId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
   }
-  render2DGraph();
+  refresh2DStyles();
 };
 
 const handle3DClick = (event) => {

@@ -12,6 +12,7 @@ from app.services.ocr_service import perform_kimi_ocr
 logger = logging.getLogger(__name__)
 
 MAX_PARSE_CHARS = 6000
+_JSON_SCHEMA_SUPPORTED: bool | None = None
 
 
 def _normalize_text(text: str) -> str:
@@ -118,6 +119,142 @@ def _normalize_payload_object(raw: Any) -> dict | None:
     if isinstance(raw, (str, int, float, bool)):
         return {"value": raw}
     return {"value": str(raw)}
+
+
+def _complete_truncated_json(text: str) -> str | None:
+    """
+    Best-effort local completion for truncated JSON text:
+    - close unterminated string
+    - close unmatched braces/brackets
+    """
+    s = (text or "").strip()
+    if not s:
+        return None
+    frag = _extract_first_json_object(s) or s
+    if not frag:
+        return None
+
+    stack: list[str] = []
+    in_str = False
+    esc = False
+    for ch in frag:
+        if in_str:
+            if esc:
+                esc = False
+            elif ch == "\\":
+                esc = True
+            elif ch == '"':
+                in_str = False
+            continue
+        if ch == '"':
+            in_str = True
+        elif ch in "{[":
+            stack.append(ch)
+        elif ch in "}]":
+            if stack:
+                top = stack[-1]
+                if (top == "{" and ch == "}") or (top == "[" and ch == "]"):
+                    stack.pop()
+
+    out = frag
+    if in_str:
+        out += '"'
+    while stack:
+        top = stack.pop()
+        out += "}" if top == "{" else "]"
+    out = re.sub(r",\s*([}\]])", r"\1", out)
+    return out
+
+
+def _parse_response_to_object(response_text: str) -> Any | None:
+    raw = _try_parse_json_loose(response_text)
+    if raw is not None:
+        return raw
+
+    completed = _complete_truncated_json(response_text)
+    if completed:
+        raw = _try_parse_json_loose(completed)
+        if raw is not None:
+            return raw
+
+    repaired = _repair_json_via_llm(response_text)
+    if repaired is not None:
+        return repaired
+
+    return None
+
+
+def _unwrap_stringified_payload(raw: Any) -> Any:
+    """
+    If LLM returns {"raw_llm_text":"{...}"}-like wrapper, try to recover object payload.
+    """
+    if not isinstance(raw, dict):
+        return raw
+    candidate_keys = ("raw_llm_text", "json", "payload", "data", "result")
+    for key in candidate_keys:
+        value = raw.get(key)
+        if not isinstance(value, str):
+            continue
+        txt = value.strip()
+        if not txt.startswith("{") and not txt.startswith("["):
+            continue
+
+        parsed = _parse_response_to_object(txt[:12000])
+        if parsed is not None:
+            return parsed
+    return raw
+
+
+def _freeform_response_format() -> dict:
+    # 核心原则（禁止动摇）：仅约束“必须是 JSON 对象”，不限制内容字段与层级。
+    return {
+        "type": "json_schema",
+        "json_schema": {
+            "name": "freeform_payload",
+            "strict": True,
+            "schema": {
+                "type": "object",
+                "additionalProperties": True,
+            },
+        },
+    }
+
+
+def _call_freeform_llm(kimi: RequestLLM, content: str, temperature: float = 0.2) -> str:
+    global _JSON_SCHEMA_SUPPORTED
+    payload = content[:MAX_PARSE_CHARS]
+
+    if _JSON_SCHEMA_SUPPORTED is not False:
+        resp = kimi.get_response(
+            content=payload,
+            model="moonshot-v1-32k",
+            response_format=_freeform_response_format(),
+            temperature=temperature,
+        )
+        if resp and not str(resp).strip().startswith("Error:"):
+            _JSON_SCHEMA_SUPPORTED = True
+            return resp
+        _JSON_SCHEMA_SUPPORTED = False
+        logger.warning("json_schema response_format unsupported, fallback to json_object")
+
+    return kimi.get_response(
+        content=payload,
+        model="moonshot-v1-32k",
+        response_format={"type": "json_object"},
+        temperature=temperature,
+    )
+
+
+def _as_displayable_fallback_payload(response_text: str, source_text: str) -> dict:
+    src = str(response_text or source_text or "").strip()
+    if not src:
+        return {}
+    lines = [ln.strip() for ln in src.splitlines() if ln.strip()]
+    blocks = lines[:48] if lines else [src[:MAX_PARSE_CHARS]]
+    return {
+        "text_blocks": blocks,
+        "raw_text_preview": src[:MAX_PARSE_CHARS],
+    }
 
 
 def _repair_json_via_llm(raw_text: str) -> Any | None:
@@ -374,6 +511,8 @@ def _freeform_prompt() -> str:
         "请只返回一个JSON对象（禁止markdown）。"
         "字段名、层级、分块方式完全由你根据内容自由决定。"
         "不要套固定模板，不要强制出现任何预设业务字段。"
+        "请保持精炼，不要大段复制原文，以避免输出被截断。"
+        "必须保证输出是闭合的合法 JSON 对象。"
         "如果你提供图谱，请放在 nodes/links；若没有也可仅输出 dynamic_payload。"
     )
 
@@ -391,17 +530,13 @@ def generate_dynamic_payload_freeform(original_text: str) -> dict:
     kimi.system_prompt = _freeform_prompt()
     for _ in range(1):
         try:
-            response = kimi.get_response(
-                content=text[:MAX_PARSE_CHARS],
-                model="moonshot-v1-32k",
-                response_format={"type": "json_object"},
-                temperature=0.2,
-            )
+            response = _call_freeform_llm(kimi, text, temperature=0.2)
             if not response or str(response).strip().startswith("Error:"):
                 continue
-            raw = _try_parse_json_loose(response)
+            raw = _parse_response_to_object(response)
+            raw = _unwrap_stringified_payload(raw)
             if raw is None:
-                raw = _repair_json_via_llm(response)
+                raw = _as_displayable_fallback_payload(str(response), text)
             payload = _normalize_payload_object(raw)
             if isinstance(payload, dict) and payload:
                 return payload
@@ -427,23 +562,20 @@ def parse_document(original_text: str, user_id: int, progress_cb=None) -> tuple[
             pass
 
     try:
-        response = kimi.get_response(
-            content=text[:MAX_PARSE_CHARS],
-            model="moonshot-v1-32k",
-            response_format={"type": "json_object"},
-            temperature=0.2,
-        )
+        response = _call_freeform_llm(kimi, text, temperature=0.2)
         if not response or str(response).strip().startswith("Error:"):
             raise ValueError(str(response))
 
-        raw = _try_parse_json_loose(response)
+        raw = _parse_response_to_object(response)
         if raw is None:
             if callable(progress_cb):
                 try:
                     progress_cb(45, "JSON 修复中")
                 except Exception:
                     pass
-            raw = _repair_json_via_llm(response)
+        raw = _unwrap_stringified_payload(raw)
+        if raw is None:
+            raw = _as_displayable_fallback_payload(str(response), text)
         normalized = _normalize_payload_object(raw)
         if not isinstance(normalized, dict):
             raise ValueError("LLM payload cannot be normalized")

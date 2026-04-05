@@ -443,9 +443,9 @@ const getComplexityClass = (item) => {
 .rec-col-title { font-size: 11px; font-weight: 700; color: #c0392b; letter-spacing: 0.5px; }
 .rec-tags { display: flex; flex-wrap: wrap; gap: 6px; }
 .rec-tag {
-  font-size: 11px; background: #fff0f0; color: #c0392b;
-  border: 1px solid #f5c6c6; padding: 3px 10px;
-  border-radius: 0; cursor: pointer; transition: all 0.2s;
+  font-size: 11px; background: #fff; color: #c0392b;
+  border: 1px solid #c0392b; padding: 3px 10px;
+  border-radius: 999px; cursor: pointer; transition: all 0.2s;
 }
 .rec-tag:hover { background: #c0392b; color: #fff; }
 .rec-items { display: flex; flex-direction: column; gap: 4px; }
@@ -476,7 +476,7 @@ const getComplexityClass = (item) => {
   gap: 8px;
   background: #fff;
   border: 1.5px solid #e0e0e0;
-  border-radius: 8px;
+  border-radius: 999px;
   padding: 8px 12px;
   color: #aaa;
   transition: border-color 0.2s;
@@ -490,11 +490,11 @@ const getComplexityClass = (item) => {
 .mid-search-col .tsb-input-wrap input::placeholder { color: #bbb; }
 .mid-search-col .tsb-btn {
   background: #c0392b; color: #fff; border: none;
-  border-radius: 6px; padding: 5px 14px;
+  border-bottom: 3px solid #922b21; border-radius: 999px; padding: 5px 14px;
   font-size: 12px; font-weight: 600; cursor: pointer;
-  white-space: nowrap; transition: background 0.2s; flex-shrink: 0;
+  white-space: nowrap; transition: all 0.2s; flex-shrink: 0;
 }
-.mid-search-col .tsb-btn:hover { background: #e74c3c; }
+.mid-search-col .tsb-btn:hover { background: #e74c3c; border-bottom-color: #c0392b; }
 .mid-rec-strip {
   flex: 1;
   display: flex;

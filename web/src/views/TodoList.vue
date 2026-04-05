@@ -150,10 +150,11 @@ async function createTodo() {
 .page-title { font-size: 20px; font-weight: 800; color: #111; margin: 0; }
 .add-btn {
   background: #c0392b; color: #fff; border: none;
-  padding: 7px 16px; font-size: 13px; font-weight: 600;
-  cursor: pointer; transition: background 0.2s;
+  border-bottom: 3px solid #922b21; border-radius: 999px;
+  padding: 7px 18px; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
 }
-.add-btn:hover { background: #e74c3c; }
+.add-btn:hover { background: #e74c3c; border-bottom-color: #c0392b; }
 
 /* 草稿区 */
 .draft-section { background: #fff8f8; border-left: 3px solid #e74c3c; padding: 12px 16px; }
@@ -175,8 +176,8 @@ async function createTodo() {
 .todo-main { display: flex; flex-direction: column; gap: 10px; }
 .todo-filters { display: flex; gap: 6px; }
 .todo-filters button {
-  background: #f5f5f5; border: none; padding: 5px 14px;
-  font-size: 12px; cursor: pointer; color: #666; transition: all 0.2s;
+  background: #fff; border: 2px solid #c0392b; border-radius: 999px;
+  padding: 5px 14px; font-size: 12px; cursor: pointer; color: #c0392b; transition: all 0.2s;
 }
 .todo-filters button.active { background: #c0392b; color: #fff; }
 .todo-loading, .todo-empty { text-align: center; color: #aaa; font-size: 13px; padding: 30px 0; }

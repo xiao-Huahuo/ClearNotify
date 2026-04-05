@@ -17,3 +17,6 @@ export const getNewsWithImages = (limit = 5) =>
 
 export const getDailySummary = () =>
   apiClient.get(API_ROUTES.NEWS_DAILY_SUMMARY);
+
+export const getHotTags = (limit = 6) =>
+  apiClient.get(API_ROUTES.NEWS_HOT_TAGS, { params: { limit } });

@@ -22,7 +22,9 @@
         </div>
         <div class="card-actions">
           <button class="action-btn" @click="openDetail(item.message)">查看详情</button>
-          <button class="action-btn danger" @click="removeFavorite(item.fav.id)">取消收藏</button>
+          <button class="star-btn" @click="handleRemoveFavorite($event, item.fav.id)">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="#f1c40f" stroke="#e6ac00" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+          </button>
         </div>
       </div>
     </div>
@@ -87,6 +89,12 @@ const removeFavorite = async (favId) => {
   } catch (e) {
     alert('取消收藏失败');
   }
+};
+
+const handleRemoveFavorite = (event, favId) => {
+  const btn = event.currentTarget;
+  btn.classList.add('star-popping');
+  btn.addEventListener('animationend', () => removeFavorite(favId), { once: true });
 };
 
 const openDetail = async (message) => {
@@ -186,29 +194,43 @@ onMounted(fetchFavorites);
 .card-actions {
   display: flex;
   gap: 8px;
+  align-items: center;
 }
 
 .action-btn {
-  border: 1px solid #ddd;
-  background: #fff;
-  color: #333;
-  padding: 6px 10px;
-  font-size: 12px;
+  background: #c0392b;
+  border: none;
+  border-bottom: 3px solid #922b21;
+  border-radius: 999px;
+  color: #fff;
+  padding: 7px 18px;
   cursor: pointer;
+  font-weight: 600;
+  font-size: 12px;
   transition: all 0.2s;
 }
 
 .action-btn:hover {
-  border-color: #c0392b;
-  color: #c0392b;
+  background: #e74c3c;
+  border-bottom-color: #c0392b;
 }
 
-.action-btn.danger {
-  border-color: #f1c1c1;
-  color: #c0392b;
+.star-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
 }
 
-.action-btn.danger:hover {
-  background: #fff0f0;
+@keyframes star-pop {
+  0%   { transform: scale(1); opacity: 1; }
+  50%  { transform: scale(1.6); opacity: 1; }
+  100% { transform: scale(0.2); opacity: 0; }
+}
+
+.star-btn.star-popping {
+  animation: star-pop 0.4s ease forwards;
 }
 </style>

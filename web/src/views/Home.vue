@@ -1,111 +1,131 @@
 ﻿<template>
   <div class="home-container">
-    <!-- ═══════════════════════════════════════════════════════════
-         三栏布局：左(时事热点) | 中(文件处理) | 右(红头文件)
-    ═══════════════════════════════════════════════════════════ -->
+    <!-- 查看原文 Modal -->
+    <div v-if="showOriginalModal" class="modal-overlay" @click.self="showOriginalModal = false">
+      <div class="modal-box">
+        <div class="modal-header">
+          <span class="modal-title">原文内容</span>
+          <div class="modal-header-actions">
+            <a v-if="aiResponse?.file_url" :href="aiResponse.file_url" target="_blank" class="modal-file-btn">查看原文件</a>
+            <button class="modal-close" @click="showOriginalModal = false">✕</button>
+          </div>
+        </div>
+        <div class="modal-body">
+          <pre class="modal-text">{{ aiResponse?.original_text || '暂无原文内容' }}</pre>
+        </div>
+      </div>
+    </div>
+
     <div class="three-col-layout" :class="{ 'focus-mode': focusMode }">
 
-      <!-- ── 左栏：时事热点 ─────────────────────────────────────── -->
+      <!-- ── 左栏：历史抽屉 toggle ─────────────────────────────── -->
       <div class="left-stack">
-        <aside class="left-panel panel-card history-panel">
-          <div class="panel-header">
-            <span class="panel-dot dot-blue"></span>
-            <h3 class="panel-title">最近解析</h3>
-            <span class="panel-badge">历史</span>
+        <!-- 历史抽屉 -->
+        <div class="history-drawer" :class="{ open: historyDrawerOpen }">
+          <div class="drawer-tab" @click="historyDrawerOpen = !historyDrawerOpen">
+            <span class="drawer-tab-text">{{ historyDrawerOpen ? '◀' : '▶' }} 最近解析</span>
           </div>
-          <div class="history-section">
-            <div class="history-header">
-              <span class="history-title">最近解析</span>
-              <button class="history-refresh" @click="fetchRecentHistory" :disabled="historyLoading">刷新</button>
+          <aside class="panel-card history-panel drawer-panel">
+            <div class="panel-header">
+              <span class="panel-dot dot-blue"></span>
+              <h3 class="panel-title">最近解析</h3>
+              <span class="panel-badge">历史</span>
             </div>
-            <div v-if="!userStore.token" class="history-empty">登录后查看最近解析</div>
-            <div v-else class="history-list">
-              <div
-                v-for="item in recentMessages"
-                :key="item.id"
-                class="history-item"
-                :class="{ active: selectedHistoryId === item.id }"
-                @click="selectHistory(item)"
-              >
-                <div class="history-main">
-                  <span class="history-item-title">{{ getMessageTitle(item) }}</span>
-                  <span class="history-item-date">{{ formatHistoryDate(item.created_time) }}</span>
-                </div>
-                <button
-                  class="history-fav"
-                  :class="{ active: isHistoryFavorited(item.id) }"
-                  @click.stop="toggleHistoryFavorite(item)"
-                  title="收藏"
+            <div class="history-section">
+              <div class="history-header">
+                <span class="history-title">最近解析</span>
+                <button class="history-refresh capsule-btn" @click="fetchRecentHistory" :disabled="historyLoading">刷新</button>
+              </div>
+              <div v-if="!userStore.token" class="history-empty">登录后查看最近解析</div>
+              <div v-else class="history-list">
+                <div
+                  v-for="item in recentMessages"
+                  :key="item.id"
+                  class="history-item"
+                  :class="{ active: selectedHistoryId === item.id }"
+                  @click="selectHistory(item)"
                 >
-                  <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" :fill="isHistoryFavorited(item.id) ? '#f1c40f' : 'none'">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                  </svg>
-                </button>
-              </div>
-              <div v-if="historyLoading" class="loading-placeholder">
-                <div v-for="i in 3" :key="i" class="skeleton-line"></div>
-              </div>
-            </div>
-            <div v-if="selectedHistoryDetail" class="history-detail">
-              <div class="history-detail-title">{{ getMessageTitle(selectedHistoryDetail) }}</div>
-              <p class="history-detail-text">{{ selectedHistoryDetail.original_text || '暂无详情' }}</p>
-              <button class="history-restore-btn" @click="restoreHistory(selectedHistoryDetail)">恢复该解析</button>
-            </div>
-            <div v-else-if="userStore.token && !historyLoading" class="history-empty">暂无记录</div>
-          </div>
-        </aside>
-
-        <aside class="left-panel panel-card news-panel">
-          <div class="panel-header">
-            <span class="panel-dot dot-blue"></span>
-            <h3 class="panel-title">时事热点</h3>
-            <span class="panel-badge">实时</span>
-          </div>
-          <div class="carousel-wrap">
-            <transition name="carousel-fade" mode="out-in">
-              <div class="carousel-slide" :key="carouselIndex">
-                <div class="carousel-content">
-                  <span class="carousel-num">{{ String(carouselIndex + 1).padStart(2, '0') }}</span>
-                  <p class="carousel-text">{{ hotNews[carouselIndex]?.title || '加载中...' }}</p>
+                  <div class="history-main">
+                    <span class="history-item-title">{{ getMessageTitle(item) }}</span>
+                    <span class="history-item-date">{{ formatHistoryDate(item.created_time) }}</span>
+                  </div>
+                  <button
+                    class="history-fav"
+                    :class="{ active: isHistoryFavorited(item.id) }"
+                    @click.stop="toggleHistoryFavorite(item)"
+                    title="收藏"
+                  >
+                    <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" :fill="isHistoryFavorited(item.id) ? '#f1c40f' : 'none'">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                    </svg>
+                  </button>
                 </div>
-                <div class="carousel-dots">
-                  <span
-                    v-for="(_, i) in Math.min(hotNews.length, 5)"
-                    :key="i"
-                    class="dot"
-                    :class="{ active: i === carouselIndex % Math.min(hotNews.length, 5) }"
-                    @click="carouselIndex = i"
-                  ></span>
+                <div v-if="historyLoading" class="loading-placeholder">
+                  <div v-for="i in 3" :key="i" class="skeleton-line"></div>
                 </div>
               </div>
-            </transition>
-          </div>
-          <div class="news-list">
-            <div
-              v-for="(item, idx) in hotNews"
-              :key="idx"
-              class="news-item"
-              @click="openLink(item.link)"
-            >
-              <span class="news-rank" :class="idx < 3 ? 'rank-top' : ''">{{ idx + 1 }}</span>
-              <span class="news-title">{{ item.title }}</span>
-              <svg class="news-arrow" viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              <div v-if="selectedHistoryDetail" class="history-detail">
+                <div class="history-detail-title">{{ getMessageTitle(selectedHistoryDetail) }}</div>
+                <p class="history-detail-text">{{ selectedHistoryDetail.original_text || '暂无详情' }}</p>
+                <button class="history-restore-btn" @click="restoreHistory(selectedHistoryDetail)">恢复该解析</button>
+              </div>
+              <div v-else-if="userStore.token && !historyLoading" class="history-empty">暂无记录</div>
             </div>
-            <div v-if="newsLoading" class="loading-placeholder">
-              <div v-for="i in 5" :key="i" class="skeleton-line"></div>
-            </div>
-          </div>
-        </aside>
+          </aside>
+        </div>
       </div>
 
-      <!-- ── 中栏：文件处理（原有逻辑） ────────────────────────── -->
+      <!-- ── 时事热点栏 ──────────────────────────────────────────── -->
+      <aside class="news-col panel-card news-panel">
+        <div class="panel-header">
+          <span class="panel-dot dot-blue"></span>
+          <h3 class="panel-title">时事热点</h3>
+          <span class="panel-badge">实时</span>
+        </div>
+        <div class="carousel-wrap">
+          <transition name="carousel-fade" mode="out-in">
+            <div class="carousel-slide" :key="carouselIndex">
+              <div class="carousel-content">
+                <span class="carousel-num">{{ String(carouselIndex + 1).padStart(2, '0') }}</span>
+                <p class="carousel-text">{{ hotNews[carouselIndex]?.title || '加载中...' }}</p>
+              </div>
+              <div class="carousel-dots">
+                <span
+                  v-for="(_, i) in Math.min(hotNews.length, 5)"
+                  :key="i"
+                  class="dot"
+                  :class="{ active: i === carouselIndex % Math.min(hotNews.length, 5) }"
+                  @click="carouselIndex = i"
+                ></span>
+              </div>
+            </div>
+          </transition>
+        </div>
+        <div class="news-list">
+          <div
+            v-for="(item, idx) in hotNews"
+            :key="idx"
+            class="news-item"
+            @click="openLink(item.link)"
+          >
+            <span class="news-rank" :class="idx < 3 ? 'rank-top' : ''">{{ idx + 1 }}</span>
+            <span class="news-title">{{ item.title }}</span>
+            <svg class="news-arrow" viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="2" fill="none"><polyline points="9 18 15 12 9 6"></polyline></svg>
+          </div>
+          <div v-if="newsLoading" class="loading-placeholder">
+            <div v-for="i in 5" :key="i" class="skeleton-line"></div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ── 中栏：文件处理 ────────────────────────────────────── -->
       <main class="center-panel">
         <!-- 标题区域 -->
         <div class="hero-section" v-if="!showResult">
           <div class="hero-header-row">
-            <div>
-              <h1 class="main-title">文档解析</h1>
-              <p class="sub-title">全格式兼容 · 精准提取 · 详细输出</p>
+            <div class="hero-title-block">
+              <h1 class="main-title">看见政策</h1>
+              <p class="sub-title">多模态 · 可视化 · 富呈现</p>
             </div>
             <div class="hero-actions">
               <button class="hero-action-btn" @click="triggerImportConversation">导入会话</button>
@@ -124,9 +144,9 @@
             :class="{ 'disabled': loading }"
           >
             <div class="upload-buttons">
-              <button class="action-btn" @click.stop="triggerFileUpload" :disabled="loading">本地上传</button>
-              <button class="action-btn" @click.stop="handleUrlUpload" :disabled="loading">URL上传</button>
-              <button class="action-btn" @click.stop="handleScreenshot" :disabled="loading">截图</button>
+              <button class="action-btn capsule-btn" @click.stop="triggerFileUpload" :disabled="loading">本地上传</button>
+              <button class="action-btn capsule-btn" @click.stop="handleUrlUpload" :disabled="loading">URL上传</button>
+              <button class="action-btn capsule-btn" @click.stop="handleScreenshot" :disabled="loading">截图</button>
             </div>
             <p class="upload-hint">点击或拖拽上传 (支持文档、图片、PDF)</p>
             <div v-if="showUrlInput" class="url-float" @click.stop>
@@ -268,9 +288,8 @@
                 </div>
                 <span v-if="isRewriting" class="rewriting-status">正在生成...</span>
               </div>
-              <div class="mapping-section" v-if="aiResponse.file_url">
-                <h4>原文件参考</h4>
-                <a :href="aiResponse.file_url" target="_blank" class="file-link">点击查看上传的原文件</a>
+              <div class="mapping-section">
+                <button class="capsule-btn view-original-btn" @click="showOriginalModal = true">查看原文</button>
               </div>
             </div>
           </div>
@@ -382,6 +401,8 @@ const historyLoading = ref(false);
 const selectedHistoryId = ref(null);
 const selectedHistoryDetail = ref(null);
 const favoritesMap = ref({});
+const historyDrawerOpen = ref(false);
+const showOriginalModal = ref(false);
 
 // ── 右栏：中央文件 ────────────────────────────────────────────────────────────
 const centralDocs = ref([]);
@@ -1046,7 +1067,7 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
 
 .three-col-layout {
   display: grid;
-  grid-template-columns: 260px 1fr 260px;
+  grid-template-columns: 40px 220px 1fr 260px;
   gap: 16px;
   padding: 16px;
   flex: 1;
@@ -1056,7 +1077,7 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
 }
 
 .three-col-layout.focus-mode {
-  grid-template-columns: 0 1fr 0;
+  grid-template-columns: 0 0 1fr 0;
   gap: 0;
   padding: 0;
 }
@@ -1068,9 +1089,11 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
 
 .left-stack {
   transition: transform 0.4s ease, opacity 0.4s ease;
+  position: relative;
 }
 
-.three-col-layout.focus-mode .left-stack {
+.three-col-layout.focus-mode .left-stack,
+.three-col-layout.focus-mode .news-col {
   transform: translateX(-120%);
   opacity: 0;
   pointer-events: none;
@@ -1139,11 +1162,73 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
 .left-stack {
   display: flex;
   flex-direction: column;
-  gap: 16px;
   min-height: 0;
+  overflow: visible;
+  position: relative;
 }
 
-.history-panel,
+/* ── 历史抽屉 ─────────────────────────────────────────────── */
+.history-drawer {
+  position: relative;
+  height: 100%;
+}
+
+.drawer-tab {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  background: #c0392b;
+  color: #fff;
+  border-radius: 0 8px 8px 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  padding: 12px 0;
+  writing-mode: vertical-rl;
+  user-select: none;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  box-shadow: 2px 0 8px rgba(0,0,0,0.12);
+  transition: background 0.2s;
+}
+.drawer-tab:hover { background: #e74c3c; }
+
+.drawer-tab-text {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 11px;
+}
+
+.drawer-panel {
+  position: absolute;
+  left: 40px;
+  top: 0;
+  width: 220px;
+  height: 100%;
+  transform: translateX(-260px);
+  transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+  z-index: 15;
+  box-shadow: 4px 0 16px rgba(0,0,0,0.1);
+}
+
+.history-drawer.open .drawer-panel {
+  transform: translateX(0);
+}
+
+/* ── 时事热点独立列 ───────────────────────────────────────── */
+.news-col {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+  transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
 .news-panel {
   flex: 1;
   min-height: 0;
@@ -1172,12 +1257,15 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
 }
 
 .history-refresh {
-  border: 1px solid #ddd;
-  background: #fff;
+  border: none;
+  background: #c0392b;
   font-size: 11px;
-  padding: 2px 8px;
+  padding: 3px 10px;
   cursor: pointer;
-  color: #666;
+  color: #fff;
+  border-radius: 999px;
+  box-shadow: 0 2px 0 #922b21;
+  font-weight: bold;
 }
 
 .history-refresh:disabled {
@@ -1438,16 +1526,24 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
   color: #c0392b;
 }
 .main-title {
-  font-size: 28px;
-  font-weight: 800;
-  color: #000;
+  font-size: 36px;
+  font-weight: 900;
+  color: #c0392b;
   margin: 0 0 4px;
-  letter-spacing: 2px;
+  letter-spacing: 4px;
+  text-align: center;
+  font-family: 'Noto Serif SC', 'SimSun', Georgia, serif;
 }
 .sub-title {
   font-size: 14px;
   color: #999;
   margin: 0;
+  text-align: center;
+}
+
+.hero-title-block {
+  flex: 1;
+  text-align: center;
 }
 
 .initial-view {
@@ -1491,6 +1587,21 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
   transition: all 0.2s;
 }
 .action-btn:hover { background: #e74c3c; }
+
+/* Capsule button style (shared) */
+.capsule-btn {
+  border-radius: 999px !important;
+  background: #c0392b !important;
+  color: #fff !important;
+  border: none !important;
+  box-shadow: 0 3px 0 #922b21 !important;
+  padding: 7px 18px !important;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.capsule-btn:hover { background: #e74c3c !important; box-shadow: 0 2px 0 #922b21 !important; transform: translateY(1px); }
+.capsule-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 .upload-hint { font-size: 13px; color: #999; margin: 0; }
 
 .url-float {
@@ -1968,6 +2079,73 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
+}
+/* ── 查看原文 Modal ───────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-box {
+  background: #fff;
+  border-radius: 12px;
+  width: min(720px, 90vw);
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+}
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  border-bottom: 1px solid #eee;
+  flex-shrink: 0;
+}
+.modal-title { font-size: 15px; font-weight: 700; color: #111; }
+.modal-header-actions { display: flex; align-items: center; gap: 10px; }
+.modal-file-btn {
+  background: #c0392b;
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 5px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 0 2px 0 #922b21;
+}
+.modal-file-btn:hover { background: #e74c3c; }
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: #888;
+  padding: 2px 6px;
+}
+.modal-close:hover { color: #333; }
+.modal-body { flex: 1; overflow-y: auto; padding: 20px; }
+.modal-text {
+  white-space: pre-wrap;
+  font-size: 13px;
+  color: #333;
+  line-height: 1.8;
+  margin: 0;
+  font-family: inherit;
+}
+
+.view-original-btn {
+  margin-top: 12px;
+  font-size: 13px;
+  padding: 8px 22px !important;
 }
 
 </style>

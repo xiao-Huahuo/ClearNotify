@@ -79,6 +79,16 @@ async def news_with_images(request: Request, limit: int = 5):
     return {"items": items[:limit] if items else []}
 
 
+@router.get("/hot-tags")
+async def hot_tags(request: Request, limit: int = 6):
+    _enforce_rate_limit(request, "news_keywords")
+    items = await _trigger_crawler_task(
+        "update_hot_keywords", "hot_keywords", get_hot_keywords
+    )
+    tags = [{"name": kw} for kw in (items or [])[:limit]]
+    return {"items": tags}
+
+
 @router.get("/daily-summary")
 async def daily_summary(request: Request):
     _enforce_rate_limit(request, "news_summary")

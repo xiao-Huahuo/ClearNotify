@@ -1,14 +1,47 @@
 <template>
   <header class="app-header">
-    <div class="search-bar" v-if="showSearch">
-      <input type="text" v-model="searchQuery" @keyup.enter="handleSearch" placeholder="搜索文档..." />
-      <button class="search-btn" @click="handleSearch">
-        <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-      </button>
+    <!-- Hamburger button: only visible in icon mode -->
+    <button v-if="isIconMode" class="icon-btn hamburger-btn" @click="sidebarRef?.openDrawer()" title="打开侧边栏">
+      <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+
+    <div class="search-section" v-if="showSearch">
+      <div class="search-bar">
+        <input type="text" v-model="searchQuery" @keyup.enter="handleSearch" placeholder="搜索文档..." />
+        <button class="search-btn" @click="handleSearch">
+          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        </button>
+      </div>
+      <div class="tag-chips" v-if="headerTags.length">
+        <button
+          v-for="tag in headerTags"
+          :key="tag"
+          class="tag-chip"
+          @click="searchQuery = tag; handleSearch()"
+        >{{ tag }}</button>
+      </div>
     </div>
     <div class="spacer" v-else></div>
 
     <div class="user-actions">
+      <!-- Sidebar mode toggle -->
+      <button class="icon-btn" @click="$emit('update:isIconMode', !isIconMode)" :title="isIconMode ? '展开侧边栏' : '收起侧边栏'">
+        <svg v-if="isIconMode" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+          <line x1="9" y1="3" x2="9" y2="21"></line>
+          <polyline points="13 8 17 12 13 16"></polyline>
+        </svg>
+        <svg v-else viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+          <line x1="9" y1="3" x2="9" y2="21"></line>
+          <polyline points="15 8 11 12 15 16"></polyline>
+        </svg>
+      </button>
+
       <select class="palette-select" :value="settingsStore.settings.color_scheme" @change="toggleColorScheme($event)">
         <option value="classic">经典红灰</option>
         <option value="morandi">莫兰迪</option>
@@ -37,14 +70,12 @@
         </div>
       </label>
 
-      <!-- 通知图标 (对接 settingsStore) -->
+      <!-- 通知图标 -->
       <button class="icon-btn" @click="toggleNotification" :title="settingsStore.settings.system_notifications ? '关闭系统通知' : '开启系统通知'">
-        <!-- 开启通知：普通铃铛 -->
         <svg v-if="settingsStore.settings.system_notifications" viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
           <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
         </svg>
-        <!-- 关闭通知：带斜杠的铃铛 -->
         <svg v-else viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
           <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
           <path d="M18.63 13A17.89 17.89 0 0 1 18 8"></path>
@@ -58,14 +89,14 @@
       <div class="user-profile" @click="handleUserClick" title="个人中心">
         <button v-if="!userStore.token" @click.stop="emitLoginEvent" class="login-capsule">登录</button>
         <template v-else>
-            <img v-if="displayAvatar" :src="displayAvatar" alt="avatar" class="header-avatar" />
-            <div v-else class="header-avatar-placeholder">
-              <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-            </div>
+          <img v-if="displayAvatar" :src="displayAvatar" alt="avatar" class="header-avatar" />
+          <div v-else class="header-avatar-placeholder">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          </div>
         </template>
       </div>
 
-      <!-- 退出登录按钮 (恢复) -->
+      <!-- 退出登录按钮 -->
       <button v-if="userStore.token" class="icon-btn logout-btn" @click="handleLogout" title="退出登录">
         <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -83,14 +114,22 @@ import { useRoute, useRouter } from 'vue-router';
 import { useUserStore } from '@/stores/auth.js';
 import { useSettingsStore } from '@/stores/settings';
 
+const props = defineProps({
+  isIconMode: { type: Boolean, default: true },
+  headerTags: { type: Array, default: () => [] },
+  sidebarRef: { type: Object, default: null },
+});
+
+const emit = defineEmits(['update:isIconMode']);
+
 const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore();
 const settingsStore = useSettingsStore();
 
 const isDark = ref(false);
-
 let themeObserver = null;
+
 const syncThemeFromDom = () => {
   isDark.value = document.documentElement.getAttribute('data-theme') === 'dark';
 };
@@ -99,80 +138,43 @@ const toggleTheme = async () => {
   const newTheme = isDark.value ? 'light' : 'dark';
   settingsStore.applyTheme(newTheme);
   settingsStore.settings.theme_mode = newTheme;
-  if (userStore.token) {
-    await settingsStore.updateSettings({ theme_mode: newTheme });
-  }
+  if (userStore.token) await settingsStore.updateSettings({ theme_mode: newTheme });
   syncThemeFromDom();
 };
 
-const toggleColorScheme = (event) => {
-  const scheme = event.target.value;
-  settingsStore.updateColorScheme(scheme);
-};
+const toggleColorScheme = (event) => settingsStore.updateColorScheme(event.target.value);
 
 const searchQuery = ref('');
-
-// 某些页面可能不需要搜索栏
-const showSearch = computed(() => {
-  return route.name !== 'login' && route.name !== 'register';
-});
+const showSearch = computed(() => route.name !== 'login' && route.name !== 'register');
 
 const handleSearch = () => {
-  if (searchQuery.value.trim()) {
-    router.push({ path: '/search', query: { q: searchQuery.value } });
-  }
+  if (searchQuery.value.trim()) router.push({ path: '/search', query: { q: searchQuery.value } });
 };
 
 const displayAvatar = computed(() => {
-    if (!userStore.user?.avatar_url) return null;
-    const url = userStore.user.avatar_url;
-    if (url.startsWith('default:')) {
-        const defaultName = url.substring(8);
-        return `/src/assets/photos/default-avatars/${defaultName}`;
-    }
-    return url;
+  if (!userStore.user?.avatar_url) return null;
+  const url = userStore.user.avatar_url;
+  if (url.startsWith('default:')) return `/src/assets/photos/default-avatars/${url.substring(8)}`;
+  return url;
 });
 
-const emitLoginEvent = () => {
-  window.dispatchEvent(new CustomEvent('open-login-modal'));
-};
-
-const handleUserClick = () => {
-  if (userStore.token) {
-    router.push('/profile');
-  }
-};
-
-const handleLogout = () => {
-  if (confirm('确定要退出登录吗？')) {
-    userStore.logout();
-    router.push('/');
-  }
-};
+const emitLoginEvent = () => window.dispatchEvent(new CustomEvent('open-login-modal'));
+const handleUserClick = () => { if (userStore.token) router.push('/profile'); };
+const handleLogout = () => { if (confirm('确定要退出登录吗？')) { userStore.logout(); router.push('/'); } };
 
 const toggleNotification = async () => {
   if (!userStore.token) return;
-  // 直接更新 pinia store 并向后端发请求
   settingsStore.settings.system_notifications = !settingsStore.settings.system_notifications;
-  await settingsStore.updateSettings({
-      system_notifications: settingsStore.settings.system_notifications
-  });
+  await settingsStore.updateSettings({ system_notifications: settingsStore.settings.system_notifications });
 };
 
 onMounted(() => {
   syncThemeFromDom();
-  themeObserver = new MutationObserver(() => {
-    syncThemeFromDom();
-  });
-  themeObserver.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ['data-theme'],
-  });
+  themeObserver = new MutationObserver(syncThemeFromDom);
+  themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 });
 
-onBeforeUnmount(() => {
-  themeObserver?.disconnect();
-});
+onBeforeUnmount(() => themeObserver?.disconnect());
 </script>
 
 <style scoped>
@@ -186,6 +188,18 @@ onBeforeUnmount(() => {
   flex-shrink: 0;
 }
 
+.hamburger-btn {
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+.search-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 300px;
+}
+
 .search-bar {
   display: flex;
   align-items: center;
@@ -193,12 +207,9 @@ onBeforeUnmount(() => {
   border: 1px solid rgba(255,255,255,0.25);
   border-radius: var(--border-radius-pill);
   padding: 5px 10px;
-  width: 300px;
   transition: background 0.3s;
 }
-.search-bar:focus-within {
-  background-color: rgba(255,255,255,0.28);
-}
+.search-bar:focus-within { background-color: rgba(255,255,255,0.28); }
 
 .search-bar input {
   border: none;
@@ -223,6 +234,26 @@ onBeforeUnmount(() => {
 }
 .search-btn:hover { color: #fff; }
 
+.tag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 0 4px;
+}
+
+.tag-chip {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: var(--border-radius-pill, 999px);
+  color: rgba(255,255,255,0.9);
+  font-size: 11px;
+  padding: 2px 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+.tag-chip:hover { background: rgba(255,255,255,0.28); }
+
 .spacer { flex: 1; }
 
 .user-actions {
@@ -241,10 +272,7 @@ onBeforeUnmount(() => {
   outline: none;
   font-size: 12px;
 }
-
-.palette-select option {
-  color: #222;
-}
+.palette-select option { color: #222; }
 
 .icon-btn {
   background: none;
@@ -296,10 +324,9 @@ onBeforeUnmount(() => {
   cursor: pointer;
   transition: background 0.2s;
 }
-
 .login-capsule:hover { background-color: rgba(255,255,255,0.35); }
 
-/* ── 明暗切换开关 (from Uiverse.io by Galahhad) ── */
+/* ── 明暗切换开关 ── */
 .theme-switch {
   --toggle-size: 11px;
   --container-width: 5.625em;

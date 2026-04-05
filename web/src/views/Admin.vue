@@ -13,17 +13,32 @@
     <div v-if="!isAdmin" class="no-permission">无权限访问</div>
     <template v-else>
       <div class="stats-row">
-        <div class="stat-card">
-          <span class="stat-num">{{ stats.total_users ?? '-' }}</span>
-          <span class="stat-label">注册用户</span>
+        <div class="stat-card stat-card--yellow">
+          <div class="stat-icon-circle" style="background:#f9a825">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="#f57f17" stroke-width="2" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          </div>
+          <div class="stat-text">
+            <span class="stat-num">{{ stats.total_users ?? '-' }}</span>
+            <span class="stat-label">注册用户</span>
+          </div>
         </div>
-        <div class="stat-card">
-          <span class="stat-num">{{ stats.total_messages ?? '-' }}</span>
-          <span class="stat-label">总解析次数</span>
+        <div class="stat-card stat-card--blue">
+          <div class="stat-icon-circle" style="background:#1565c0">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="#0d47a1" stroke-width="2" fill="none"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+          </div>
+          <div class="stat-text">
+            <span class="stat-num">{{ stats.total_messages ?? '-' }}</span>
+            <span class="stat-label">总解析次数</span>
+          </div>
         </div>
-        <div class="stat-card">
-          <span class="stat-num">{{ stats.active_users ?? '-' }}</span>
-          <span class="stat-label">活跃用户</span>
+        <div class="stat-card stat-card--green">
+          <div class="stat-icon-circle" style="background:#2e7d32">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="#1b5e20" stroke-width="2" fill="none"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          </div>
+          <div class="stat-text">
+            <span class="stat-num">{{ stats.active_users ?? '-' }}</span>
+            <span class="stat-label">活跃用户</span>
+          </div>
         </div>
       </div>
 
@@ -408,8 +423,13 @@ onUnmounted(() => {
 .no-permission { text-align: center; color: #aaa; padding: 60px 0; font-size: 14px; }
 
 .stats-row { display: flex; gap: 12px; }
-.stat-card { flex: 1; background: #fff; border: 1px solid #eee; border-top: 3px solid #c0392b; padding: 16px; display: flex; flex-direction: column; gap: 4px; }
-.stat-num { font-size: 28px; font-weight: 800; color: #c0392b; line-height: 1; }
+.stat-card { flex: 1; border-radius: 16px; border: none; padding: 16px; display: flex; align-items: center; gap: 14px; }
+.stat-card--yellow { background: #fffde7; }
+.stat-card--blue { background: #e3f2fd; }
+.stat-card--green { background: #e8f5e9; }
+.stat-icon-circle { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.stat-text { display: flex; flex-direction: column; gap: 4px; }
+.stat-num { font-size: 28px; font-weight: 800; color: #111; line-height: 1; }
 .stat-label { font-size: 12px; color: #888; }
 
 .time-cards-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
@@ -423,8 +443,8 @@ onUnmounted(() => {
 .section { background: #fff; border: 1px solid #eee; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
 .section-label-row { display: flex; align-items: center; justify-content: space-between; }
 .section-label { font-size: 13px; font-weight: 700; color: #111; }
-.refresh-btn { background: none; border: 1px solid #ddd; padding: 4px 12px; font-size: 12px; cursor: pointer; }
-.refresh-btn:hover { border-color: #c0392b; color: #c0392b; }
+.refresh-btn { background: #c0392b; border: none; border-bottom: 3px solid #922b21; border-radius: 999px; color: #fff; padding: 7px 18px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.refresh-btn:hover { background: #e74c3c; border-bottom-color: #c0392b; }
 .loading-text { color: #aaa; font-size: 13px; }
 
 .toggle-group { display: flex; gap: 4px; }

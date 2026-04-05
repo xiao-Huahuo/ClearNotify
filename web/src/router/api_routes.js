@@ -22,6 +22,7 @@ export const API_ROUTES = {
   NEWS_SEARCH: '/news/search',
   NEWS_WITH_IMAGES: '/news/with-images',
   NEWS_DAILY_SUMMARY: '/news/daily-summary',
+  NEWS_HOT_TAGS: '/news/hot-tags',
   TODO: '/todo/',
   TODO_FROM_CHAT: '/todo/from-chat',
   FAVORITE: '/favorite/',

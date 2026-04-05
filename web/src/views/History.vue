@@ -433,16 +433,20 @@ onMounted(() => {
 }
 
 .import-btn {
-  border: 1px solid #ddd;
-  background: #fff;
-  color: #333;
-  padding: 8px 14px;
+  background: #c0392b;
+  border: none;
+  border-bottom: 3px solid #922b21;
+  border-radius: 999px;
+  color: #fff;
+  padding: 7px 18px;
   cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
 }
 
 .import-btn:hover {
-  border-color: #c0392b;
-  color: #c0392b;
+  background: #e74c3c;
+  border-bottom-color: #c0392b;
 }
 
 .top-bar {

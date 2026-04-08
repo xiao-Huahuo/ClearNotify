@@ -1,7 +1,7 @@
 services:
   redis:
     image: redis:latest
-    container_name: ClearNotify_redis
+    container_name: CloudPolicy_Redis_Service
     ports:
       - "6379:6379"
     volumes:
@@ -14,7 +14,7 @@ services:
       dockerfile: ./app/Dockerfile
     working_dir: /server
     command: uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload
-    container_name: ClearNotify_app
+    container_name: CloudPolicy_Service
     ports:
       - "${PORT:-8080}:8080"
     environment:
@@ -67,7 +67,7 @@ services:
 
   web:
     build: ./web
-    container_name: ClearNotify_web
+    container_name: CloudPolicy_Web
     ports:
       - "80:80"
     depends_on:

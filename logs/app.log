@@ -5983,3 +5983,414 @@ WHERE favorite.user_id = ? ORDER BY favorite.created_time DESC
 2026-04-08 19:08:09,674 | INFO | app.services.worker | Processing task: update_hot_keywords with args: []
 2026-04-08 19:08:09,678 | INFO | app.services.worker | Hot keywords updated in cache.
 2026-04-08 19:08:09,678 | INFO | app.main | HTTP GET /news/keywords -> 200
+2026-04-08 19:13:26,786 | INFO | app.main | HTTP GET /news/daily-summary
+2026-04-08 19:13:26,792 | INFO | app.services.redis_queue | Enqueued task: {'type': 'update_daily_gov_summary', 'args': (), 'kwargs': {}}
+2026-04-08 19:13:26,793 | INFO | app.services.redis_queue | Dequeued task: {'type': 'update_daily_gov_summary', 'args': [], 'kwargs': {}}
+2026-04-08 19:13:26,793 | INFO | app.services.worker | Processing task: update_daily_gov_summary with args: []
+2026-04-08 19:13:27,156 | WARNING | app.services.news_crawler | fetch https://www.gov.cn/xinwen/rss/index.htm failed: HTTP Error 404: Not Found
+2026-04-08 19:13:27,176 | WARNING | app.services.news_crawler | fetch https://www.gov.cn/xinwen/rss/index.htm failed: HTTP Error 404: Not Found
+2026-04-08 19:13:27,342 | WARNING | app.services.news_crawler | fetch http://www.gov.cn/xinwen/rss/index.htm failed: HTTP Error 404: Not Found
+2026-04-08 19:13:27,346 | INFO | app.main | HTTP GET /news/daily-summary -> 200
+2026-04-08 19:13:27,346 | INFO | app.main | HTTP GET /policy-documents/approved
+2026-04-08 19:13:27,346 | INFO | app.main | HTTP GET /news/hot
+2026-04-08 19:13:27,347 | INFO | app.main | HTTP GET /news/central-docs
+2026-04-08 19:13:27,352 | INFO | app.main | HTTP GET /news/hot -> 200
+2026-04-08 19:13:27,352 | INFO | app.main | HTTP GET /news/central-docs -> 200
+2026-04-08 19:13:27,354 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 19:13:27,354 | INFO | sqlalchemy.engine.Engine | SELECT policydocument.title, policydocument.content, policydocument.category, policydocument.tags, policydocument.id, policydocument.uploader_id, policydocument.status, policydocument.file_path, policydocument.view_count, policydocument.like_count, policydocument.created_time, policydocument.reviewed_time, policydocument.reject_reason 
+FROM policydocument 
+WHERE policydocument.status = ? ORDER BY policydocument.created_time DESC
+ LIMIT ? OFFSET ?
+2026-04-08 19:13:27,354 | INFO | sqlalchemy.engine.Engine | [cached since 4632s ago] ('approved', 20, 0)
+2026-04-08 19:13:27,355 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:13:27,355 | INFO | sqlalchemy.engine.Engine | [cached since 4731s ago] (2,)
+2026-04-08 19:13:27,356 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:13:27,356 | INFO | sqlalchemy.engine.Engine | [cached since 4731s ago] (2,)
+2026-04-08 19:13:27,356 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:13:27,356 | INFO | sqlalchemy.engine.Engine | [cached since 4731s ago] (2,)
+2026-04-08 19:13:27,357 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:13:27,357 | INFO | sqlalchemy.engine.Engine | [cached since 4731s ago] (2,)
+2026-04-08 19:13:27,357 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:13:27,357 | INFO | sqlalchemy.engine.Engine | [cached since 4731s ago] (2,)
+2026-04-08 19:13:27,358 | INFO | app.main | HTTP GET /policy-documents/approved -> 200
+2026-04-08 19:13:27,359 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 19:13:27,392 | WARNING | app.services.news_crawler | fetch http://www.gov.cn/xinwen/rss/index.htm failed: HTTP Error 404: Not Found
+2026-04-08 19:13:27,394 | INFO | app.services.worker | Daily gov summary updated in cache.
+2026-04-08 19:13:43,864 | INFO | app.main | HTTP GET /news/daily-summary
+2026-04-08 19:13:43,868 | INFO | app.main | HTTP GET /news/daily-summary -> 200
+2026-04-08 19:13:43,869 | INFO | app.main | HTTP GET /policy-documents/approved
+2026-04-08 19:13:43,870 | INFO | app.main | HTTP GET /news/central-docs
+2026-04-08 19:13:43,870 | INFO | app.main | HTTP GET /news/hot
+2026-04-08 19:13:43,878 | INFO | app.main | HTTP GET /news/central-docs -> 200
+2026-04-08 19:13:43,879 | INFO | app.main | HTTP GET /news/hot -> 200
+2026-04-08 19:13:43,881 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 19:13:43,881 | INFO | sqlalchemy.engine.Engine | SELECT policydocument.title, policydocument.content, policydocument.category, policydocument.tags, policydocument.id, policydocument.uploader_id, policydocument.status, policydocument.file_path, policydocument.view_count, policydocument.like_count, policydocument.created_time, policydocument.reviewed_time, policydocument.reject_reason 
+FROM policydocument 
+WHERE policydocument.status = ? ORDER BY policydocument.created_time DESC
+ LIMIT ? OFFSET ?
+2026-04-08 19:13:43,881 | INFO | sqlalchemy.engine.Engine | [cached since 4648s ago] ('approved', 20, 0)
+2026-04-08 19:13:43,883 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:13:43,883 | INFO | sqlalchemy.engine.Engine | [cached since 4748s ago] (2,)
+2026-04-08 19:13:43,884 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:13:43,884 | INFO | sqlalchemy.engine.Engine | [cached since 4748s ago] (2,)
+2026-04-08 19:13:43,885 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:13:43,885 | INFO | sqlalchemy.engine.Engine | [cached since 4748s ago] (2,)
+2026-04-08 19:13:43,885 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:13:43,886 | INFO | sqlalchemy.engine.Engine | [cached since 4748s ago] (2,)
+2026-04-08 19:13:43,886 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:13:43,886 | INFO | sqlalchemy.engine.Engine | [cached since 4748s ago] (2,)
+2026-04-08 19:13:43,888 | INFO | app.main | HTTP GET /policy-documents/approved -> 200
+2026-04-08 19:13:43,889 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 19:18:50,754 | INFO | app.main | HTTP GET /news/daily-summary
+2026-04-08 19:18:50,759 | INFO | app.main | HTTP GET /news/daily-summary -> 200
+2026-04-08 19:18:50,760 | INFO | app.main | HTTP GET /news/central-docs
+2026-04-08 19:18:50,761 | INFO | app.main | HTTP GET /news/hot
+2026-04-08 19:18:50,768 | INFO | app.main | HTTP GET /policy-documents/approved
+2026-04-08 19:18:50,768 | INFO | app.main | HTTP GET /news/central-docs -> 200
+2026-04-08 19:18:50,769 | INFO | app.main | HTTP GET /news/hot -> 200
+2026-04-08 19:18:50,771 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 19:18:50,772 | INFO | sqlalchemy.engine.Engine | SELECT policydocument.title, policydocument.content, policydocument.category, policydocument.tags, policydocument.id, policydocument.uploader_id, policydocument.status, policydocument.file_path, policydocument.view_count, policydocument.like_count, policydocument.created_time, policydocument.reviewed_time, policydocument.reject_reason 
+FROM policydocument 
+WHERE policydocument.status = ? ORDER BY policydocument.created_time DESC
+ LIMIT ? OFFSET ?
+2026-04-08 19:18:50,772 | INFO | sqlalchemy.engine.Engine | [cached since 4955s ago] ('approved', 20, 0)
+2026-04-08 19:18:50,774 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:18:50,774 | INFO | sqlalchemy.engine.Engine | [cached since 5055s ago] (2,)
+2026-04-08 19:18:50,775 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:18:50,775 | INFO | sqlalchemy.engine.Engine | [cached since 5055s ago] (2,)
+2026-04-08 19:18:50,775 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:18:50,775 | INFO | sqlalchemy.engine.Engine | [cached since 5055s ago] (2,)
+2026-04-08 19:18:50,775 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:18:50,775 | INFO | sqlalchemy.engine.Engine | [cached since 5055s ago] (2,)
+2026-04-08 19:18:50,776 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:18:50,776 | INFO | sqlalchemy.engine.Engine | [cached since 5055s ago] (2,)
+2026-04-08 19:18:50,777 | INFO | app.main | HTTP GET /policy-documents/approved -> 200
+2026-04-08 19:18:50,777 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 19:20:46,839 | INFO | app.main | HTTP GET /news/daily-summary
+2026-04-08 19:20:46,843 | INFO | app.main | HTTP GET /news/daily-summary -> 200
+2026-04-08 19:20:46,844 | INFO | app.main | HTTP GET /policy-documents/approved
+2026-04-08 19:20:46,844 | INFO | app.main | HTTP GET /news/central-docs
+2026-04-08 19:20:46,844 | INFO | app.main | HTTP GET /news/hot
+2026-04-08 19:20:46,853 | INFO | app.main | HTTP GET /news/central-docs -> 200
+2026-04-08 19:20:46,854 | INFO | app.main | HTTP GET /news/hot -> 200
+2026-04-08 19:20:46,856 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 19:20:46,857 | INFO | sqlalchemy.engine.Engine | SELECT policydocument.title, policydocument.content, policydocument.category, policydocument.tags, policydocument.id, policydocument.uploader_id, policydocument.status, policydocument.file_path, policydocument.view_count, policydocument.like_count, policydocument.created_time, policydocument.reviewed_time, policydocument.reject_reason 
+FROM policydocument 
+WHERE policydocument.status = ? ORDER BY policydocument.created_time DESC
+ LIMIT ? OFFSET ?
+2026-04-08 19:20:46,857 | INFO | sqlalchemy.engine.Engine | [cached since 5071s ago] ('approved', 20, 0)
+2026-04-08 19:20:46,858 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:20:46,858 | INFO | sqlalchemy.engine.Engine | [cached since 5171s ago] (2,)
+2026-04-08 19:20:46,859 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:20:46,860 | INFO | sqlalchemy.engine.Engine | [cached since 5171s ago] (2,)
+2026-04-08 19:20:46,860 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:20:46,860 | INFO | sqlalchemy.engine.Engine | [cached since 5171s ago] (2,)
+2026-04-08 19:20:46,861 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:20:46,861 | INFO | sqlalchemy.engine.Engine | [cached since 5171s ago] (2,)
+2026-04-08 19:20:46,861 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:20:46,861 | INFO | sqlalchemy.engine.Engine | [cached since 5171s ago] (2,)
+2026-04-08 19:20:46,862 | INFO | app.main | HTTP GET /policy-documents/approved -> 200
+2026-04-08 19:20:46,863 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 19:21:05,741 | INFO | app.main | HTTP GET /user/me
+2026-04-08 19:21:05,743 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 19:21:05,743 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:21:05,743 | INFO | sqlalchemy.engine.Engine | [cached since 5190s ago] (1,)
+2026-04-08 19:21:05,746 | INFO | app.main | HTTP GET /user/me -> 200
+2026-04-08 19:21:05,747 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 19:21:05,760 | INFO | app.main | HTTP GET /news/hot
+2026-04-08 19:21:05,764 | INFO | app.main | HTTP GET /news/hot -> 200
+2026-04-08 19:21:05,765 | INFO | app.main | HTTP GET /news/central-docs
+2026-04-08 19:21:05,765 | INFO | app.main | HTTP GET /user/me
+2026-04-08 19:21:05,769 | INFO | app.main | HTTP GET /news/central-docs -> 200
+2026-04-08 19:21:05,770 | INFO | app.main | HTTP GET /news/with-images
+2026-04-08 19:21:05,775 | INFO | app.services.redis_queue | Enqueued task: {'type': 'update_news_with_images', 'args': (), 'kwargs': {'limit': 5}}
+2026-04-08 19:21:05,775 | INFO | app.services.redis_queue | Dequeued task: {'type': 'update_news_with_images', 'args': [], 'kwargs': {'limit': 5}}
+2026-04-08 19:21:05,775 | INFO | app.services.worker | Processing task: update_news_with_images with args: []
+2026-04-08 19:21:05,778 | INFO | app.services.worker | News with images updated in cache.
+2026-04-08 19:21:05,779 | INFO | app.main | HTTP GET /news/with-images -> 200
+2026-04-08 19:21:05,781 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 19:21:05,781 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:21:05,781 | INFO | sqlalchemy.engine.Engine | [cached since 5190s ago] (1,)
+2026-04-08 19:21:05,783 | INFO | app.main | HTTP GET /user/me -> 200
+2026-04-08 19:21:05,784 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 19:21:05,801 | INFO | app.main | HTTP GET /settings/me
+2026-04-08 19:21:05,803 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 19:21:05,804 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:21:05,804 | INFO | sqlalchemy.engine.Engine | [cached since 5190s ago] (1,)
+2026-04-08 19:21:05,808 | INFO | sqlalchemy.engine.Engine | SELECT settings.default_audience, settings.theme_mode, settings.system_notifications, settings.user_id, settings.id 
+FROM settings 
+WHERE settings.user_id = ?
+2026-04-08 19:21:05,808 | INFO | sqlalchemy.engine.Engine | [cached since 4436s ago] (1,)
+2026-04-08 19:21:05,811 | INFO | app.main | HTTP GET /settings/me -> 200
+2026-04-08 19:21:05,892 | INFO | app.main | HTTP GET /chat/
+2026-04-08 19:21:05,892 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 19:21:05,895 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 19:21:05,896 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:21:05,896 | INFO | sqlalchemy.engine.Engine | [cached since 5190s ago] (1,)
+2026-04-08 19:21:05,898 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.user_id = ? AND chatmessage.is_deleted = 0
+2026-04-08 19:21:05,898 | INFO | sqlalchemy.engine.Engine | [cached since 3979s ago] (1,)
+2026-04-08 19:21:05,907 | INFO | app.main | HTTP GET /chat/ -> 200
+2026-04-08 19:21:05,908 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 19:21:05,921 | INFO | app.main | HTTP GET /chat/66
+2026-04-08 19:21:05,923 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 19:21:05,923 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:21:05,923 | INFO | sqlalchemy.engine.Engine | [cached since 5190s ago] (1,)
+2026-04-08 19:21:05,925 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text AS chatmessage_original_text, chatmessage.file_url AS chatmessage_file_url, chatmessage.target_audience AS chatmessage_target_audience, chatmessage.handling_matter AS chatmessage_handling_matter, chatmessage.time_deadline AS chatmessage_time_deadline, chatmessage.location_entrance AS chatmessage_location_entrance, chatmessage.required_materials AS chatmessage_required_materials, chatmessage.handling_process AS chatmessage_handling_process, chatmessage.precautions AS chatmessage_precautions, chatmessage.risk_warnings AS chatmessage_risk_warnings, chatmessage.original_text_mapping AS chatmessage_original_text_mapping, chatmessage.chat_analysis AS chatmessage_chat_analysis, chatmessage.user_id AS chatmessage_user_id, chatmessage.id AS chatmessage_id, chatmessage.created_time AS chatmessage_created_time, chatmessage.is_deleted AS chatmessage_is_deleted, chatmessage.source_chat_id AS chatmessage_source_chat_id, chatmessage.session_json_path AS chatmessage_session_json_path 
+FROM chatmessage 
+WHERE chatmessage.id = ?
+2026-04-08 19:21:05,925 | INFO | sqlalchemy.engine.Engine | [cached since 5190s ago] (66,)
+2026-04-08 19:21:05,927 | INFO | app.main | HTTP GET /chat/66 -> 200
+2026-04-08 19:21:05,928 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 19:21:05,947 | INFO | app.main | HTTP GET /favorite/
+2026-04-08 19:21:05,949 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 19:21:05,949 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:21:05,949 | INFO | sqlalchemy.engine.Engine | [cached since 5190s ago] (1,)
+2026-04-08 19:21:05,950 | INFO | sqlalchemy.engine.Engine | SELECT favorite.id, favorite.user_id, favorite.chat_message_id, favorite.note, favorite.created_time 
+FROM favorite 
+WHERE favorite.user_id = ? ORDER BY favorite.created_time DESC
+2026-04-08 19:21:05,950 | INFO | sqlalchemy.engine.Engine | [cached since 5190s ago] (1,)
+2026-04-08 19:21:05,952 | INFO | app.main | HTTP GET /favorite/ -> 200
+2026-04-08 19:21:05,952 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 19:21:06,057 | INFO | app.main | HTTP GET /news/keywords
+2026-04-08 19:21:06,061 | INFO | app.services.redis_queue | Dequeued task: {'type': 'update_hot_keywords', 'args': [], 'kwargs': {}}
+2026-04-08 19:21:06,062 | INFO | app.services.worker | Processing task: update_hot_keywords with args: []
+2026-04-08 19:21:06,062 | INFO | app.services.redis_queue | Enqueued task: {'type': 'update_hot_keywords', 'args': (), 'kwargs': {}}
+2026-04-08 19:21:06,065 | INFO | app.services.worker | Hot keywords updated in cache.
+2026-04-08 19:21:06,066 | INFO | app.main | HTTP GET /news/keywords -> 200
+2026-04-08 19:25:12,473 | INFO | app.main | HTTP GET /news/daily-summary
+2026-04-08 19:25:12,479 | INFO | app.services.redis_queue | Dequeued task: {'type': 'update_daily_gov_summary', 'args': [], 'kwargs': {}}
+2026-04-08 19:25:12,480 | INFO | app.services.worker | Processing task: update_daily_gov_summary with args: []
+2026-04-08 19:25:12,479 | INFO | app.services.redis_queue | Enqueued task: {'type': 'update_daily_gov_summary', 'args': (), 'kwargs': {}}
+2026-04-08 19:25:13,170 | WARNING | app.services.news_crawler | fetch https://www.gov.cn/xinwen/rss/index.htm failed: HTTP Error 404: Not Found
+2026-04-08 19:25:13,235 | WARNING | app.services.news_crawler | fetch https://www.gov.cn/xinwen/rss/index.htm failed: HTTP Error 404: Not Found
+2026-04-08 19:25:13,415 | WARNING | app.services.news_crawler | fetch http://www.gov.cn/xinwen/rss/index.htm failed: HTTP Error 404: Not Found
+2026-04-08 19:25:13,417 | INFO | app.services.worker | Daily gov summary updated in cache.
+2026-04-08 19:25:13,434 | WARNING | app.services.news_crawler | fetch http://www.gov.cn/xinwen/rss/index.htm failed: HTTP Error 404: Not Found
+2026-04-08 19:25:13,437 | INFO | app.main | HTTP GET /news/daily-summary -> 200
+2026-04-08 19:25:13,437 | INFO | app.main | HTTP GET /policy-documents/approved
+2026-04-08 19:25:13,437 | INFO | app.main | HTTP GET /news/central-docs
+2026-04-08 19:25:13,438 | INFO | app.main | HTTP GET /news/hot
+2026-04-08 19:25:13,443 | INFO | app.main | HTTP GET /news/central-docs -> 200
+2026-04-08 19:25:13,443 | INFO | app.main | HTTP GET /news/hot -> 200
+2026-04-08 19:25:13,445 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 19:25:13,445 | INFO | sqlalchemy.engine.Engine | SELECT policydocument.title, policydocument.content, policydocument.category, policydocument.tags, policydocument.id, policydocument.uploader_id, policydocument.status, policydocument.file_path, policydocument.view_count, policydocument.like_count, policydocument.created_time, policydocument.reviewed_time, policydocument.reject_reason 
+FROM policydocument 
+WHERE policydocument.status = ? ORDER BY policydocument.created_time DESC
+ LIMIT ? OFFSET ?
+2026-04-08 19:25:13,445 | INFO | sqlalchemy.engine.Engine | [cached since 5338s ago] ('approved', 20, 0)
+2026-04-08 19:25:13,447 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:25:13,447 | INFO | sqlalchemy.engine.Engine | [cached since 5438s ago] (2,)
+2026-04-08 19:25:13,447 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:25:13,447 | INFO | sqlalchemy.engine.Engine | [cached since 5438s ago] (2,)
+2026-04-08 19:25:13,448 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:25:13,448 | INFO | sqlalchemy.engine.Engine | [cached since 5438s ago] (2,)
+2026-04-08 19:25:13,448 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:25:13,448 | INFO | sqlalchemy.engine.Engine | [cached since 5438s ago] (2,)
+2026-04-08 19:25:13,448 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:25:13,448 | INFO | sqlalchemy.engine.Engine | [cached since 5438s ago] (2,)
+2026-04-08 19:25:13,449 | INFO | app.main | HTTP GET /policy-documents/approved -> 200
+2026-04-08 19:25:13,450 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 19:26:39,939 | INFO | app.main | HTTP GET /news/daily-summary
+2026-04-08 19:26:39,944 | INFO | app.main | HTTP GET /news/daily-summary -> 200
+2026-04-08 19:26:39,946 | INFO | app.main | HTTP GET /news/hot
+2026-04-08 19:26:39,950 | INFO | app.main | HTTP GET /news/hot -> 200
+2026-04-08 19:26:39,951 | INFO | app.main | HTTP GET /news/central-docs
+2026-04-08 19:26:39,955 | INFO | app.main | HTTP GET /news/central-docs -> 200
+2026-04-08 19:26:39,955 | INFO | app.main | HTTP GET /policy-documents/approved
+2026-04-08 19:26:39,958 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 19:26:39,958 | INFO | sqlalchemy.engine.Engine | SELECT policydocument.title, policydocument.content, policydocument.category, policydocument.tags, policydocument.id, policydocument.uploader_id, policydocument.status, policydocument.file_path, policydocument.view_count, policydocument.like_count, policydocument.created_time, policydocument.reviewed_time, policydocument.reject_reason 
+FROM policydocument 
+WHERE policydocument.status = ? ORDER BY policydocument.created_time DESC
+ LIMIT ? OFFSET ?
+2026-04-08 19:26:39,958 | INFO | sqlalchemy.engine.Engine | [cached since 5424s ago] ('approved', 20, 0)
+2026-04-08 19:26:39,959 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:26:39,959 | INFO | sqlalchemy.engine.Engine | [cached since 5524s ago] (2,)
+2026-04-08 19:26:39,960 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:26:39,960 | INFO | sqlalchemy.engine.Engine | [cached since 5524s ago] (2,)
+2026-04-08 19:26:39,960 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:26:39,960 | INFO | sqlalchemy.engine.Engine | [cached since 5524s ago] (2,)
+2026-04-08 19:26:39,961 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:26:39,961 | INFO | sqlalchemy.engine.Engine | [cached since 5524s ago] (2,)
+2026-04-08 19:26:39,961 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:26:39,961 | INFO | sqlalchemy.engine.Engine | [cached since 5524s ago] (2,)
+2026-04-08 19:26:39,962 | INFO | app.main | HTTP GET /policy-documents/approved -> 200
+2026-04-08 19:26:39,963 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 19:27:54,887 | INFO | app.main | HTTP GET /news/daily-summary
+2026-04-08 19:27:54,890 | INFO | app.main | HTTP GET /news/daily-summary -> 200
+2026-04-08 19:27:54,892 | INFO | app.main | HTTP GET /news/central-docs
+2026-04-08 19:27:54,892 | INFO | app.main | HTTP GET /policy-documents/approved
+2026-04-08 19:27:54,892 | INFO | app.main | HTTP GET /news/hot
+2026-04-08 19:27:54,898 | INFO | app.main | HTTP GET /news/central-docs -> 200
+2026-04-08 19:27:54,898 | INFO | app.main | HTTP GET /news/hot -> 200
+2026-04-08 19:27:54,900 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 19:27:54,901 | INFO | sqlalchemy.engine.Engine | SELECT policydocument.title, policydocument.content, policydocument.category, policydocument.tags, policydocument.id, policydocument.uploader_id, policydocument.status, policydocument.file_path, policydocument.view_count, policydocument.like_count, policydocument.created_time, policydocument.reviewed_time, policydocument.reject_reason 
+FROM policydocument 
+WHERE policydocument.status = ? ORDER BY policydocument.created_time DESC
+ LIMIT ? OFFSET ?
+2026-04-08 19:27:54,901 | INFO | sqlalchemy.engine.Engine | [cached since 5499s ago] ('approved', 20, 0)
+2026-04-08 19:27:54,902 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:27:54,902 | INFO | sqlalchemy.engine.Engine | [cached since 5599s ago] (2,)
+2026-04-08 19:27:54,903 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:27:54,903 | INFO | sqlalchemy.engine.Engine | [cached since 5599s ago] (2,)
+2026-04-08 19:27:54,904 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:27:54,904 | INFO | sqlalchemy.engine.Engine | [cached since 5599s ago] (2,)
+2026-04-08 19:27:54,905 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:27:54,905 | INFO | sqlalchemy.engine.Engine | [cached since 5599s ago] (2,)
+2026-04-08 19:27:54,905 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:27:54,905 | INFO | sqlalchemy.engine.Engine | [cached since 5599s ago] (2,)
+2026-04-08 19:27:54,907 | INFO | app.main | HTTP GET /policy-documents/approved -> 200
+2026-04-08 19:27:54,908 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 19:31:08,370 | INFO | app.main | HTTP GET /news/daily-summary
+2026-04-08 19:31:08,373 | INFO | app.main | HTTP GET /news/daily-summary -> 200
+2026-04-08 19:31:08,374 | INFO | app.main | HTTP GET /policy-documents/approved
+2026-04-08 19:31:08,374 | INFO | app.main | HTTP GET /news/central-docs
+2026-04-08 19:31:08,374 | INFO | app.main | HTTP GET /news/hot
+2026-04-08 19:31:08,382 | INFO | app.main | HTTP GET /news/central-docs -> 200
+2026-04-08 19:31:08,383 | INFO | app.main | HTTP GET /news/hot -> 200
+2026-04-08 19:31:08,384 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 19:31:08,384 | INFO | sqlalchemy.engine.Engine | SELECT policydocument.title, policydocument.content, policydocument.category, policydocument.tags, policydocument.id, policydocument.uploader_id, policydocument.status, policydocument.file_path, policydocument.view_count, policydocument.like_count, policydocument.created_time, policydocument.reviewed_time, policydocument.reject_reason 
+FROM policydocument 
+WHERE policydocument.status = ? ORDER BY policydocument.created_time DESC
+ LIMIT ? OFFSET ?
+2026-04-08 19:31:08,385 | INFO | sqlalchemy.engine.Engine | [cached since 5693s ago] ('approved', 20, 0)
+2026-04-08 19:31:08,386 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:31:08,386 | INFO | sqlalchemy.engine.Engine | [cached since 5792s ago] (2,)
+2026-04-08 19:31:08,387 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:31:08,387 | INFO | sqlalchemy.engine.Engine | [cached since 5792s ago] (2,)
+2026-04-08 19:31:08,388 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:31:08,388 | INFO | sqlalchemy.engine.Engine | [cached since 5792s ago] (2,)
+2026-04-08 19:31:08,388 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:31:08,388 | INFO | sqlalchemy.engine.Engine | [cached since 5792s ago] (2,)
+2026-04-08 19:31:08,389 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:31:08,389 | INFO | sqlalchemy.engine.Engine | [cached since 5792s ago] (2,)
+2026-04-08 19:31:08,390 | INFO | app.main | HTTP GET /policy-documents/approved -> 200
+2026-04-08 19:31:08,391 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 19:31:14,026 | INFO | app.main | HTTP GET /news/daily-summary
+2026-04-08 19:31:14,029 | INFO | app.main | HTTP GET /news/daily-summary -> 200
+2026-04-08 19:31:14,030 | INFO | app.main | HTTP GET /news/central-docs
+2026-04-08 19:31:14,030 | INFO | app.main | HTTP GET /policy-documents/approved
+2026-04-08 19:31:14,030 | INFO | app.main | HTTP GET /news/hot
+2026-04-08 19:31:14,034 | INFO | app.main | HTTP GET /news/central-docs -> 200
+2026-04-08 19:31:14,034 | INFO | app.main | HTTP GET /news/hot -> 200
+2026-04-08 19:31:14,036 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 19:31:14,037 | INFO | sqlalchemy.engine.Engine | SELECT policydocument.title, policydocument.content, policydocument.category, policydocument.tags, policydocument.id, policydocument.uploader_id, policydocument.status, policydocument.file_path, policydocument.view_count, policydocument.like_count, policydocument.created_time, policydocument.reviewed_time, policydocument.reject_reason 
+FROM policydocument 
+WHERE policydocument.status = ? ORDER BY policydocument.created_time DESC
+ LIMIT ? OFFSET ?
+2026-04-08 19:31:14,037 | INFO | sqlalchemy.engine.Engine | [cached since 5698s ago] ('approved', 20, 0)
+2026-04-08 19:31:14,039 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:31:14,039 | INFO | sqlalchemy.engine.Engine | [cached since 5798s ago] (2,)
+2026-04-08 19:31:14,040 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:31:14,040 | INFO | sqlalchemy.engine.Engine | [cached since 5798s ago] (2,)
+2026-04-08 19:31:14,040 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:31:14,040 | INFO | sqlalchemy.engine.Engine | [cached since 5798s ago] (2,)
+2026-04-08 19:31:14,041 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:31:14,041 | INFO | sqlalchemy.engine.Engine | [cached since 5798s ago] (2,)
+2026-04-08 19:31:14,042 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.role AS user_role, user.profession AS user_profession, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at, user.last_ip AS user_last_ip 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 19:31:14,042 | INFO | sqlalchemy.engine.Engine | [cached since 5798s ago] (2,)
+2026-04-08 19:31:14,044 | INFO | app.main | HTTP GET /policy-documents/approved -> 200
+2026-04-08 19:31:14,044 | INFO | sqlalchemy.engine.Engine | ROLLBACK

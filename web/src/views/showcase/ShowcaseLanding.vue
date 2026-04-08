@@ -49,6 +49,75 @@
       </div>
     </section>
 
+    <!-- Comparison Cards -->
+    <section class="comparison-section" ref="comparisonRef">
+      <div class="section-inner">
+        <h2 class="section-title" :class="{ visible: visibleSections.comparison }">为什么选择我们</h2>
+
+        <div class="comparison-grid">
+          <!-- 左侧优势卡片 -->
+          <div class="comparison-column">
+            <div
+              v-for="(card, i) in advantageCards"
+              :key="'adv-' + i"
+              class="comp-card advantage-card"
+              :class="{ visible: visibleSections.comparison }"
+              :style="{
+                transitionDelay: i * 150 + 'ms',
+                marginTop: (i % 3) * 30 + 'px'
+              }"
+            >
+              <div class="comp-card-image">
+                <div v-if="!card.image" class="image-placeholder">
+                  <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" stroke-width="1.5" fill="none">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <path d="M21 15l-5-5L5 21"/>
+                  </svg>
+                </div>
+                <img v-else :src="card.image" :alt="card.title" />
+              </div>
+              <div class="comp-card-content">
+                <div class="comp-badge advantage">优势</div>
+                <h3 class="comp-title">{{ card.title }}</h3>
+                <p class="comp-desc">{{ card.desc }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 右侧劣势卡片 -->
+          <div class="comparison-column">
+            <div
+              v-for="(card, i) in disadvantageCards"
+              :key="'dis-' + i"
+              class="comp-card disadvantage-card"
+              :class="{ visible: visibleSections.comparison }"
+              :style="{
+                transitionDelay: (advantageCards.length * 150 + i * 150) + 'ms',
+                marginTop: (2 - i % 3) * 30 + 'px'
+              }"
+            >
+              <div class="comp-card-image">
+                <div v-if="!card.image" class="image-placeholder">
+                  <svg viewBox="0 0 24 24" width="48" height="48" stroke="currentColor" stroke-width="1.5" fill="none">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <circle cx="8.5" cy="8.5" r="1.5"/>
+                    <path d="M21 15l-5-5L5 21"/>
+                  </svg>
+                </div>
+                <img v-else :src="card.image" :alt="card.title" />
+              </div>
+              <div class="comp-card-content">
+                <div class="comp-badge disadvantage">痛点</div>
+                <h3 class="comp-title">{{ card.title }}</h3>
+                <p class="comp-desc">{{ card.desc }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Flow -->
     <section class="flow-section" ref="flowRef">
       <div class="section-inner">
@@ -78,6 +147,26 @@
       <h2>立即加入云上观策</h2>
       <p>免费注册，即刻体验智能政策分析服务</p>
       <button class="btn-primary large" @click="$router.push('/register')">免费注册</button>
+    </section>
+
+    <!-- Sponsors -->
+    <section class="sponsors-section">
+      <div class="section-inner">
+        <h3 class="sponsors-title">合作伙伴</h3>
+        <div class="sponsors-track-wrapper">
+          <div class="sponsors-track">
+            <div class="sponsor-item" v-for="(sponsor, i) in [...sponsors, ...sponsors]" :key="i">
+              <div class="sponsor-logo">
+                <div v-if="!sponsor.logo" class="logo-placeholder">
+                  <span>{{ sponsor.name.charAt(0) }}</span>
+                </div>
+                <img v-else :src="sponsor.logo" :alt="sponsor.name" />
+              </div>
+              <span class="sponsor-name">{{ sponsor.name }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- Footer -->
@@ -146,15 +235,37 @@ const features = [
   },
 ]
 
+const advantageCards = [
+  { title: '极速智能解析', desc: 'AI 驱动的文件解析技术，秒级提取关键信息，节省 90% 阅读时间', image: null },
+  { title: '多版本改写', desc: '一键生成老人版、学生版、极简版等多种表达风格，真正做到人人可读', image: null },
+  { title: '实时政策追踪', desc: '全网政策动态实时更新，第一时间掌握最新政务信息', image: null },
+]
+
+const disadvantageCards = [
+  { title: '传统方式效率低', desc: '人工阅读政策文件耗时长，关键信息难以快速定位', image: null },
+  { title: '信息获取不及时', desc: '其他平台更新滞后，错过重要政策发布时机', image: null },
+  { title: '专业术语难理解', desc: '政策文件充斥专业术语，普通用户理解困难', image: null },
+]
+
+const sponsors = [
+  { name: '腾讯云', logo: null },
+  { name: '字节跳动', logo: null },
+  { name: '阿里云', logo: null },
+  { name: '华为云', logo: null },
+  { name: '百度智能云', logo: null },
+  { name: '京东云', logo: null },
+]
+
 const flowSteps = [
   { title: '注册账号', desc: '免费注册，邮箱验证后即可使用' },
   { title: '浏览政策', desc: '在政策广场发现最新政务文件' },
   { title: '智能分析', desc: 'AI 自动解析，获取关键摘要' },
 ]
 
-const visibleSections = reactive({ hero: false, features: false, flow: false, cta: false })
+const visibleSections = reactive({ hero: false, features: false, comparison: false, flow: false, cta: false })
 const heroRef = ref(null)
 const featuresRef = ref(null)
+const comparisonRef = ref(null)
 const flowRef = ref(null)
 const ctaRef = ref(null)
 
@@ -165,6 +276,7 @@ onMounted(() => {
       if (e.isIntersecting) {
         if (e.target === heroRef.value) visibleSections.hero = true
         if (e.target === featuresRef.value) visibleSections.features = true
+        if (e.target === comparisonRef.value) visibleSections.comparison = true
         if (e.target === flowRef.value) visibleSections.flow = true
         if (e.target === ctaRef.value) visibleSections.cta = true
       }
@@ -173,6 +285,7 @@ onMounted(() => {
 
   if (heroRef.value) observer.observe(heroRef.value)
   if (featuresRef.value) observer.observe(featuresRef.value)
+  if (comparisonRef.value) observer.observe(comparisonRef.value)
   if (flowRef.value) observer.observe(flowRef.value)
   if (ctaRef.value) observer.observe(ctaRef.value)
 })
@@ -236,6 +349,130 @@ onUnmounted(() => observer?.disconnect())
 .feat-title { font-size: 16px; font-weight: 700; margin: 0 0 8px; color: var(--text-primary, #111); }
 .feat-desc { font-size: 13px; color: var(--text-secondary, #666); line-height: 1.6; margin: 0; }
 
+.comparison-section {
+  background: linear-gradient(135deg, #1a0a09 0%, #c0392b 40%, #2980b9 100%) !important;
+  padding: 80px 0;
+  position: relative;
+}
+.comparison-section .section-inner { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+.comparison-section .section-title {
+  text-align: center;
+  color: #fff !important;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  opacity: 1;
+  transform: translateY(0);
+}
+.comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 60px;
+  margin-top: 40px;
+}
+
+.comparison-column {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.comp-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 100px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 16px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  opacity: 0;
+  filter: blur(4px);
+  min-height: 120px;
+}
+
+.comp-card.advantage-card {
+  transform: translateX(-100px);
+}
+
+.comp-card.disadvantage-card {
+  transform: translateX(100px);
+}
+
+.comp-card.visible {
+  opacity: 1;
+  transform: translateX(0);
+  filter: blur(0);
+}
+
+.comp-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+}
+
+.comp-card-image {
+  width: 100px;
+  height: 100px;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.comp-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #cbd5e0;
+}
+
+.comp-card-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.comp-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+
+.comp-badge.advantage {
+  background: #d4edda;
+  color: #27ae60;
+}
+
+.comp-badge.disadvantage {
+  background: #f8d7da;
+  color: #c0392b;
+}
+
+.comp-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 6px;
+  color: var(--text-primary, #111);
+}
+
+.comp-desc {
+  font-size: 13px;
+  color: var(--text-secondary, #666);
+  line-height: 1.6;
+  margin: 0;
+}
+
 .flow-section { background: var(--content-bg, #f4f5f7); }
 .flow-steps { display: flex; align-items: center; gap: 0; flex-wrap: wrap; }
 .flow-step {
@@ -268,6 +505,117 @@ onUnmounted(() => observer?.disconnect())
 .cta-section p { font-size: 16px; color: rgba(255,255,255,0.8); margin: 0 0 32px; }
 .cta-section .btn-primary { background: #fff; color: #c0392b; }
 
+.sponsors-section {
+  background: #111;
+  padding: 60px 0;
+  overflow: hidden;
+}
+
+.sponsors-title {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #999;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin: 0 0 40px;
+}
+
+.sponsors-track-wrapper {
+  overflow: hidden;
+  position: relative;
+}
+
+.sponsors-track-wrapper::before,
+.sponsors-track-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.sponsors-track-wrapper::before {
+  left: 0;
+  background: linear-gradient(to right, #111, transparent);
+}
+
+.sponsors-track-wrapper::after {
+  right: 0;
+  background: linear-gradient(to left, #111, transparent);
+}
+
+.sponsors-track {
+  display: flex;
+  gap: 30px;
+  animation: scroll-sponsors 30s linear infinite;
+  width: fit-content;
+}
+
+@keyframes scroll-sponsors {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.sponsor-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 16px;
+  transition: all 0.3s;
+}
+
+.sponsor-item:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+  border-color: #555;
+}
+
+.sponsor-logo {
+  width: 70px;
+  height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.sponsor-logo img {
+  max-width: 55px;
+  max-height: 55px;
+  object-fit: contain;
+}
+
+.logo-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 700;
+  color: #555;
+}
+
+.sponsor-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #aaa;
+}
+
 .sc-footer { background: #111; color: rgba(255,255,255,0.6); padding: 40px 24px; }
 .footer-inner { max-width: 1100px; margin: 0 auto; display: flex; align-items: center; gap: 32px; flex-wrap: wrap; }
 .footer-brand { font-size: 18px; font-weight: 800; color: #fff; flex: 1; }
@@ -278,9 +626,31 @@ onUnmounted(() => observer?.disconnect())
 
 @media (max-width: 960px) {
   .features-grid { grid-template-columns: repeat(2, 1fr); }
+  .comparison-grid { grid-template-columns: 1fr; gap: 20px; }
+  .comp-card {
+    flex-direction: column;
+    text-align: center;
+    padding: 20px;
+  }
+  .comp-card-image {
+    width: 80px;
+    height: 80px;
+  }
 }
 
 @media (max-width: 640px) {
   .features-grid { grid-template-columns: 1fr; }
+  .comparison-grid { gap: 16px; }
+  .comparison-column { gap: 16px; }
+  .comp-card {
+    min-height: auto;
+    padding: 16px;
+  }
+  .comp-card-image { width: 70px; height: 70px; }
+  .sponsors-track { gap: 20px; }
+  .sponsor-item { padding: 12px; }
+  .sponsor-logo { width: 55px; height: 55px; }
+  .sponsor-logo img { max-width: 40px; max-height: 40px; }
+  .logo-placeholder { font-size: 20px; }
 }
 </style>

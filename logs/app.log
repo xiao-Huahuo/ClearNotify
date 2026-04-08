@@ -8520,3 +8520,1492 @@ WHERE favorite.user_id = ? ORDER BY favorite.created_time DESC
 2026-04-05 22:58:15,603 | INFO | sqlalchemy.engine.Engine | ROLLBACK
 2026-04-05 22:58:15,613 | INFO | app.main | HTTP GET /news/keywords
 2026-04-05 22:58:15,615 | INFO | app.main | HTTP GET /news/keywords -> 200
+2026-04-08 12:23:48,111 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:23:48,111 | INFO | sqlalchemy.engine.Engine | PRAGMA main.table_info("user")
+2026-04-08 12:23:48,111 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2026-04-08 12:23:48,113 | INFO | sqlalchemy.engine.Engine | PRAGMA main.table_info("chatmessage")
+2026-04-08 12:23:48,113 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2026-04-08 12:23:48,114 | INFO | sqlalchemy.engine.Engine | PRAGMA main.table_info("ragusage")
+2026-04-08 12:23:48,114 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2026-04-08 12:23:48,114 | INFO | sqlalchemy.engine.Engine | PRAGMA main.table_info("statsanalysis")
+2026-04-08 12:23:48,114 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2026-04-08 12:23:48,114 | INFO | sqlalchemy.engine.Engine | PRAGMA main.table_info("settings")
+2026-04-08 12:23:48,114 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2026-04-08 12:23:48,114 | INFO | sqlalchemy.engine.Engine | PRAGMA main.table_info("todoitem")
+2026-04-08 12:23:48,114 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2026-04-08 12:23:48,114 | INFO | sqlalchemy.engine.Engine | PRAGMA main.table_info("favorite")
+2026-04-08 12:23:48,114 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2026-04-08 12:23:48,115 | INFO | sqlalchemy.engine.Engine | PRAGMA main.table_info("agentmemory")
+2026-04-08 12:23:48,115 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2026-04-08 12:23:48,115 | INFO | sqlalchemy.engine.Engine | PRAGMA main.table_info("agentconversation")
+2026-04-08 12:23:48,115 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2026-04-08 12:23:48,115 | INFO | sqlalchemy.engine.Engine | PRAGMA main.table_info("agentmessage")
+2026-04-08 12:23:48,115 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2026-04-08 12:23:48,115 | INFO | sqlalchemy.engine.Engine | COMMIT
+2026-04-08 12:23:48,116 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:23:48,116 | INFO | sqlalchemy.engine.Engine | ALTER TABLE user ADD COLUMN is_admin BOOLEAN NOT NULL DEFAULT 0
+2026-04-08 12:23:48,116 | INFO | sqlalchemy.engine.Engine | [generated in 0.00017s] ()
+2026-04-08 12:23:48,116 | INFO | sqlalchemy.engine.Engine | ALTER TABLE user ADD COLUMN email_verified BOOLEAN NOT NULL DEFAULT 0
+2026-04-08 12:23:48,116 | INFO | sqlalchemy.engine.Engine | [generated in 0.00008s] ()
+2026-04-08 12:23:48,157 | INFO | watchfiles.main | 5 changes detected
+2026-04-08 12:23:48,162 | INFO | sqlalchemy.engine.Engine | ALTER TABLE user ADD COLUMN email_verification_code VARCHAR
+2026-04-08 12:23:48,162 | INFO | sqlalchemy.engine.Engine | [generated in 0.00020s] ()
+2026-04-08 12:23:48,162 | INFO | sqlalchemy.engine.Engine | ALTER TABLE user ADD COLUMN email_verification_sent_at DATETIME
+2026-04-08 12:23:48,162 | INFO | sqlalchemy.engine.Engine | [generated in 0.00008s] ()
+2026-04-08 12:23:48,162 | INFO | sqlalchemy.engine.Engine | ALTER TABLE chatmessage ADD COLUMN source_chat_id INTEGER REFERENCES chatmessage(id)
+2026-04-08 12:23:48,162 | INFO | sqlalchemy.engine.Engine | [generated in 0.00006s] ()
+2026-04-08 12:23:48,162 | INFO | sqlalchemy.engine.Engine | ALTER TABLE chatmessage ADD COLUMN session_json_path VARCHAR
+2026-04-08 12:23:48,162 | INFO | sqlalchemy.engine.Engine | [generated in 0.00005s] ()
+2026-04-08 12:23:48,163 | INFO | sqlalchemy.engine.Engine | ALTER TABLE agentmemory ADD COLUMN updated_time DATETIME
+2026-04-08 12:23:48,163 | INFO | sqlalchemy.engine.Engine | [generated in 0.00005s] ()
+2026-04-08 12:23:48,163 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:23:48,163 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:23:48,176 | INFO | sqlalchemy.engine.Engine | SELECT user.uname, user.email, user.phone, user.avatar_url, user.is_admin, user.uid, user.hashed_pwd, user.created_time, user.last_login, user.email_verified, user.email_verification_code, user.email_verification_sent_at 
+FROM user 
+WHERE user.email = ?
+2026-04-08 12:23:48,176 | INFO | sqlalchemy.engine.Engine | [generated in 0.00021s] ('1647239706@qq.com',)
+2026-04-08 12:23:48,177 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:23:48,177 | INFO | app.main | Starting Redis worker thread...
+2026-04-08 12:23:48,178 | INFO | app.services.worker | Starting Redis queue worker...
+2026-04-08 12:23:48,178 | INFO | app.main | Redis worker thread started.
+2026-04-08 12:24:22,397 | INFO | app.main | HTTP GET /user/me
+2026-04-08 12:24:22,408 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:24:22,409 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:24:22,409 | INFO | sqlalchemy.engine.Engine | [generated in 0.00022s] (1,)
+2026-04-08 12:24:22,411 | INFO | app.main | HTTP GET /user/me -> 200
+2026-04-08 12:24:22,412 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:24:22,413 | INFO | app.main | HTTP GET /news/hot
+2026-04-08 12:24:22,420 | INFO | app.services.redis_queue | Enqueued task: {'type': 'update_hot_news', 'args': (), 'kwargs': {'limit': 10}}
+2026-04-08 12:24:22,420 | INFO | app.services.redis_queue | Dequeued task: {'type': 'update_hot_news', 'args': [], 'kwargs': {'limit': 10}}
+2026-04-08 12:24:22,420 | INFO | app.services.worker | Processing task: update_hot_news with args: []
+2026-04-08 12:24:22,570 | INFO | app.services.worker | Hot news updated in cache.
+2026-04-08 12:24:22,627 | INFO | app.main | HTTP GET /news/central-docs
+2026-04-08 12:24:22,627 | INFO | app.main | HTTP GET /news/with-images
+2026-04-08 12:24:22,629 | INFO | app.services.redis_queue | Enqueued task: {'type': 'update_central_docs', 'args': (), 'kwargs': {'limit': 5}}
+2026-04-08 12:24:22,629 | INFO | app.services.redis_queue | Dequeued task: {'type': 'update_central_docs', 'args': [], 'kwargs': {'limit': 5}}
+2026-04-08 12:24:22,629 | INFO | app.services.worker | Processing task: update_central_docs with args: []
+2026-04-08 12:24:22,800 | WARNING | app.services.news_crawler | fetch https://www.gov.cn/xinwen/rss/index.htm failed: HTTP Error 404: Not Found
+2026-04-08 12:24:22,986 | WARNING | app.services.news_crawler | fetch http://www.gov.cn/xinwen/rss/index.htm failed: HTTP Error 404: Not Found
+2026-04-08 12:24:22,988 | INFO | app.services.worker | Central docs updated in cache.
+2026-04-08 12:24:23,073 | WARNING | app.services.news_crawler | fetch https://www.gov.cn/xinwen/rss/index.htm failed: HTTP Error 404: Not Found
+2026-04-08 12:24:23,198 | WARNING | app.services.news_crawler | fetch http://www.gov.cn/xinwen/rss/index.htm failed: HTTP Error 404: Not Found
+2026-04-08 12:24:23,201 | INFO | app.services.redis_queue | Enqueued task: {'type': 'update_news_with_images', 'args': (), 'kwargs': {'limit': 5}}
+2026-04-08 12:24:23,201 | INFO | app.services.redis_queue | Dequeued task: {'type': 'update_news_with_images', 'args': [], 'kwargs': {'limit': 5}}
+2026-04-08 12:24:23,201 | INFO | app.services.worker | Processing task: update_news_with_images with args: []
+2026-04-08 12:24:23,203 | INFO | app.services.worker | News with images updated in cache.
+2026-04-08 12:24:23,203 | INFO | app.main | HTTP GET /news/hot -> 200
+2026-04-08 12:24:23,204 | INFO | app.main | HTTP GET /news/central-docs -> 200
+2026-04-08 12:24:23,204 | INFO | app.main | HTTP GET /news/with-images -> 200
+2026-04-08 12:24:23,204 | INFO | app.main | HTTP GET /user/me
+2026-04-08 12:24:23,204 | INFO | app.main | HTTP GET /settings/me
+2026-04-08 12:24:23,206 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:24:23,207 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:24:23,207 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:24:23,207 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:24:23,208 | INFO | sqlalchemy.engine.Engine | [cached since 0.7984s ago] (1,)
+2026-04-08 12:24:23,208 | INFO | sqlalchemy.engine.Engine | [cached since 0.7986s ago] (1,)
+2026-04-08 12:24:23,209 | INFO | sqlalchemy.engine.Engine | SELECT settings.default_audience, settings.theme_mode, settings.system_notifications, settings.user_id, settings.id 
+FROM settings 
+WHERE settings.user_id = ?
+2026-04-08 12:24:23,210 | INFO | sqlalchemy.engine.Engine | [generated in 0.00025s] (1,)
+2026-04-08 12:24:23,210 | INFO | app.main | HTTP GET /user/me -> 200
+2026-04-08 12:24:23,211 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:24:23,211 | INFO | app.main | HTTP GET /settings/me -> 200
+2026-04-08 12:24:23,211 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:24:23,213 | INFO | app.main | HTTP GET /chat/
+2026-04-08 12:24:23,214 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:24:23,215 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:24:23,215 | INFO | sqlalchemy.engine.Engine | [cached since 0.8055s ago] (1,)
+2026-04-08 12:24:23,216 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.user_id = ? AND chatmessage.is_deleted = 0
+2026-04-08 12:24:23,217 | INFO | sqlalchemy.engine.Engine | [generated in 0.00013s] (1,)
+2026-04-08 12:24:23,238 | INFO | app.main | HTTP GET /chat/ -> 200
+2026-04-08 12:24:23,239 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:24:23,249 | INFO | app.main | HTTP GET /chat/67
+2026-04-08 12:24:23,250 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:24:23,251 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:24:23,251 | INFO | sqlalchemy.engine.Engine | [cached since 0.8416s ago] (1,)
+2026-04-08 12:24:23,252 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text AS chatmessage_original_text, chatmessage.file_url AS chatmessage_file_url, chatmessage.target_audience AS chatmessage_target_audience, chatmessage.handling_matter AS chatmessage_handling_matter, chatmessage.time_deadline AS chatmessage_time_deadline, chatmessage.location_entrance AS chatmessage_location_entrance, chatmessage.required_materials AS chatmessage_required_materials, chatmessage.handling_process AS chatmessage_handling_process, chatmessage.precautions AS chatmessage_precautions, chatmessage.risk_warnings AS chatmessage_risk_warnings, chatmessage.original_text_mapping AS chatmessage_original_text_mapping, chatmessage.chat_analysis AS chatmessage_chat_analysis, chatmessage.user_id AS chatmessage_user_id, chatmessage.id AS chatmessage_id, chatmessage.created_time AS chatmessage_created_time, chatmessage.is_deleted AS chatmessage_is_deleted, chatmessage.source_chat_id AS chatmessage_source_chat_id, chatmessage.session_json_path AS chatmessage_session_json_path 
+FROM chatmessage 
+WHERE chatmessage.id = ?
+2026-04-08 12:24:23,252 | INFO | sqlalchemy.engine.Engine | [generated in 0.00014s] (67,)
+2026-04-08 12:24:23,255 | INFO | app.main | HTTP GET /chat/67 -> 200
+2026-04-08 12:24:23,255 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:24:23,263 | INFO | app.main | HTTP GET /favorite/
+2026-04-08 12:24:23,264 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:24:23,264 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:24:23,264 | INFO | sqlalchemy.engine.Engine | [cached since 0.8554s ago] (1,)
+2026-04-08 12:24:23,266 | INFO | sqlalchemy.engine.Engine | SELECT favorite.id, favorite.user_id, favorite.chat_message_id, favorite.note, favorite.created_time 
+FROM favorite 
+WHERE favorite.user_id = ? ORDER BY favorite.created_time DESC
+2026-04-08 12:24:23,266 | INFO | sqlalchemy.engine.Engine | [generated in 0.00017s] (1,)
+2026-04-08 12:24:23,267 | INFO | app.main | HTTP GET /favorite/ -> 200
+2026-04-08 12:24:23,268 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:24:23,331 | INFO | app.main | HTTP GET /news/keywords
+2026-04-08 12:24:23,334 | INFO | app.services.redis_queue | Enqueued task: {'type': 'update_hot_keywords', 'args': (), 'kwargs': {}}
+2026-04-08 12:24:23,334 | INFO | app.services.redis_queue | Dequeued task: {'type': 'update_hot_keywords', 'args': [], 'kwargs': {}}
+2026-04-08 12:24:23,334 | INFO | app.services.worker | Processing task: update_hot_keywords with args: []
+2026-04-08 12:24:23,336 | INFO | app.services.worker | Hot keywords updated in cache.
+2026-04-08 12:24:23,336 | INFO | app.main | HTTP GET /news/keywords -> 200
+2026-04-08 12:24:38,367 | INFO | app.main | HTTP POST /chat/progress/start
+2026-04-08 12:24:38,368 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:24:38,368 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:24:38,368 | INFO | sqlalchemy.engine.Engine | [cached since 15.96s ago] (1,)
+2026-04-08 12:24:38,370 | INFO | app.main | HTTP POST /chat/progress/start -> 200
+2026-04-08 12:24:38,370 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:24:38,380 | INFO | app.main | HTTP GET /chat/progress/stream
+2026-04-08 12:24:38,381 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:24:38,382 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:24:38,382 | INFO | sqlalchemy.engine.Engine | [cached since 15.97s ago] (1,)
+2026-04-08 12:24:38,382 | INFO | app.main | HTTP GET /chat/progress/stream -> 200
+2026-04-08 12:24:38,383 | INFO | app.main | HTTP POST /upload/document
+2026-04-08 12:24:38,397 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:24:38,398 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:24:38,398 | INFO | sqlalchemy.engine.Engine | [cached since 15.99s ago] (1,)
+2026-04-08 12:24:38,493 | INFO | app.main | HTTP POST /upload/document -> 200
+2026-04-08 12:24:38,494 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:24:38,502 | INFO | app.main | HTTP POST /chat/
+2026-04-08 12:24:38,504 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:24:38,504 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:24:38,504 | INFO | sqlalchemy.engine.Engine | [cached since 16.09s ago] (1,)
+2026-04-08 12:24:58,062 | INFO | httpx | HTTP Request: POST https://api.moonshot.cn/v1/chat/completions "HTTP/1.1 200 OK"
+2026-04-08 12:24:58,067 | INFO | app.ai.document_parser | Freeform parse completed in 19.03s (nodes=116, links=115, mode=ai)
+2026-04-08 12:24:58,069 | INFO | sqlalchemy.engine.Engine | INSERT INTO chatmessage (original_text, file_url, target_audience, handling_matter, time_deadline, location_entrance, required_materials, handling_process, precautions, risk_warnings, original_text_mapping, chat_analysis, user_id, created_time, is_deleted, source_chat_id, session_json_path) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+2026-04-08 12:24:58,069 | INFO | sqlalchemy.engine.Engine | [generated in 0.00020s] ('MetaWeave(元织)软件开发任务书\n- 缝合碎片，编织智慧\n背景介绍\n在数字化办公时代，个人知识资产呈现碎片化与多模态化的爆炸式增长。传统的知识管理/笔记软件过度依赖人工标注与手动操作，导致非文本附件沦为“内容黑盒”，大量非结构化数据难以被有效检索与利用，文档库极易演变为互不联系的“信 ... (10080 characters truncated) ... 隐藏关联。\n系统管理员 (运维人员) | 1. 隐私审计与脱敏：监控系统内的敏感信息并执行自动脱敏。\n系统管理员 (运维人员) | 2. 数据资料维护：执行数据加密、自动化备份与完整性检查。\n系统管理员 (运维人员) | 3. 任务队列监控：管理后端 OCR 与 LLM 异步推理任务的负载。', '/media/docs/doc_1_ba60e800.docx', None, None, None, None, None, None, None, None, None, '{"version": "kg_v1", "parse_mode": "ai", "language_complexity": "高", "handling_complexity": "高", "risk_level": "低", "notice_type": "graph", "content" ... (57720 characters truncated) ... ": "负责容器化集群编排与自动化运维"}, "参考文献": ["学术理论与核心算法", "开发框架与技术标准"]}, "visual_config": {"focus_node": "payload_root", "initial_zoom": 1.0, "text_mapping": {}}}', 1, '2026-04-08 12:24:58.068042', 0, None, None)
+2026-04-08 12:24:58,088 | INFO | sqlalchemy.engine.Engine | COMMIT
+2026-04-08 12:24:58,092 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:24:58,093 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.id = ?
+2026-04-08 12:24:58,093 | INFO | sqlalchemy.engine.Engine | [generated in 0.00015s] (68,)
+2026-04-08 12:24:58,097 | INFO | sqlalchemy.engine.Engine | UPDATE chatmessage SET session_json_path=? WHERE chatmessage.id = ?
+2026-04-08 12:24:58,097 | INFO | sqlalchemy.engine.Engine | [generated in 0.00014s] ('D:\\Projects\\Python\\CloudPolicy\\uploads\\chat_exports\\user_1\\chat_68.json', 68)
+2026-04-08 12:24:58,099 | INFO | sqlalchemy.engine.Engine | COMMIT
+2026-04-08 12:24:58,102 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:24:58,103 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.id = ?
+2026-04-08 12:24:58,103 | INFO | sqlalchemy.engine.Engine | [cached since 0.009679s ago] (68,)
+2026-04-08 12:24:58,911 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:24:58,911 | INFO | sqlalchemy.engine.Engine | INSERT INTO ragusage (user_id, created_time, "query", top_k, result_count, avg_score, source) VALUES (?, ?, ?, ?, ?, ?, ?)
+2026-04-08 12:24:58,912 | INFO | sqlalchemy.engine.Engine | [generated in 0.00015s] (1, '2026-04-08 12:24:58.909853', 'MetaWeave(元织)软件开发任务书\n- 缝合碎片，编织智慧\n背景介绍\n在数字化办公时代，个人知识资产呈现碎片化与多模态化的爆炸式增长。传统的知识管理/笔记软件过度依赖人工标注与手动操作，导致非文本附件沦为“内容黑盒”，大量非结构化数据难以被有效检索与利用，文档库极易演变为互不联系的“信 ... (207 characters truncated) ... 。它能通过智能分析，自动将那些零散散落在各处的孤立文件，编织成一张逻辑严密的知识网络。从杂乱的信息记录到井然有序的决策支持，MetaWeave 实现了从“人找资料”到“资料自动找人”的跨越。通过主动的风险审计与自动化的内容小结，它不仅让管理工作告别了繁琐的手动整理，更让每一份知识资产都能在需要时被', 3, 3, -0.25486666666666663, 'chat_message')
+2026-04-08 12:24:58,913 | INFO | sqlalchemy.engine.Engine | COMMIT
+2026-04-08 12:24:58,917 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:24:58,917 | INFO | sqlalchemy.engine.Engine | [generated in 0.00012s] (1,)
+2026-04-08 12:24:58,920 | INFO | app.main | HTTP POST /chat/ -> 200
+2026-04-08 12:24:58,921 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:24:59,006 | INFO | app.main | HTTP GET /chat/
+2026-04-08 12:24:59,008 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:24:59,008 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:24:59,008 | INFO | sqlalchemy.engine.Engine | [cached since 36.6s ago] (1,)
+2026-04-08 12:24:59,010 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.user_id = ? AND chatmessage.is_deleted = 0
+2026-04-08 12:24:59,010 | INFO | sqlalchemy.engine.Engine | [cached since 35.79s ago] (1,)
+2026-04-08 12:24:59,037 | INFO | app.main | HTTP GET /chat/ -> 200
+2026-04-08 12:24:59,038 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:24:59,048 | INFO | app.main | HTTP GET /favorite/
+2026-04-08 12:24:59,049 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:24:59,049 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:24:59,050 | INFO | sqlalchemy.engine.Engine | [cached since 36.64s ago] (1,)
+2026-04-08 12:24:59,051 | INFO | sqlalchemy.engine.Engine | SELECT favorite.id, favorite.user_id, favorite.chat_message_id, favorite.note, favorite.created_time 
+FROM favorite 
+WHERE favorite.user_id = ? ORDER BY favorite.created_time DESC
+2026-04-08 12:24:59,051 | INFO | sqlalchemy.engine.Engine | [cached since 35.78s ago] (1,)
+2026-04-08 12:24:59,052 | INFO | app.main | HTTP GET /favorite/ -> 200
+2026-04-08 12:24:59,053 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:24:59,056 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:25:36,018 | INFO | app.main | HTTP GET /news/daily-summary
+2026-04-08 12:25:36,023 | INFO | app.services.redis_queue | Enqueued task: {'type': 'update_daily_gov_summary', 'args': (), 'kwargs': {}}
+2026-04-08 12:25:36,023 | INFO | app.services.redis_queue | Dequeued task: {'type': 'update_daily_gov_summary', 'args': [], 'kwargs': {}}
+2026-04-08 12:25:36,023 | INFO | app.services.worker | Processing task: update_daily_gov_summary with args: []
+2026-04-08 12:25:36,030 | INFO | app.services.worker | Daily gov summary updated in cache.
+2026-04-08 12:25:36,030 | INFO | app.main | HTTP GET /news/daily-summary -> 200
+2026-04-08 12:25:36,031 | INFO | app.main | HTTP GET /news/central-docs
+2026-04-08 12:25:36,031 | INFO | app.main | HTTP GET /news/hot
+2026-04-08 12:25:36,037 | INFO | app.main | HTTP GET /news/central-docs -> 200
+2026-04-08 12:25:36,037 | INFO | app.main | HTTP GET /news/hot -> 200
+2026-04-08 12:25:37,653 | INFO | app.main | HTTP GET /news/central-docs
+2026-04-08 12:25:37,653 | INFO | app.main | HTTP GET /user/me
+2026-04-08 12:25:37,654 | INFO | app.main | HTTP GET /news/hot
+2026-04-08 12:25:37,659 | INFO | app.main | HTTP GET /news/with-images
+2026-04-08 12:25:37,660 | INFO | app.main | HTTP GET /news/central-docs -> 200
+2026-04-08 12:25:37,660 | INFO | app.main | HTTP GET /news/hot -> 200
+2026-04-08 12:25:37,664 | INFO | app.main | HTTP GET /news/with-images -> 200
+2026-04-08 12:25:37,665 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:25:37,666 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:25:37,666 | INFO | sqlalchemy.engine.Engine | [cached since 75.26s ago] (1,)
+2026-04-08 12:25:37,668 | INFO | app.main | HTTP GET /user/me -> 200
+2026-04-08 12:25:37,669 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:25:37,672 | INFO | app.main | HTTP GET /chat/
+2026-04-08 12:25:37,674 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:25:37,674 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:25:37,674 | INFO | sqlalchemy.engine.Engine | [cached since 75.26s ago] (1,)
+2026-04-08 12:25:37,675 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.user_id = ? AND chatmessage.is_deleted = 0
+2026-04-08 12:25:37,675 | INFO | sqlalchemy.engine.Engine | [cached since 74.46s ago] (1,)
+2026-04-08 12:25:37,699 | INFO | app.main | HTTP GET /chat/ -> 200
+2026-04-08 12:25:37,700 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:25:37,733 | INFO | app.main | HTTP GET /chat/68
+2026-04-08 12:25:37,734 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:25:37,734 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:25:37,734 | INFO | sqlalchemy.engine.Engine | [cached since 75.32s ago] (1,)
+2026-04-08 12:25:37,735 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text AS chatmessage_original_text, chatmessage.file_url AS chatmessage_file_url, chatmessage.target_audience AS chatmessage_target_audience, chatmessage.handling_matter AS chatmessage_handling_matter, chatmessage.time_deadline AS chatmessage_time_deadline, chatmessage.location_entrance AS chatmessage_location_entrance, chatmessage.required_materials AS chatmessage_required_materials, chatmessage.handling_process AS chatmessage_handling_process, chatmessage.precautions AS chatmessage_precautions, chatmessage.risk_warnings AS chatmessage_risk_warnings, chatmessage.original_text_mapping AS chatmessage_original_text_mapping, chatmessage.chat_analysis AS chatmessage_chat_analysis, chatmessage.user_id AS chatmessage_user_id, chatmessage.id AS chatmessage_id, chatmessage.created_time AS chatmessage_created_time, chatmessage.is_deleted AS chatmessage_is_deleted, chatmessage.source_chat_id AS chatmessage_source_chat_id, chatmessage.session_json_path AS chatmessage_session_json_path 
+FROM chatmessage 
+WHERE chatmessage.id = ?
+2026-04-08 12:25:37,735 | INFO | sqlalchemy.engine.Engine | [cached since 74.48s ago] (68,)
+2026-04-08 12:25:37,738 | INFO | app.main | HTTP GET /chat/68 -> 200
+2026-04-08 12:25:37,739 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:25:37,746 | INFO | app.main | HTTP GET /favorite/
+2026-04-08 12:25:37,747 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:25:37,747 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:25:37,747 | INFO | sqlalchemy.engine.Engine | [cached since 75.34s ago] (1,)
+2026-04-08 12:25:37,747 | INFO | sqlalchemy.engine.Engine | SELECT favorite.id, favorite.user_id, favorite.chat_message_id, favorite.note, favorite.created_time 
+FROM favorite 
+WHERE favorite.user_id = ? ORDER BY favorite.created_time DESC
+2026-04-08 12:25:37,748 | INFO | sqlalchemy.engine.Engine | [cached since 74.48s ago] (1,)
+2026-04-08 12:25:37,748 | INFO | app.main | HTTP GET /favorite/ -> 200
+2026-04-08 12:25:37,749 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:25:37,754 | INFO | app.main | HTTP GET /news/keywords
+2026-04-08 12:25:37,756 | INFO | app.main | HTTP GET /news/keywords -> 200
+2026-04-08 12:25:39,454 | INFO | app.main | HTTP GET /agent/conversations
+2026-04-08 12:25:39,456 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:25:39,456 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:25:39,456 | INFO | sqlalchemy.engine.Engine | [cached since 77.05s ago] (1,)
+2026-04-08 12:25:39,458 | INFO | sqlalchemy.engine.Engine | SELECT agentconversation.id, agentconversation.user_id, agentconversation.title, agentconversation.created_time, agentconversation.updated_time 
+FROM agentconversation 
+WHERE agentconversation.user_id = ?
+2026-04-08 12:25:39,458 | INFO | sqlalchemy.engine.Engine | [generated in 0.00021s] (1,)
+2026-04-08 12:25:39,460 | INFO | app.main | HTTP GET /agent/conversations -> 200
+2026-04-08 12:25:39,460 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:25:39,467 | INFO | app.main | HTTP GET /agent/conversations/1/messages
+2026-04-08 12:25:39,469 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:25:39,469 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:25:39,469 | INFO | sqlalchemy.engine.Engine | [cached since 77.06s ago] (1,)
+2026-04-08 12:25:39,470 | INFO | sqlalchemy.engine.Engine | SELECT agentconversation.id AS agentconversation_id, agentconversation.user_id AS agentconversation_user_id, agentconversation.title AS agentconversation_title, agentconversation.created_time AS agentconversation_created_time, agentconversation.updated_time AS agentconversation_updated_time 
+FROM agentconversation 
+WHERE agentconversation.id = ?
+2026-04-08 12:25:39,471 | INFO | sqlalchemy.engine.Engine | [generated in 0.00014s] (1,)
+2026-04-08 12:25:39,471 | INFO | sqlalchemy.engine.Engine | SELECT agentmessage.id, agentmessage.conversation_id, agentmessage.user_id, agentmessage.role, agentmessage.content, agentmessage.created_time 
+FROM agentmessage 
+WHERE agentmessage.conversation_id = ?
+2026-04-08 12:25:39,472 | INFO | sqlalchemy.engine.Engine | [generated in 0.00010s] (1,)
+2026-04-08 12:25:39,472 | INFO | app.main | HTTP GET /agent/conversations/1/messages -> 200
+2026-04-08 12:25:39,473 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:25:39,478 | INFO | agent_ws | agent ws connect
+2026-04-08 12:25:39,479 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:25:39,479 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:25:39,480 | INFO | sqlalchemy.engine.Engine | [cached since 77.07s ago] (1,)
+2026-04-08 12:25:39,480 | INFO | agent_ws | agent ws auth ok user_id=1
+2026-04-08 12:25:40,576 | INFO | agent_ws | agent ws disconnect
+2026-04-08 12:25:40,576 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:25:40,594 | INFO | app.main | HTTP GET /analysis/me
+2026-04-08 12:25:40,594 | INFO | app.main | HTTP GET /admin/analysis/all
+2026-04-08 12:25:40,596 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:25:40,597 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:25:40,597 | INFO | sqlalchemy.engine.Engine | [cached since 78.19s ago] (1,)
+2026-04-08 12:25:40,597 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:25:40,598 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:25:40,598 | INFO | sqlalchemy.engine.Engine | [cached since 78.19s ago] (1,)
+2026-04-08 12:25:40,599 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.user_id = ? AND chatmessage.is_deleted = 0
+2026-04-08 12:25:40,600 | INFO | sqlalchemy.engine.Engine | [cached since 77.38s ago] (1,)
+2026-04-08 12:25:40,601 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.is_deleted = 0
+2026-04-08 12:25:40,601 | INFO | sqlalchemy.engine.Engine | [generated in 0.00027s] ()
+2026-04-08 12:25:40,612 | INFO | sqlalchemy.engine.Engine | SELECT ragusage.id, ragusage.user_id, ragusage.created_time, ragusage."query", ragusage.top_k, ragusage.result_count, ragusage.avg_score, ragusage.source 
+FROM ragusage 
+WHERE ragusage.user_id = ?
+2026-04-08 12:25:40,612 | INFO | sqlalchemy.engine.Engine | [generated in 0.00022s] (1,)
+2026-04-08 12:25:40,614 | INFO | sqlalchemy.engine.Engine | SELECT ragusage.id, ragusage.user_id, ragusage.created_time, ragusage."query", ragusage.top_k, ragusage.result_count, ragusage.avg_score, ragusage.source 
+FROM ragusage
+2026-04-08 12:25:40,614 | INFO | sqlalchemy.engine.Engine | [generated in 0.00013s] ()
+2026-04-08 12:25:40,620 | DEBUG | jieba | Building prefix dict from the default dictionary ...
+2026-04-08 12:25:40,627 | DEBUG | jieba | Loading model from cache C:\Users\slump\AppData\Local\Temp\jieba.cache
+2026-04-08 12:25:41,013 | DEBUG | jieba | Loading model cost 0.393 seconds.
+2026-04-08 12:25:41,013 | DEBUG | jieba | Prefix dict has been built successfully.
+2026-04-08 12:25:41,032 | INFO | app.main | HTTP GET /admin/analysis/all -> 200
+2026-04-08 12:25:41,033 | INFO | app.main | HTTP GET /analysis/me -> 200
+2026-04-08 12:25:41,033 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:25:41,034 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:25:41,037 | INFO | app.main | HTTP GET /chat/
+2026-04-08 12:25:41,038 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:25:41,038 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:25:41,038 | INFO | sqlalchemy.engine.Engine | [cached since 78.63s ago] (1,)
+2026-04-08 12:25:41,039 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.user_id = ? AND chatmessage.is_deleted = 0
+2026-04-08 12:25:41,039 | INFO | sqlalchemy.engine.Engine | [cached since 77.82s ago] (1,)
+2026-04-08 12:25:41,052 | INFO | app.main | HTTP GET /chat/ -> 200
+2026-04-08 12:25:41,052 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:25:44,050 | INFO | app.main | HTTP GET /favorite/
+2026-04-08 12:25:44,051 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:25:44,052 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:25:44,052 | INFO | sqlalchemy.engine.Engine | [cached since 81.64s ago] (1,)
+2026-04-08 12:25:44,053 | INFO | sqlalchemy.engine.Engine | SELECT favorite.id, favorite.user_id, favorite.chat_message_id, favorite.note, favorite.created_time 
+FROM favorite 
+WHERE favorite.user_id = ? ORDER BY favorite.created_time DESC
+2026-04-08 12:25:44,053 | INFO | sqlalchemy.engine.Engine | [cached since 80.79s ago] (1,)
+2026-04-08 12:25:44,054 | INFO | app.main | HTTP GET /favorite/ -> 200
+2026-04-08 12:25:44,055 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:25:45,205 | INFO | app.main | HTTP GET /todo/
+2026-04-08 12:25:45,206 | INFO | app.main | HTTP GET /todo/
+2026-04-08 12:25:45,207 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:25:45,207 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:25:45,207 | INFO | sqlalchemy.engine.Engine | [cached since 82.8s ago] (1,)
+2026-04-08 12:25:45,208 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:25:45,208 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:25:45,208 | INFO | sqlalchemy.engine.Engine | [cached since 82.8s ago] (1,)
+2026-04-08 12:25:45,211 | INFO | sqlalchemy.engine.Engine | SELECT todoitem.id, todoitem.user_id, todoitem.source_chat_id, todoitem.title, todoitem.detail, todoitem.deadline, todoitem.is_done, todoitem.is_confirmed, todoitem.created_time, todoitem.updated_time 
+FROM todoitem 
+WHERE todoitem.user_id = ? ORDER BY todoitem.created_time DESC
+2026-04-08 12:25:45,212 | INFO | sqlalchemy.engine.Engine | [generated in 0.00121s] (1,)
+2026-04-08 12:25:45,212 | INFO | sqlalchemy.engine.Engine | SELECT todoitem.id, todoitem.user_id, todoitem.source_chat_id, todoitem.title, todoitem.detail, todoitem.deadline, todoitem.is_done, todoitem.is_confirmed, todoitem.created_time, todoitem.updated_time 
+FROM todoitem 
+WHERE todoitem.user_id = ? AND todoitem.is_confirmed = 1 ORDER BY todoitem.created_time DESC
+2026-04-08 12:25:45,212 | INFO | sqlalchemy.engine.Engine | [generated in 0.00056s] (1,)
+2026-04-08 12:25:45,214 | INFO | app.main | HTTP GET /todo/ -> 200
+2026-04-08 12:25:45,215 | INFO | app.main | HTTP GET /todo/ -> 200
+2026-04-08 12:25:45,215 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:25:45,216 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:25:46,154 | INFO | app.main | HTTP GET /user/me
+2026-04-08 12:25:46,156 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:25:46,156 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:25:46,156 | INFO | sqlalchemy.engine.Engine | [cached since 83.75s ago] (1,)
+2026-04-08 12:25:46,158 | INFO | app.main | HTTP GET /analysis/me
+2026-04-08 12:25:46,159 | INFO | app.main | HTTP GET /user/me -> 200
+2026-04-08 12:25:46,160 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:25:46,160 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:25:46,160 | INFO | sqlalchemy.engine.Engine | [cached since 83.75s ago] (1,)
+2026-04-08 12:25:46,161 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:25:46,161 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.user_id = ? AND chatmessage.is_deleted = 0
+2026-04-08 12:25:46,162 | INFO | sqlalchemy.engine.Engine | [cached since 82.95s ago] (1,)
+2026-04-08 12:25:46,167 | INFO | sqlalchemy.engine.Engine | SELECT ragusage.id, ragusage.user_id, ragusage.created_time, ragusage."query", ragusage.top_k, ragusage.result_count, ragusage.avg_score, ragusage.source 
+FROM ragusage 
+WHERE ragusage.user_id = ?
+2026-04-08 12:25:46,167 | INFO | sqlalchemy.engine.Engine | [cached since 5.556s ago] (1,)
+2026-04-08 12:25:46,183 | INFO | app.main | HTTP GET /analysis/me -> 200
+2026-04-08 12:25:46,184 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:25:49,345 | INFO | app.main | HTTP GET /admin/users
+2026-04-08 12:25:49,347 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:25:49,347 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:25:49,347 | INFO | sqlalchemy.engine.Engine | [cached since 86.94s ago] (1,)
+2026-04-08 12:25:49,348 | INFO | app.main | HTTP GET /admin/stats
+2026-04-08 12:25:49,349 | INFO | app.main | HTTP GET /analysis/me
+2026-04-08 12:25:49,350 | INFO | app.main | HTTP GET /admin/analysis/all
+2026-04-08 12:25:49,352 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:25:49,353 | INFO | sqlalchemy.engine.Engine | SELECT user.uname, user.email, user.phone, user.avatar_url, user.is_admin, user.uid, user.hashed_pwd, user.created_time, user.last_login, user.email_verified, user.email_verification_code, user.email_verification_sent_at 
+FROM user
+2026-04-08 12:25:49,353 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:25:49,354 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:25:49,354 | INFO | sqlalchemy.engine.Engine | [generated in 0.00166s] ()
+2026-04-08 12:25:49,354 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:25:49,354 | INFO | sqlalchemy.engine.Engine | [cached since 86.95s ago] (1,)
+2026-04-08 12:25:49,355 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:25:49,355 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:25:49,355 | INFO | sqlalchemy.engine.Engine | [cached since 86.95s ago] (1,)
+2026-04-08 12:25:49,355 | INFO | sqlalchemy.engine.Engine | [cached since 86.95s ago] (1,)
+2026-04-08 12:25:49,357 | INFO | app.main | HTTP GET /admin/users -> 200
+2026-04-08 12:25:49,359 | INFO | sqlalchemy.engine.Engine | SELECT count(user.uid) AS count_1 
+FROM user
+2026-04-08 12:25:49,359 | INFO | sqlalchemy.engine.Engine | [generated in 0.00043s] ()
+2026-04-08 12:25:49,360 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.user_id = ? AND chatmessage.is_deleted = 0
+2026-04-08 12:25:49,360 | INFO | sqlalchemy.engine.Engine | [cached since 86.14s ago] (1,)
+2026-04-08 12:25:49,361 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.is_deleted = 0
+2026-04-08 12:25:49,361 | INFO | sqlalchemy.engine.Engine | [cached since 8.761s ago] ()
+2026-04-08 12:25:49,362 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:25:49,360 | INFO | sqlalchemy.engine.Engine | SELECT count(chatmessage.id) AS count_1 
+FROM chatmessage 
+WHERE chatmessage.is_deleted = 0
+2026-04-08 12:25:49,362 | INFO | sqlalchemy.engine.Engine | [generated in 0.00187s] ()
+2026-04-08 12:25:49,364 | INFO | sqlalchemy.engine.Engine | SELECT count(distinct(chatmessage.user_id)) AS count_1 
+FROM chatmessage 
+WHERE chatmessage.is_deleted = 0
+2026-04-08 12:25:49,364 | INFO | sqlalchemy.engine.Engine | [generated in 0.00018s] ()
+2026-04-08 12:25:49,365 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.user_id, count(chatmessage.id) AS count_1 
+FROM chatmessage 
+WHERE chatmessage.is_deleted = 0 GROUP BY chatmessage.user_id
+2026-04-08 12:25:49,365 | INFO | sqlalchemy.engine.Engine | [generated in 0.00017s] ()
+2026-04-08 12:25:49,366 | INFO | app.main | HTTP GET /admin/stats -> 200
+2026-04-08 12:25:49,367 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:25:49,374 | INFO | sqlalchemy.engine.Engine | SELECT ragusage.id, ragusage.user_id, ragusage.created_time, ragusage."query", ragusage.top_k, ragusage.result_count, ragusage.avg_score, ragusage.source 
+FROM ragusage 
+WHERE ragusage.user_id = ?
+2026-04-08 12:25:49,375 | INFO | sqlalchemy.engine.Engine | SELECT ragusage.id, ragusage.user_id, ragusage.created_time, ragusage."query", ragusage.top_k, ragusage.result_count, ragusage.avg_score, ragusage.source 
+FROM ragusage
+2026-04-08 12:25:49,375 | INFO | sqlalchemy.engine.Engine | [cached since 8.763s ago] (1,)
+2026-04-08 12:25:49,375 | INFO | sqlalchemy.engine.Engine | [cached since 8.762s ago] ()
+2026-04-08 12:25:49,392 | INFO | app.main | HTTP GET /analysis/me -> 200
+2026-04-08 12:25:49,392 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:25:49,409 | INFO | app.main | HTTP GET /admin/analysis/all -> 200
+2026-04-08 12:25:49,409 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:25:49,458 | INFO | app.main | HTTP GET /admin/stats/stream
+2026-04-08 12:25:49,459 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:25:49,459 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:25:49,459 | INFO | sqlalchemy.engine.Engine | [cached since 87.05s ago] (1,)
+2026-04-08 12:25:49,460 | INFO | sqlalchemy.engine.Engine | SELECT count(user.uid) AS count_1 
+FROM user
+2026-04-08 12:25:49,460 | INFO | sqlalchemy.engine.Engine | [cached since 0.101s ago] ()
+2026-04-08 12:25:49,460 | INFO | sqlalchemy.engine.Engine | SELECT count(chatmessage.id) AS count_1 
+FROM chatmessage 
+WHERE chatmessage.is_deleted = 0
+2026-04-08 12:25:49,460 | INFO | sqlalchemy.engine.Engine | [cached since 0.09981s ago] ()
+2026-04-08 12:25:49,461 | INFO | sqlalchemy.engine.Engine | SELECT count(distinct(chatmessage.user_id)) AS count_1 
+FROM chatmessage 
+WHERE chatmessage.is_deleted = 0
+2026-04-08 12:25:49,461 | INFO | sqlalchemy.engine.Engine | [cached since 0.09693s ago] ()
+2026-04-08 12:25:49,461 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.user_id, count(chatmessage.id) AS count_1 
+FROM chatmessage 
+WHERE chatmessage.is_deleted = 0 GROUP BY chatmessage.user_id
+2026-04-08 12:25:49,461 | INFO | sqlalchemy.engine.Engine | [cached since 0.09587s ago] ()
+2026-04-08 12:25:49,461 | INFO | app.main | HTTP GET /admin/stats/stream -> 200
+2026-04-08 12:25:51,627 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:25:51,639 | INFO | app.main | HTTP GET /user/me
+2026-04-08 12:25:51,641 | INFO | app.main | HTTP GET /settings/me
+2026-04-08 12:25:51,642 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:25:51,642 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:25:51,642 | INFO | sqlalchemy.engine.Engine | [cached since 89.23s ago] (1,)
+2026-04-08 12:25:51,643 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:25:51,644 | INFO | app.main | HTTP GET /user/me -> 200
+2026-04-08 12:25:51,644 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:25:51,644 | INFO | sqlalchemy.engine.Engine | [cached since 89.24s ago] (1,)
+2026-04-08 12:25:51,645 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:25:51,646 | INFO | sqlalchemy.engine.Engine | SELECT settings.default_audience, settings.theme_mode, settings.system_notifications, settings.user_id, settings.id 
+FROM settings 
+WHERE settings.user_id = ?
+2026-04-08 12:25:51,647 | INFO | sqlalchemy.engine.Engine | [cached since 88.44s ago] (1,)
+2026-04-08 12:25:51,648 | INFO | app.main | HTTP GET /settings/me -> 200
+2026-04-08 12:25:51,648 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:25:54,853 | INFO | app.main | HTTP PATCH /settings/me
+2026-04-08 12:25:54,855 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:25:54,855 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:25:54,856 | INFO | sqlalchemy.engine.Engine | [cached since 92.45s ago] (1,)
+2026-04-08 12:25:54,857 | INFO | sqlalchemy.engine.Engine | SELECT settings.default_audience, settings.theme_mode, settings.system_notifications, settings.user_id, settings.id 
+FROM settings 
+WHERE settings.user_id = ?
+2026-04-08 12:25:54,857 | INFO | sqlalchemy.engine.Engine | [cached since 91.65s ago] (1,)
+2026-04-08 12:25:54,858 | INFO | sqlalchemy.engine.Engine | UPDATE settings SET theme_mode=? WHERE settings.id = ?
+2026-04-08 12:25:54,858 | INFO | sqlalchemy.engine.Engine | [generated in 0.00015s] ('system', 1)
+2026-04-08 12:25:54,862 | INFO | sqlalchemy.engine.Engine | COMMIT
+2026-04-08 12:25:54,866 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:25:54,867 | INFO | sqlalchemy.engine.Engine | SELECT settings.default_audience, settings.theme_mode, settings.system_notifications, settings.user_id, settings.id 
+FROM settings 
+WHERE settings.id = ?
+2026-04-08 12:25:54,867 | INFO | sqlalchemy.engine.Engine | [generated in 0.00009s] (1,)
+2026-04-08 12:25:54,868 | INFO | app.main | HTTP PATCH /settings/me -> 200
+2026-04-08 12:25:54,869 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:25:55,260 | INFO | app.main | HTTP PATCH /settings/me
+2026-04-08 12:25:55,262 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:25:55,262 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:25:55,262 | INFO | sqlalchemy.engine.Engine | [cached since 92.85s ago] (1,)
+2026-04-08 12:25:55,264 | INFO | sqlalchemy.engine.Engine | SELECT settings.default_audience, settings.theme_mode, settings.system_notifications, settings.user_id, settings.id 
+FROM settings 
+WHERE settings.user_id = ?
+2026-04-08 12:25:55,264 | INFO | sqlalchemy.engine.Engine | [cached since 92.05s ago] (1,)
+2026-04-08 12:25:55,265 | INFO | sqlalchemy.engine.Engine | UPDATE settings SET theme_mode=? WHERE settings.id = ?
+2026-04-08 12:25:55,265 | INFO | sqlalchemy.engine.Engine | [cached since 0.4067s ago] ('dark', 1)
+2026-04-08 12:25:55,270 | INFO | sqlalchemy.engine.Engine | COMMIT
+2026-04-08 12:25:55,276 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:25:55,276 | INFO | sqlalchemy.engine.Engine | SELECT settings.default_audience, settings.theme_mode, settings.system_notifications, settings.user_id, settings.id 
+FROM settings 
+WHERE settings.id = ?
+2026-04-08 12:25:55,276 | INFO | sqlalchemy.engine.Engine | [cached since 0.4093s ago] (1,)
+2026-04-08 12:25:55,278 | INFO | app.main | HTTP PATCH /settings/me -> 200
+2026-04-08 12:25:55,278 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:25:56,638 | INFO | app.main | HTTP GET /user/me
+2026-04-08 12:25:56,638 | INFO | app.main | HTTP GET /news/hot
+2026-04-08 12:25:56,638 | INFO | app.main | HTTP GET /news/central-docs
+2026-04-08 12:25:56,642 | INFO | app.main | HTTP GET /news/with-images
+2026-04-08 12:25:56,645 | INFO | app.main | HTTP GET /news/hot -> 200
+2026-04-08 12:25:56,645 | INFO | app.main | HTTP GET /news/central-docs -> 200
+2026-04-08 12:25:56,646 | INFO | app.main | HTTP GET /news/with-images -> 200
+2026-04-08 12:25:56,648 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:25:56,648 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:25:56,648 | INFO | sqlalchemy.engine.Engine | [cached since 94.24s ago] (1,)
+2026-04-08 12:25:56,650 | INFO | app.main | HTTP GET /user/me -> 200
+2026-04-08 12:25:56,651 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:25:56,653 | INFO | app.main | HTTP GET /chat/
+2026-04-08 12:25:56,654 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:25:56,654 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:25:56,655 | INFO | sqlalchemy.engine.Engine | [cached since 94.25s ago] (1,)
+2026-04-08 12:25:56,656 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.user_id = ? AND chatmessage.is_deleted = 0
+2026-04-08 12:25:56,656 | INFO | sqlalchemy.engine.Engine | [cached since 93.44s ago] (1,)
+2026-04-08 12:25:56,682 | INFO | app.main | HTTP GET /chat/ -> 200
+2026-04-08 12:25:56,683 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:25:56,694 | INFO | app.main | HTTP GET /chat/68
+2026-04-08 12:25:56,696 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:25:56,696 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:25:56,696 | INFO | sqlalchemy.engine.Engine | [cached since 94.29s ago] (1,)
+2026-04-08 12:25:56,697 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text AS chatmessage_original_text, chatmessage.file_url AS chatmessage_file_url, chatmessage.target_audience AS chatmessage_target_audience, chatmessage.handling_matter AS chatmessage_handling_matter, chatmessage.time_deadline AS chatmessage_time_deadline, chatmessage.location_entrance AS chatmessage_location_entrance, chatmessage.required_materials AS chatmessage_required_materials, chatmessage.handling_process AS chatmessage_handling_process, chatmessage.precautions AS chatmessage_precautions, chatmessage.risk_warnings AS chatmessage_risk_warnings, chatmessage.original_text_mapping AS chatmessage_original_text_mapping, chatmessage.chat_analysis AS chatmessage_chat_analysis, chatmessage.user_id AS chatmessage_user_id, chatmessage.id AS chatmessage_id, chatmessage.created_time AS chatmessage_created_time, chatmessage.is_deleted AS chatmessage_is_deleted, chatmessage.source_chat_id AS chatmessage_source_chat_id, chatmessage.session_json_path AS chatmessage_session_json_path 
+FROM chatmessage 
+WHERE chatmessage.id = ?
+2026-04-08 12:25:56,697 | INFO | sqlalchemy.engine.Engine | [cached since 93.45s ago] (68,)
+2026-04-08 12:25:56,701 | INFO | app.main | HTTP GET /chat/68 -> 200
+2026-04-08 12:25:56,702 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:25:56,710 | INFO | app.main | HTTP GET /favorite/
+2026-04-08 12:25:56,711 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:25:56,712 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:25:56,712 | INFO | sqlalchemy.engine.Engine | [cached since 94.3s ago] (1,)
+2026-04-08 12:25:56,713 | INFO | sqlalchemy.engine.Engine | SELECT favorite.id, favorite.user_id, favorite.chat_message_id, favorite.note, favorite.created_time 
+FROM favorite 
+WHERE favorite.user_id = ? ORDER BY favorite.created_time DESC
+2026-04-08 12:25:56,713 | INFO | sqlalchemy.engine.Engine | [cached since 93.45s ago] (1,)
+2026-04-08 12:25:56,714 | INFO | app.main | HTTP GET /favorite/ -> 200
+2026-04-08 12:25:56,714 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:25:56,720 | INFO | app.main | HTTP GET /news/keywords
+2026-04-08 12:25:56,722 | INFO | app.main | HTTP GET /news/keywords -> 200
+2026-04-08 12:26:00,753 | INFO | app.main | HTTP PATCH /settings/me
+2026-04-08 12:26:00,755 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:26:00,756 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:26:00,756 | INFO | sqlalchemy.engine.Engine | [cached since 98.35s ago] (1,)
+2026-04-08 12:26:00,757 | INFO | sqlalchemy.engine.Engine | SELECT settings.default_audience, settings.theme_mode, settings.system_notifications, settings.user_id, settings.id 
+FROM settings 
+WHERE settings.user_id = ?
+2026-04-08 12:26:00,757 | INFO | sqlalchemy.engine.Engine | [cached since 97.55s ago] (1,)
+2026-04-08 12:26:00,758 | INFO | sqlalchemy.engine.Engine | UPDATE settings SET theme_mode=? WHERE settings.id = ?
+2026-04-08 12:26:00,758 | INFO | sqlalchemy.engine.Engine | [cached since 5.9s ago] ('light', 1)
+2026-04-08 12:26:00,776 | INFO | sqlalchemy.engine.Engine | COMMIT
+2026-04-08 12:26:00,786 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:26:00,786 | INFO | sqlalchemy.engine.Engine | SELECT settings.default_audience, settings.theme_mode, settings.system_notifications, settings.user_id, settings.id 
+FROM settings 
+WHERE settings.id = ?
+2026-04-08 12:26:00,786 | INFO | sqlalchemy.engine.Engine | [cached since 5.919s ago] (1,)
+2026-04-08 12:26:00,787 | INFO | app.main | HTTP PATCH /settings/me -> 200
+2026-04-08 12:26:00,788 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:26:07,999 | INFO | app.main | HTTP GET /news/hot
+2026-04-08 12:26:07,999 | INFO | app.main | HTTP GET /news/daily-summary
+2026-04-08 12:26:08,002 | INFO | app.main | HTTP GET /news/central-docs
+2026-04-08 12:26:08,003 | INFO | app.main | HTTP GET /news/hot -> 200
+2026-04-08 12:26:08,003 | INFO | app.main | HTTP GET /news/daily-summary -> 200
+2026-04-08 12:26:08,005 | INFO | app.main | HTTP GET /news/central-docs -> 200
+2026-04-08 12:26:14,249 | INFO | app.main | HTTP GET /news/hot
+2026-04-08 12:26:14,249 | INFO | app.main | HTTP GET /user/me
+2026-04-08 12:26:14,252 | INFO | app.main | HTTP GET /news/central-docs
+2026-04-08 12:26:14,252 | INFO | app.main | HTTP GET /news/hot -> 200
+2026-04-08 12:26:14,255 | INFO | app.main | HTTP GET /news/central-docs -> 200
+2026-04-08 12:26:14,255 | INFO | app.main | HTTP GET /news/with-images
+2026-04-08 12:26:14,257 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:26:14,257 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:26:14,258 | INFO | sqlalchemy.engine.Engine | [cached since 111.8s ago] (1,)
+2026-04-08 12:26:14,260 | INFO | app.main | HTTP GET /news/with-images -> 200
+2026-04-08 12:26:14,262 | INFO | app.main | HTTP GET /user/me -> 200
+2026-04-08 12:26:14,263 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:26:14,266 | INFO | app.main | HTTP GET /chat/
+2026-04-08 12:26:14,267 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:26:14,268 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:26:14,268 | INFO | sqlalchemy.engine.Engine | [cached since 111.9s ago] (1,)
+2026-04-08 12:26:14,269 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.user_id = ? AND chatmessage.is_deleted = 0
+2026-04-08 12:26:14,269 | INFO | sqlalchemy.engine.Engine | [cached since 111.1s ago] (1,)
+2026-04-08 12:26:14,297 | INFO | app.main | HTTP GET /chat/ -> 200
+2026-04-08 12:26:14,298 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:26:14,307 | INFO | app.main | HTTP GET /chat/68
+2026-04-08 12:26:14,309 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:26:14,309 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:26:14,309 | INFO | sqlalchemy.engine.Engine | [cached since 111.9s ago] (1,)
+2026-04-08 12:26:14,310 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text AS chatmessage_original_text, chatmessage.file_url AS chatmessage_file_url, chatmessage.target_audience AS chatmessage_target_audience, chatmessage.handling_matter AS chatmessage_handling_matter, chatmessage.time_deadline AS chatmessage_time_deadline, chatmessage.location_entrance AS chatmessage_location_entrance, chatmessage.required_materials AS chatmessage_required_materials, chatmessage.handling_process AS chatmessage_handling_process, chatmessage.precautions AS chatmessage_precautions, chatmessage.risk_warnings AS chatmessage_risk_warnings, chatmessage.original_text_mapping AS chatmessage_original_text_mapping, chatmessage.chat_analysis AS chatmessage_chat_analysis, chatmessage.user_id AS chatmessage_user_id, chatmessage.id AS chatmessage_id, chatmessage.created_time AS chatmessage_created_time, chatmessage.is_deleted AS chatmessage_is_deleted, chatmessage.source_chat_id AS chatmessage_source_chat_id, chatmessage.session_json_path AS chatmessage_session_json_path 
+FROM chatmessage 
+WHERE chatmessage.id = ?
+2026-04-08 12:26:14,310 | INFO | sqlalchemy.engine.Engine | [cached since 111.1s ago] (68,)
+2026-04-08 12:26:14,314 | INFO | app.main | HTTP GET /chat/68 -> 200
+2026-04-08 12:26:14,315 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:26:14,323 | INFO | app.main | HTTP GET /favorite/
+2026-04-08 12:26:14,325 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:26:14,326 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:26:14,326 | INFO | sqlalchemy.engine.Engine | [cached since 111.9s ago] (1,)
+2026-04-08 12:26:14,327 | INFO | sqlalchemy.engine.Engine | SELECT favorite.id, favorite.user_id, favorite.chat_message_id, favorite.note, favorite.created_time 
+FROM favorite 
+WHERE favorite.user_id = ? ORDER BY favorite.created_time DESC
+2026-04-08 12:26:14,327 | INFO | sqlalchemy.engine.Engine | [cached since 111.1s ago] (1,)
+2026-04-08 12:26:14,328 | INFO | app.main | HTTP GET /favorite/ -> 200
+2026-04-08 12:26:14,329 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:26:14,338 | INFO | app.main | HTTP GET /news/keywords
+2026-04-08 12:26:14,340 | INFO | app.main | HTTP GET /news/keywords -> 200
+2026-04-08 12:26:15,262 | INFO | app.main | HTTP GET /analysis/me
+2026-04-08 12:26:15,263 | INFO | app.main | HTTP GET /admin/analysis/all
+2026-04-08 12:26:15,265 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:26:15,265 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:26:15,266 | INFO | sqlalchemy.engine.Engine | [cached since 112.9s ago] (1,)
+2026-04-08 12:26:15,266 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:26:15,267 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:26:15,267 | INFO | sqlalchemy.engine.Engine | [cached since 112.9s ago] (1,)
+2026-04-08 12:26:15,268 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.user_id = ? AND chatmessage.is_deleted = 0
+2026-04-08 12:26:15,268 | INFO | sqlalchemy.engine.Engine | [cached since 112.1s ago] (1,)
+2026-04-08 12:26:15,269 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.is_deleted = 0
+2026-04-08 12:26:15,269 | INFO | sqlalchemy.engine.Engine | [cached since 34.67s ago] ()
+2026-04-08 12:26:15,280 | INFO | sqlalchemy.engine.Engine | SELECT ragusage.id, ragusage.user_id, ragusage.created_time, ragusage."query", ragusage.top_k, ragusage.result_count, ragusage.avg_score, ragusage.source 
+FROM ragusage 
+WHERE ragusage.user_id = ?
+2026-04-08 12:26:15,281 | INFO | sqlalchemy.engine.Engine | [cached since 34.67s ago] (1,)
+2026-04-08 12:26:15,282 | INFO | sqlalchemy.engine.Engine | SELECT ragusage.id, ragusage.user_id, ragusage.created_time, ragusage."query", ragusage.top_k, ragusage.result_count, ragusage.avg_score, ragusage.source 
+FROM ragusage
+2026-04-08 12:26:15,282 | INFO | sqlalchemy.engine.Engine | [cached since 34.67s ago] ()
+2026-04-08 12:26:15,315 | INFO | app.main | HTTP GET /analysis/me -> 200
+2026-04-08 12:26:15,316 | INFO | app.main | HTTP GET /admin/analysis/all -> 200
+2026-04-08 12:26:15,317 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:26:15,317 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:26:15,323 | INFO | app.main | HTTP GET /chat/
+2026-04-08 12:26:15,324 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:26:15,325 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:26:15,325 | INFO | sqlalchemy.engine.Engine | [cached since 112.9s ago] (1,)
+2026-04-08 12:26:15,326 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.user_id = ? AND chatmessage.is_deleted = 0
+2026-04-08 12:26:15,326 | INFO | sqlalchemy.engine.Engine | [cached since 112.1s ago] (1,)
+2026-04-08 12:26:15,339 | INFO | app.main | HTTP GET /chat/ -> 200
+2026-04-08 12:26:15,341 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:26:18,102 | INFO | app.main | HTTP GET /agent/conversations
+2026-04-08 12:26:18,104 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:26:18,104 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:26:18,104 | INFO | sqlalchemy.engine.Engine | [cached since 115.7s ago] (1,)
+2026-04-08 12:26:18,105 | INFO | sqlalchemy.engine.Engine | SELECT agentconversation.id, agentconversation.user_id, agentconversation.title, agentconversation.created_time, agentconversation.updated_time 
+FROM agentconversation 
+WHERE agentconversation.user_id = ?
+2026-04-08 12:26:18,106 | INFO | sqlalchemy.engine.Engine | [cached since 38.65s ago] (1,)
+2026-04-08 12:26:18,107 | INFO | app.main | HTTP GET /agent/conversations -> 200
+2026-04-08 12:26:18,107 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:26:18,115 | INFO | app.main | HTTP GET /agent/conversations/1/messages
+2026-04-08 12:26:18,116 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:26:18,116 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:26:18,116 | INFO | sqlalchemy.engine.Engine | [cached since 115.7s ago] (1,)
+2026-04-08 12:26:18,117 | INFO | sqlalchemy.engine.Engine | SELECT agentconversation.id AS agentconversation_id, agentconversation.user_id AS agentconversation_user_id, agentconversation.title AS agentconversation_title, agentconversation.created_time AS agentconversation_created_time, agentconversation.updated_time AS agentconversation_updated_time 
+FROM agentconversation 
+WHERE agentconversation.id = ?
+2026-04-08 12:26:18,117 | INFO | sqlalchemy.engine.Engine | [cached since 38.65s ago] (1,)
+2026-04-08 12:26:18,118 | INFO | sqlalchemy.engine.Engine | SELECT agentmessage.id, agentmessage.conversation_id, agentmessage.user_id, agentmessage.role, agentmessage.content, agentmessage.created_time 
+FROM agentmessage 
+WHERE agentmessage.conversation_id = ?
+2026-04-08 12:26:18,118 | INFO | sqlalchemy.engine.Engine | [cached since 38.65s ago] (1,)
+2026-04-08 12:26:18,118 | INFO | app.main | HTTP GET /agent/conversations/1/messages -> 200
+2026-04-08 12:26:18,118 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:26:18,122 | INFO | agent_ws | agent ws connect
+2026-04-08 12:26:18,122 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:26:18,123 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:26:18,123 | INFO | sqlalchemy.engine.Engine | [cached since 115.7s ago] (1,)
+2026-04-08 12:26:18,123 | INFO | agent_ws | agent ws auth ok user_id=1
+2026-04-08 12:26:20,093 | INFO | agent_ws | agent ws disconnect
+2026-04-08 12:26:20,093 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:26:20,116 | INFO | app.main | HTTP GET /user/me
+2026-04-08 12:26:20,118 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:26:20,118 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:26:20,118 | INFO | sqlalchemy.engine.Engine | [cached since 117.7s ago] (1,)
+2026-04-08 12:26:20,120 | INFO | app.main | HTTP GET /user/me -> 200
+2026-04-08 12:26:20,121 | INFO | app.main | HTTP GET /news/hot
+2026-04-08 12:26:20,124 | INFO | app.main | HTTP GET /news/central-docs
+2026-04-08 12:26:20,125 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:26:20,126 | INFO | app.main | HTTP GET /news/hot -> 200
+2026-04-08 12:26:20,127 | INFO | app.main | HTTP GET /news/central-docs -> 200
+2026-04-08 12:26:20,127 | INFO | app.main | HTTP GET /news/with-images
+2026-04-08 12:26:20,130 | INFO | app.main | HTTP GET /news/with-images -> 200
+2026-04-08 12:26:20,135 | INFO | app.main | HTTP GET /chat/
+2026-04-08 12:26:20,137 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:26:20,137 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:26:20,137 | INFO | sqlalchemy.engine.Engine | [cached since 117.7s ago] (1,)
+2026-04-08 12:26:20,139 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.user_id = ? AND chatmessage.is_deleted = 0
+2026-04-08 12:26:20,139 | INFO | sqlalchemy.engine.Engine | [cached since 116.9s ago] (1,)
+2026-04-08 12:26:20,158 | INFO | app.main | HTTP GET /chat/ -> 200
+2026-04-08 12:26:20,159 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:26:20,169 | INFO | app.main | HTTP GET /chat/68
+2026-04-08 12:26:20,171 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:26:20,171 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:26:20,172 | INFO | sqlalchemy.engine.Engine | [cached since 117.8s ago] (1,)
+2026-04-08 12:26:20,173 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text AS chatmessage_original_text, chatmessage.file_url AS chatmessage_file_url, chatmessage.target_audience AS chatmessage_target_audience, chatmessage.handling_matter AS chatmessage_handling_matter, chatmessage.time_deadline AS chatmessage_time_deadline, chatmessage.location_entrance AS chatmessage_location_entrance, chatmessage.required_materials AS chatmessage_required_materials, chatmessage.handling_process AS chatmessage_handling_process, chatmessage.precautions AS chatmessage_precautions, chatmessage.risk_warnings AS chatmessage_risk_warnings, chatmessage.original_text_mapping AS chatmessage_original_text_mapping, chatmessage.chat_analysis AS chatmessage_chat_analysis, chatmessage.user_id AS chatmessage_user_id, chatmessage.id AS chatmessage_id, chatmessage.created_time AS chatmessage_created_time, chatmessage.is_deleted AS chatmessage_is_deleted, chatmessage.source_chat_id AS chatmessage_source_chat_id, chatmessage.session_json_path AS chatmessage_session_json_path 
+FROM chatmessage 
+WHERE chatmessage.id = ?
+2026-04-08 12:26:20,173 | INFO | sqlalchemy.engine.Engine | [cached since 116.9s ago] (68,)
+2026-04-08 12:26:20,178 | INFO | app.main | HTTP GET /chat/68 -> 200
+2026-04-08 12:26:20,179 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:26:20,186 | INFO | app.main | HTTP GET /favorite/
+2026-04-08 12:26:20,188 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:26:20,188 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:26:20,188 | INFO | sqlalchemy.engine.Engine | [cached since 117.8s ago] (1,)
+2026-04-08 12:26:20,189 | INFO | sqlalchemy.engine.Engine | SELECT favorite.id, favorite.user_id, favorite.chat_message_id, favorite.note, favorite.created_time 
+FROM favorite 
+WHERE favorite.user_id = ? ORDER BY favorite.created_time DESC
+2026-04-08 12:26:20,190 | INFO | sqlalchemy.engine.Engine | [cached since 116.9s ago] (1,)
+2026-04-08 12:26:20,191 | INFO | app.main | HTTP GET /favorite/ -> 200
+2026-04-08 12:26:20,191 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:26:20,198 | INFO | app.main | HTTP GET /news/keywords
+2026-04-08 12:26:20,201 | INFO | app.main | HTTP GET /news/keywords -> 200
+2026-04-08 12:26:40,932 | INFO | app.main | HTTP GET /news/daily-summary
+2026-04-08 12:26:40,935 | INFO | app.main | HTTP GET /news/daily-summary -> 200
+2026-04-08 12:26:40,936 | INFO | app.main | HTTP GET /news/hot
+2026-04-08 12:26:40,936 | INFO | app.main | HTTP GET /news/central-docs
+2026-04-08 12:26:40,940 | INFO | app.main | HTTP GET /news/hot -> 200
+2026-04-08 12:26:40,940 | INFO | app.main | HTTP GET /news/central-docs -> 200
+2026-04-08 12:26:47,358 | INFO | app.main | HTTP GET /news/search
+2026-04-08 12:26:47,364 | INFO | app.main | HTTP GET /news/search -> 200
+2026-04-08 12:26:47,370 | INFO | app.main | HTTP GET /news/central-docs
+2026-04-08 12:26:47,373 | INFO | app.main | HTTP GET /news/central-docs -> 200
+2026-04-08 12:26:47,379 | INFO | app.main | HTTP GET /news/hot
+2026-04-08 12:26:47,382 | INFO | app.main | HTTP GET /news/hot -> 200
+2026-04-08 12:26:57,112 | INFO | app.main | HTTP GET /analysis/me
+2026-04-08 12:26:57,114 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:26:57,114 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:26:57,114 | INFO | sqlalchemy.engine.Engine | [cached since 154.7s ago] (1,)
+2026-04-08 12:26:57,115 | INFO | app.main | HTTP GET /admin/analysis/all
+2026-04-08 12:26:57,117 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.user_id = ? AND chatmessage.is_deleted = 0
+2026-04-08 12:26:57,117 | INFO | sqlalchemy.engine.Engine | [cached since 153.9s ago] (1,)
+2026-04-08 12:26:57,118 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:26:57,118 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:26:57,118 | INFO | sqlalchemy.engine.Engine | [cached since 154.7s ago] (1,)
+2026-04-08 12:26:57,119 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.is_deleted = 0
+2026-04-08 12:26:57,120 | INFO | sqlalchemy.engine.Engine | [cached since 76.52s ago] ()
+2026-04-08 12:26:57,130 | INFO | sqlalchemy.engine.Engine | SELECT ragusage.id, ragusage.user_id, ragusage.created_time, ragusage."query", ragusage.top_k, ragusage.result_count, ragusage.avg_score, ragusage.source 
+FROM ragusage 
+WHERE ragusage.user_id = ?
+2026-04-08 12:26:57,130 | INFO | sqlalchemy.engine.Engine | SELECT ragusage.id, ragusage.user_id, ragusage.created_time, ragusage."query", ragusage.top_k, ragusage.result_count, ragusage.avg_score, ragusage.source 
+FROM ragusage
+2026-04-08 12:26:57,131 | INFO | sqlalchemy.engine.Engine | [cached since 76.52s ago] ()
+2026-04-08 12:26:57,130 | INFO | sqlalchemy.engine.Engine | [cached since 76.52s ago] (1,)
+2026-04-08 12:26:57,163 | INFO | app.main | HTTP GET /admin/analysis/all -> 200
+2026-04-08 12:26:57,164 | INFO | app.main | HTTP GET /analysis/me -> 200
+2026-04-08 12:26:57,165 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:26:57,165 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:26:57,169 | INFO | app.main | HTTP GET /chat/
+2026-04-08 12:26:57,170 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:26:57,170 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:26:57,170 | INFO | sqlalchemy.engine.Engine | [cached since 154.8s ago] (1,)
+2026-04-08 12:26:57,171 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.user_id = ? AND chatmessage.is_deleted = 0
+2026-04-08 12:26:57,171 | INFO | sqlalchemy.engine.Engine | [cached since 154s ago] (1,)
+2026-04-08 12:26:57,186 | INFO | app.main | HTTP GET /chat/ -> 200
+2026-04-08 12:26:57,187 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:26:58,406 | INFO | app.main | HTTP GET /agent/conversations
+2026-04-08 12:26:58,407 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:26:58,407 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:26:58,407 | INFO | sqlalchemy.engine.Engine | [cached since 156s ago] (1,)
+2026-04-08 12:26:58,408 | INFO | sqlalchemy.engine.Engine | SELECT agentconversation.id, agentconversation.user_id, agentconversation.title, agentconversation.created_time, agentconversation.updated_time 
+FROM agentconversation 
+WHERE agentconversation.user_id = ?
+2026-04-08 12:26:58,408 | INFO | sqlalchemy.engine.Engine | [cached since 78.95s ago] (1,)
+2026-04-08 12:26:58,409 | INFO | app.main | HTTP GET /agent/conversations -> 200
+2026-04-08 12:26:58,410 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:26:58,415 | INFO | app.main | HTTP GET /agent/conversations/1/messages
+2026-04-08 12:26:58,416 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:26:58,416 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:26:58,417 | INFO | sqlalchemy.engine.Engine | [cached since 156s ago] (1,)
+2026-04-08 12:26:58,417 | INFO | sqlalchemy.engine.Engine | SELECT agentconversation.id AS agentconversation_id, agentconversation.user_id AS agentconversation_user_id, agentconversation.title AS agentconversation_title, agentconversation.created_time AS agentconversation_created_time, agentconversation.updated_time AS agentconversation_updated_time 
+FROM agentconversation 
+WHERE agentconversation.id = ?
+2026-04-08 12:26:58,418 | INFO | sqlalchemy.engine.Engine | [cached since 78.95s ago] (1,)
+2026-04-08 12:26:58,418 | INFO | sqlalchemy.engine.Engine | SELECT agentmessage.id, agentmessage.conversation_id, agentmessage.user_id, agentmessage.role, agentmessage.content, agentmessage.created_time 
+FROM agentmessage 
+WHERE agentmessage.conversation_id = ?
+2026-04-08 12:26:58,418 | INFO | sqlalchemy.engine.Engine | [cached since 78.95s ago] (1,)
+2026-04-08 12:26:58,419 | INFO | app.main | HTTP GET /agent/conversations/1/messages -> 200
+2026-04-08 12:26:58,420 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:26:58,423 | INFO | agent_ws | agent ws connect
+2026-04-08 12:26:58,424 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:26:58,424 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:26:58,424 | INFO | sqlalchemy.engine.Engine | [cached since 156s ago] (1,)
+2026-04-08 12:26:58,424 | INFO | agent_ws | agent ws auth ok user_id=1
+2026-04-08 12:26:59,204 | INFO | agent_ws | agent ws disconnect
+2026-04-08 12:26:59,204 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:26:59,224 | INFO | app.main | HTTP GET /user/me
+2026-04-08 12:26:59,225 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:26:59,226 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:26:59,226 | INFO | sqlalchemy.engine.Engine | [cached since 156.8s ago] (1,)
+2026-04-08 12:26:59,226 | INFO | app.main | HTTP GET /news/hot
+2026-04-08 12:26:59,229 | INFO | app.main | HTTP GET /news/central-docs
+2026-04-08 12:26:59,229 | INFO | app.main | HTTP GET /news/with-images
+2026-04-08 12:26:59,229 | INFO | app.main | HTTP GET /news/hot -> 200
+2026-04-08 12:26:59,232 | INFO | app.main | HTTP GET /news/central-docs -> 200
+2026-04-08 12:26:59,233 | INFO | app.main | HTTP GET /news/with-images -> 200
+2026-04-08 12:26:59,234 | INFO | app.main | HTTP GET /user/me -> 200
+2026-04-08 12:26:59,235 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:26:59,240 | INFO | app.main | HTTP GET /chat/
+2026-04-08 12:26:59,242 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:26:59,242 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:26:59,242 | INFO | sqlalchemy.engine.Engine | [cached since 156.8s ago] (1,)
+2026-04-08 12:26:59,244 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.user_id = ? AND chatmessage.is_deleted = 0
+2026-04-08 12:26:59,244 | INFO | sqlalchemy.engine.Engine | [cached since 156s ago] (1,)
+2026-04-08 12:26:59,269 | INFO | app.main | HTTP GET /chat/ -> 200
+2026-04-08 12:26:59,270 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:26:59,282 | INFO | app.main | HTTP GET /chat/68
+2026-04-08 12:26:59,283 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:26:59,283 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:26:59,283 | INFO | sqlalchemy.engine.Engine | [cached since 156.9s ago] (1,)
+2026-04-08 12:26:59,284 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text AS chatmessage_original_text, chatmessage.file_url AS chatmessage_file_url, chatmessage.target_audience AS chatmessage_target_audience, chatmessage.handling_matter AS chatmessage_handling_matter, chatmessage.time_deadline AS chatmessage_time_deadline, chatmessage.location_entrance AS chatmessage_location_entrance, chatmessage.required_materials AS chatmessage_required_materials, chatmessage.handling_process AS chatmessage_handling_process, chatmessage.precautions AS chatmessage_precautions, chatmessage.risk_warnings AS chatmessage_risk_warnings, chatmessage.original_text_mapping AS chatmessage_original_text_mapping, chatmessage.chat_analysis AS chatmessage_chat_analysis, chatmessage.user_id AS chatmessage_user_id, chatmessage.id AS chatmessage_id, chatmessage.created_time AS chatmessage_created_time, chatmessage.is_deleted AS chatmessage_is_deleted, chatmessage.source_chat_id AS chatmessage_source_chat_id, chatmessage.session_json_path AS chatmessage_session_json_path 
+FROM chatmessage 
+WHERE chatmessage.id = ?
+2026-04-08 12:26:59,285 | INFO | sqlalchemy.engine.Engine | [cached since 156s ago] (68,)
+2026-04-08 12:26:59,288 | INFO | app.main | HTTP GET /chat/68 -> 200
+2026-04-08 12:26:59,289 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:26:59,296 | INFO | app.main | HTTP GET /favorite/
+2026-04-08 12:26:59,297 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:26:59,297 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:26:59,297 | INFO | sqlalchemy.engine.Engine | [cached since 156.9s ago] (1,)
+2026-04-08 12:26:59,298 | INFO | sqlalchemy.engine.Engine | SELECT favorite.id, favorite.user_id, favorite.chat_message_id, favorite.note, favorite.created_time 
+FROM favorite 
+WHERE favorite.user_id = ? ORDER BY favorite.created_time DESC
+2026-04-08 12:26:59,298 | INFO | sqlalchemy.engine.Engine | [cached since 156s ago] (1,)
+2026-04-08 12:26:59,299 | INFO | app.main | HTTP GET /favorite/ -> 200
+2026-04-08 12:26:59,299 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:26:59,306 | INFO | app.main | HTTP GET /news/keywords
+2026-04-08 12:26:59,307 | INFO | app.main | HTTP GET /news/keywords -> 200
+2026-04-08 12:27:14,533 | INFO | app.main | HTTP GET /user/me
+2026-04-08 12:27:14,534 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:14,534 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:14,534 | INFO | sqlalchemy.engine.Engine | [cached since 172.1s ago] (1,)
+2026-04-08 12:27:14,536 | INFO | app.main | HTTP GET /user/me -> 200
+2026-04-08 12:27:14,536 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:14,542 | INFO | app.main | HTTP GET /user/me
+2026-04-08 12:27:14,542 | INFO | app.main | HTTP GET /news/hot
+2026-04-08 12:27:14,547 | INFO | app.main | HTTP GET /news/with-images
+2026-04-08 12:27:14,547 | INFO | app.main | HTTP GET /news/central-docs
+2026-04-08 12:27:14,553 | INFO | app.main | HTTP GET /news/hot -> 200
+2026-04-08 12:27:14,554 | INFO | app.main | HTTP GET /news/with-images -> 200
+2026-04-08 12:27:14,554 | INFO | app.main | HTTP GET /news/central-docs -> 200
+2026-04-08 12:27:14,555 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:14,556 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:14,556 | INFO | sqlalchemy.engine.Engine | [cached since 172.1s ago] (1,)
+2026-04-08 12:27:14,558 | INFO | app.main | HTTP GET /user/me -> 200
+2026-04-08 12:27:14,558 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:14,570 | INFO | app.main | HTTP GET /settings/me
+2026-04-08 12:27:14,573 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:14,573 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:14,573 | INFO | sqlalchemy.engine.Engine | [cached since 172.2s ago] (1,)
+2026-04-08 12:27:14,574 | INFO | app.main | HTTP GET /chat/
+2026-04-08 12:27:14,575 | INFO | sqlalchemy.engine.Engine | SELECT settings.default_audience, settings.theme_mode, settings.system_notifications, settings.user_id, settings.id 
+FROM settings 
+WHERE settings.user_id = ?
+2026-04-08 12:27:14,576 | INFO | sqlalchemy.engine.Engine | [cached since 171.4s ago] (1,)
+2026-04-08 12:27:14,578 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:14,579 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:14,579 | INFO | sqlalchemy.engine.Engine | [cached since 172.2s ago] (1,)
+2026-04-08 12:27:14,580 | INFO | app.main | HTTP GET /settings/me -> 200
+2026-04-08 12:27:14,582 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.user_id = ? AND chatmessage.is_deleted = 0
+2026-04-08 12:27:14,583 | INFO | sqlalchemy.engine.Engine | [cached since 171.4s ago] (1,)
+2026-04-08 12:27:14,583 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:14,629 | INFO | app.main | HTTP GET /chat/ -> 200
+2026-04-08 12:27:14,630 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:14,645 | INFO | app.main | HTTP GET /chat/68
+2026-04-08 12:27:14,647 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:14,647 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:14,647 | INFO | sqlalchemy.engine.Engine | [cached since 172.2s ago] (1,)
+2026-04-08 12:27:14,649 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text AS chatmessage_original_text, chatmessage.file_url AS chatmessage_file_url, chatmessage.target_audience AS chatmessage_target_audience, chatmessage.handling_matter AS chatmessage_handling_matter, chatmessage.time_deadline AS chatmessage_time_deadline, chatmessage.location_entrance AS chatmessage_location_entrance, chatmessage.required_materials AS chatmessage_required_materials, chatmessage.handling_process AS chatmessage_handling_process, chatmessage.precautions AS chatmessage_precautions, chatmessage.risk_warnings AS chatmessage_risk_warnings, chatmessage.original_text_mapping AS chatmessage_original_text_mapping, chatmessage.chat_analysis AS chatmessage_chat_analysis, chatmessage.user_id AS chatmessage_user_id, chatmessage.id AS chatmessage_id, chatmessage.created_time AS chatmessage_created_time, chatmessage.is_deleted AS chatmessage_is_deleted, chatmessage.source_chat_id AS chatmessage_source_chat_id, chatmessage.session_json_path AS chatmessage_session_json_path 
+FROM chatmessage 
+WHERE chatmessage.id = ?
+2026-04-08 12:27:14,649 | INFO | sqlalchemy.engine.Engine | [cached since 171.4s ago] (68,)
+2026-04-08 12:27:14,655 | INFO | app.main | HTTP GET /chat/68 -> 200
+2026-04-08 12:27:14,656 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:14,664 | INFO | app.main | HTTP GET /favorite/
+2026-04-08 12:27:14,665 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:14,665 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:14,665 | INFO | sqlalchemy.engine.Engine | [cached since 172.3s ago] (1,)
+2026-04-08 12:27:14,667 | INFO | sqlalchemy.engine.Engine | SELECT favorite.id, favorite.user_id, favorite.chat_message_id, favorite.note, favorite.created_time 
+FROM favorite 
+WHERE favorite.user_id = ? ORDER BY favorite.created_time DESC
+2026-04-08 12:27:14,667 | INFO | sqlalchemy.engine.Engine | [cached since 171.4s ago] (1,)
+2026-04-08 12:27:14,669 | INFO | app.main | HTTP GET /favorite/ -> 200
+2026-04-08 12:27:14,670 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:14,686 | INFO | app.main | HTTP GET /news/keywords
+2026-04-08 12:27:14,689 | INFO | app.main | HTTP GET /news/keywords -> 200
+2026-04-08 12:27:25,900 | INFO | app.main | HTTP GET /news/daily-summary
+2026-04-08 12:27:25,903 | INFO | app.main | HTTP GET /news/daily-summary -> 200
+2026-04-08 12:27:25,904 | INFO | app.main | HTTP GET /news/hot
+2026-04-08 12:27:25,904 | INFO | app.main | HTTP GET /news/central-docs
+2026-04-08 12:27:25,907 | INFO | app.main | HTTP GET /news/hot -> 200
+2026-04-08 12:27:25,907 | INFO | app.main | HTTP GET /news/central-docs -> 200
+2026-04-08 12:27:27,474 | INFO | app.main | HTTP GET /user/me
+2026-04-08 12:27:27,475 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:27,476 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:27,476 | INFO | sqlalchemy.engine.Engine | [cached since 185.1s ago] (1,)
+2026-04-08 12:27:27,479 | INFO | app.main | HTTP GET /user/me -> 200
+2026-04-08 12:27:27,480 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:27,482 | INFO | app.main | HTTP GET /news/hot
+2026-04-08 12:27:27,485 | INFO | app.main | HTTP GET /news/hot -> 200
+2026-04-08 12:27:27,486 | INFO | app.main | HTTP GET /news/central-docs
+2026-04-08 12:27:27,486 | INFO | app.main | HTTP GET /news/with-images
+2026-04-08 12:27:27,490 | INFO | app.main | HTTP GET /news/central-docs -> 200
+2026-04-08 12:27:27,490 | INFO | app.main | HTTP GET /news/with-images -> 200
+2026-04-08 12:27:27,496 | INFO | app.main | HTTP GET /chat/
+2026-04-08 12:27:27,497 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:27,497 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:27,497 | INFO | sqlalchemy.engine.Engine | [cached since 185.1s ago] (1,)
+2026-04-08 12:27:27,498 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.user_id = ? AND chatmessage.is_deleted = 0
+2026-04-08 12:27:27,498 | INFO | sqlalchemy.engine.Engine | [cached since 184.3s ago] (1,)
+2026-04-08 12:27:27,519 | INFO | app.main | HTTP GET /chat/ -> 200
+2026-04-08 12:27:27,520 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:27,532 | INFO | app.main | HTTP GET /chat/68
+2026-04-08 12:27:27,534 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:27,534 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:27,534 | INFO | sqlalchemy.engine.Engine | [cached since 185.1s ago] (1,)
+2026-04-08 12:27:27,535 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text AS chatmessage_original_text, chatmessage.file_url AS chatmessage_file_url, chatmessage.target_audience AS chatmessage_target_audience, chatmessage.handling_matter AS chatmessage_handling_matter, chatmessage.time_deadline AS chatmessage_time_deadline, chatmessage.location_entrance AS chatmessage_location_entrance, chatmessage.required_materials AS chatmessage_required_materials, chatmessage.handling_process AS chatmessage_handling_process, chatmessage.precautions AS chatmessage_precautions, chatmessage.risk_warnings AS chatmessage_risk_warnings, chatmessage.original_text_mapping AS chatmessage_original_text_mapping, chatmessage.chat_analysis AS chatmessage_chat_analysis, chatmessage.user_id AS chatmessage_user_id, chatmessage.id AS chatmessage_id, chatmessage.created_time AS chatmessage_created_time, chatmessage.is_deleted AS chatmessage_is_deleted, chatmessage.source_chat_id AS chatmessage_source_chat_id, chatmessage.session_json_path AS chatmessage_session_json_path 
+FROM chatmessage 
+WHERE chatmessage.id = ?
+2026-04-08 12:27:27,535 | INFO | sqlalchemy.engine.Engine | [cached since 184.3s ago] (68,)
+2026-04-08 12:27:27,540 | INFO | app.main | HTTP GET /chat/68 -> 200
+2026-04-08 12:27:27,542 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:27,549 | INFO | app.main | HTTP GET /favorite/
+2026-04-08 12:27:27,551 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:27,551 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:27,551 | INFO | sqlalchemy.engine.Engine | [cached since 185.1s ago] (1,)
+2026-04-08 12:27:27,553 | INFO | sqlalchemy.engine.Engine | SELECT favorite.id, favorite.user_id, favorite.chat_message_id, favorite.note, favorite.created_time 
+FROM favorite 
+WHERE favorite.user_id = ? ORDER BY favorite.created_time DESC
+2026-04-08 12:27:27,553 | INFO | sqlalchemy.engine.Engine | [cached since 184.3s ago] (1,)
+2026-04-08 12:27:27,554 | INFO | app.main | HTTP GET /favorite/ -> 200
+2026-04-08 12:27:27,555 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:27,561 | INFO | app.main | HTTP GET /news/keywords
+2026-04-08 12:27:27,565 | INFO | app.main | HTTP GET /news/keywords -> 200
+2026-04-08 12:27:32,842 | INFO | app.main | HTTP GET /user/me
+2026-04-08 12:27:32,844 | INFO | app.main | HTTP GET /settings/me
+2026-04-08 12:27:32,844 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:32,845 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:32,845 | INFO | sqlalchemy.engine.Engine | [cached since 190.4s ago] (1,)
+2026-04-08 12:27:32,847 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:32,847 | INFO | app.main | HTTP GET /user/me -> 200
+2026-04-08 12:27:32,848 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:32,848 | INFO | sqlalchemy.engine.Engine | [cached since 190.4s ago] (1,)
+2026-04-08 12:27:32,849 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:32,850 | INFO | sqlalchemy.engine.Engine | SELECT settings.default_audience, settings.theme_mode, settings.system_notifications, settings.user_id, settings.id 
+FROM settings 
+WHERE settings.user_id = ?
+2026-04-08 12:27:32,850 | INFO | sqlalchemy.engine.Engine | [cached since 189.6s ago] (1,)
+2026-04-08 12:27:32,852 | INFO | app.main | HTTP GET /settings/me -> 200
+2026-04-08 12:27:32,852 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:34,841 | INFO | app.main | HTTP GET /user/me
+2026-04-08 12:27:34,842 | INFO | app.main | HTTP GET /news/hot
+2026-04-08 12:27:34,842 | INFO | app.main | HTTP GET /news/central-docs
+2026-04-08 12:27:34,847 | INFO | app.main | HTTP GET /news/hot -> 200
+2026-04-08 12:27:34,847 | INFO | app.main | HTTP GET /news/central-docs -> 200
+2026-04-08 12:27:34,848 | INFO | app.main | HTTP GET /news/with-images
+2026-04-08 12:27:34,851 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:34,852 | INFO | app.main | HTTP GET /news/with-images -> 200
+2026-04-08 12:27:34,852 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:34,852 | INFO | sqlalchemy.engine.Engine | [cached since 192.4s ago] (1,)
+2026-04-08 12:27:34,854 | INFO | app.main | HTTP GET /user/me -> 200
+2026-04-08 12:27:34,855 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:34,860 | INFO | app.main | HTTP GET /chat/
+2026-04-08 12:27:34,861 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:34,862 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:34,862 | INFO | sqlalchemy.engine.Engine | [cached since 192.5s ago] (1,)
+2026-04-08 12:27:34,864 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.user_id = ? AND chatmessage.is_deleted = 0
+2026-04-08 12:27:34,864 | INFO | sqlalchemy.engine.Engine | [cached since 191.6s ago] (1,)
+2026-04-08 12:27:34,895 | INFO | app.main | HTTP GET /chat/ -> 200
+2026-04-08 12:27:34,896 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:34,906 | INFO | app.main | HTTP GET /chat/68
+2026-04-08 12:27:34,907 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:34,908 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:34,908 | INFO | sqlalchemy.engine.Engine | [cached since 192.5s ago] (1,)
+2026-04-08 12:27:34,909 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text AS chatmessage_original_text, chatmessage.file_url AS chatmessage_file_url, chatmessage.target_audience AS chatmessage_target_audience, chatmessage.handling_matter AS chatmessage_handling_matter, chatmessage.time_deadline AS chatmessage_time_deadline, chatmessage.location_entrance AS chatmessage_location_entrance, chatmessage.required_materials AS chatmessage_required_materials, chatmessage.handling_process AS chatmessage_handling_process, chatmessage.precautions AS chatmessage_precautions, chatmessage.risk_warnings AS chatmessage_risk_warnings, chatmessage.original_text_mapping AS chatmessage_original_text_mapping, chatmessage.chat_analysis AS chatmessage_chat_analysis, chatmessage.user_id AS chatmessage_user_id, chatmessage.id AS chatmessage_id, chatmessage.created_time AS chatmessage_created_time, chatmessage.is_deleted AS chatmessage_is_deleted, chatmessage.source_chat_id AS chatmessage_source_chat_id, chatmessage.session_json_path AS chatmessage_session_json_path 
+FROM chatmessage 
+WHERE chatmessage.id = ?
+2026-04-08 12:27:34,909 | INFO | sqlalchemy.engine.Engine | [cached since 191.7s ago] (68,)
+2026-04-08 12:27:34,914 | INFO | app.main | HTTP GET /chat/68 -> 200
+2026-04-08 12:27:34,915 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:34,922 | INFO | app.main | HTTP GET /favorite/
+2026-04-08 12:27:34,923 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:34,923 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:34,923 | INFO | sqlalchemy.engine.Engine | [cached since 192.5s ago] (1,)
+2026-04-08 12:27:34,924 | INFO | sqlalchemy.engine.Engine | SELECT favorite.id, favorite.user_id, favorite.chat_message_id, favorite.note, favorite.created_time 
+FROM favorite 
+WHERE favorite.user_id = ? ORDER BY favorite.created_time DESC
+2026-04-08 12:27:34,924 | INFO | sqlalchemy.engine.Engine | [cached since 191.7s ago] (1,)
+2026-04-08 12:27:34,925 | INFO | app.main | HTTP GET /favorite/ -> 200
+2026-04-08 12:27:34,925 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:34,930 | INFO | app.main | HTTP GET /news/keywords
+2026-04-08 12:27:34,932 | INFO | app.main | HTTP GET /news/keywords -> 200
+2026-04-08 12:27:48,846 | INFO | app.main | HTTP GET /analysis/me
+2026-04-08 12:27:48,848 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:48,849 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:48,849 | INFO | app.main | HTTP GET /admin/analysis/all
+2026-04-08 12:27:48,849 | INFO | sqlalchemy.engine.Engine | [cached since 206.4s ago] (1,)
+2026-04-08 12:27:48,852 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:48,852 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.user_id = ? AND chatmessage.is_deleted = 0
+2026-04-08 12:27:48,852 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:48,853 | INFO | sqlalchemy.engine.Engine | [cached since 205.6s ago] (1,)
+2026-04-08 12:27:48,853 | INFO | sqlalchemy.engine.Engine | [cached since 206.4s ago] (1,)
+2026-04-08 12:27:48,854 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.is_deleted = 0
+2026-04-08 12:27:48,854 | INFO | sqlalchemy.engine.Engine | [cached since 128.3s ago] ()
+2026-04-08 12:27:48,862 | INFO | sqlalchemy.engine.Engine | SELECT ragusage.id, ragusage.user_id, ragusage.created_time, ragusage."query", ragusage.top_k, ragusage.result_count, ragusage.avg_score, ragusage.source 
+FROM ragusage 
+WHERE ragusage.user_id = ?
+2026-04-08 12:27:48,863 | INFO | sqlalchemy.engine.Engine | [cached since 128.3s ago] (1,)
+2026-04-08 12:27:48,863 | INFO | sqlalchemy.engine.Engine | SELECT ragusage.id, ragusage.user_id, ragusage.created_time, ragusage."query", ragusage.top_k, ragusage.result_count, ragusage.avg_score, ragusage.source 
+FROM ragusage
+2026-04-08 12:27:48,863 | INFO | sqlalchemy.engine.Engine | [cached since 128.2s ago] ()
+2026-04-08 12:27:48,880 | INFO | app.main | HTTP GET /analysis/me -> 200
+2026-04-08 12:27:48,880 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:48,897 | INFO | app.main | HTTP GET /admin/analysis/all -> 200
+2026-04-08 12:27:48,897 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:48,901 | INFO | app.main | HTTP GET /chat/
+2026-04-08 12:27:48,902 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:48,902 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:48,903 | INFO | sqlalchemy.engine.Engine | [cached since 206.5s ago] (1,)
+2026-04-08 12:27:48,904 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.user_id = ? AND chatmessage.is_deleted = 0
+2026-04-08 12:27:48,904 | INFO | sqlalchemy.engine.Engine | [cached since 205.7s ago] (1,)
+2026-04-08 12:27:48,916 | INFO | app.main | HTTP GET /chat/ -> 200
+2026-04-08 12:27:48,916 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:52,036 | INFO | app.main | HTTP GET /user/me
+2026-04-08 12:27:52,036 | INFO | app.main | HTTP GET /news/central-docs
+2026-04-08 12:27:52,037 | INFO | app.main | HTTP GET /news/hot
+2026-04-08 12:27:52,040 | INFO | app.main | HTTP GET /news/with-images
+2026-04-08 12:27:52,042 | INFO | app.main | HTTP GET /news/central-docs -> 200
+2026-04-08 12:27:52,042 | INFO | app.main | HTTP GET /news/hot -> 200
+2026-04-08 12:27:52,043 | INFO | app.main | HTTP GET /news/with-images -> 200
+2026-04-08 12:27:52,044 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:52,044 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:52,044 | INFO | sqlalchemy.engine.Engine | [cached since 209.6s ago] (1,)
+2026-04-08 12:27:52,046 | INFO | app.main | HTTP GET /user/me -> 200
+2026-04-08 12:27:52,047 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:52,049 | INFO | app.main | HTTP GET /chat/
+2026-04-08 12:27:52,051 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:52,051 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:52,051 | INFO | sqlalchemy.engine.Engine | [cached since 209.6s ago] (1,)
+2026-04-08 12:27:52,052 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.user_id = ? AND chatmessage.is_deleted = 0
+2026-04-08 12:27:52,052 | INFO | sqlalchemy.engine.Engine | [cached since 208.8s ago] (1,)
+2026-04-08 12:27:52,080 | INFO | app.main | HTTP GET /chat/ -> 200
+2026-04-08 12:27:52,081 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:52,091 | INFO | app.main | HTTP GET /chat/68
+2026-04-08 12:27:52,093 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:52,093 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:52,094 | INFO | sqlalchemy.engine.Engine | [cached since 209.7s ago] (1,)
+2026-04-08 12:27:52,095 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text AS chatmessage_original_text, chatmessage.file_url AS chatmessage_file_url, chatmessage.target_audience AS chatmessage_target_audience, chatmessage.handling_matter AS chatmessage_handling_matter, chatmessage.time_deadline AS chatmessage_time_deadline, chatmessage.location_entrance AS chatmessage_location_entrance, chatmessage.required_materials AS chatmessage_required_materials, chatmessage.handling_process AS chatmessage_handling_process, chatmessage.precautions AS chatmessage_precautions, chatmessage.risk_warnings AS chatmessage_risk_warnings, chatmessage.original_text_mapping AS chatmessage_original_text_mapping, chatmessage.chat_analysis AS chatmessage_chat_analysis, chatmessage.user_id AS chatmessage_user_id, chatmessage.id AS chatmessage_id, chatmessage.created_time AS chatmessage_created_time, chatmessage.is_deleted AS chatmessage_is_deleted, chatmessage.source_chat_id AS chatmessage_source_chat_id, chatmessage.session_json_path AS chatmessage_session_json_path 
+FROM chatmessage 
+WHERE chatmessage.id = ?
+2026-04-08 12:27:52,095 | INFO | sqlalchemy.engine.Engine | [cached since 208.8s ago] (68,)
+2026-04-08 12:27:52,101 | INFO | app.main | HTTP GET /chat/68 -> 200
+2026-04-08 12:27:52,102 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:52,109 | INFO | app.main | HTTP GET /favorite/
+2026-04-08 12:27:52,110 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:52,110 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:52,110 | INFO | sqlalchemy.engine.Engine | [cached since 209.7s ago] (1,)
+2026-04-08 12:27:52,111 | INFO | sqlalchemy.engine.Engine | SELECT favorite.id, favorite.user_id, favorite.chat_message_id, favorite.note, favorite.created_time 
+FROM favorite 
+WHERE favorite.user_id = ? ORDER BY favorite.created_time DESC
+2026-04-08 12:27:52,111 | INFO | sqlalchemy.engine.Engine | [cached since 208.8s ago] (1,)
+2026-04-08 12:27:52,112 | INFO | app.main | HTTP GET /favorite/ -> 200
+2026-04-08 12:27:52,112 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:52,117 | INFO | app.main | HTTP GET /news/keywords
+2026-04-08 12:27:52,119 | INFO | app.main | HTTP GET /news/keywords -> 200
+2026-04-08 12:27:55,362 | INFO | app.main | HTTP GET /agent/conversations
+2026-04-08 12:27:55,364 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:55,364 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:55,364 | INFO | sqlalchemy.engine.Engine | [cached since 213s ago] (1,)
+2026-04-08 12:27:55,365 | INFO | sqlalchemy.engine.Engine | SELECT agentconversation.id, agentconversation.user_id, agentconversation.title, agentconversation.created_time, agentconversation.updated_time 
+FROM agentconversation 
+WHERE agentconversation.user_id = ?
+2026-04-08 12:27:55,365 | INFO | sqlalchemy.engine.Engine | [cached since 135.9s ago] (1,)
+2026-04-08 12:27:55,366 | INFO | app.main | HTTP GET /agent/conversations -> 200
+2026-04-08 12:27:55,367 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:55,374 | INFO | app.main | HTTP GET /agent/conversations/1/messages
+2026-04-08 12:27:55,375 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:55,376 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:55,376 | INFO | sqlalchemy.engine.Engine | [cached since 213s ago] (1,)
+2026-04-08 12:27:55,377 | INFO | sqlalchemy.engine.Engine | SELECT agentconversation.id AS agentconversation_id, agentconversation.user_id AS agentconversation_user_id, agentconversation.title AS agentconversation_title, agentconversation.created_time AS agentconversation_created_time, agentconversation.updated_time AS agentconversation_updated_time 
+FROM agentconversation 
+WHERE agentconversation.id = ?
+2026-04-08 12:27:55,377 | INFO | sqlalchemy.engine.Engine | [cached since 135.9s ago] (1,)
+2026-04-08 12:27:55,378 | INFO | sqlalchemy.engine.Engine | SELECT agentmessage.id, agentmessage.conversation_id, agentmessage.user_id, agentmessage.role, agentmessage.content, agentmessage.created_time 
+FROM agentmessage 
+WHERE agentmessage.conversation_id = ?
+2026-04-08 12:27:55,378 | INFO | sqlalchemy.engine.Engine | [cached since 135.9s ago] (1,)
+2026-04-08 12:27:55,379 | INFO | app.main | HTTP GET /agent/conversations/1/messages -> 200
+2026-04-08 12:27:55,380 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:55,384 | INFO | agent_ws | agent ws connect
+2026-04-08 12:27:55,384 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:55,384 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:55,384 | INFO | sqlalchemy.engine.Engine | [cached since 213s ago] (1,)
+2026-04-08 12:27:55,384 | INFO | agent_ws | agent ws auth ok user_id=1
+2026-04-08 12:27:55,845 | INFO | agent_ws | agent ws disconnect
+2026-04-08 12:27:55,848 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:55,863 | INFO | app.main | HTTP GET /chat/
+2026-04-08 12:27:55,863 | INFO | app.main | HTTP GET /favorite/
+2026-04-08 12:27:55,865 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:55,866 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:55,866 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:55,866 | INFO | sqlalchemy.engine.Engine | [cached since 213.5s ago] (1,)
+2026-04-08 12:27:55,866 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:55,867 | INFO | sqlalchemy.engine.Engine | SELECT favorite.id, favorite.user_id, favorite.chat_message_id, favorite.note, favorite.created_time 
+FROM favorite 
+WHERE favorite.user_id = ? ORDER BY favorite.created_time DESC
+2026-04-08 12:27:55,867 | INFO | sqlalchemy.engine.Engine | [cached since 213.5s ago] (1,)
+2026-04-08 12:27:55,867 | INFO | sqlalchemy.engine.Engine | [cached since 212.6s ago] (1,)
+2026-04-08 12:27:55,869 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.user_id = ? AND chatmessage.is_deleted = 0
+2026-04-08 12:27:55,870 | INFO | sqlalchemy.engine.Engine | [cached since 212.7s ago] (1,)
+2026-04-08 12:27:55,870 | INFO | app.main | HTTP GET /favorite/ -> 200
+2026-04-08 12:27:55,871 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:56,006 | INFO | app.main | HTTP GET /chat/ -> 200
+2026-04-08 12:27:56,007 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:57,220 | INFO | app.main | HTTP GET /user/me
+2026-04-08 12:27:57,222 | INFO | app.main | HTTP GET /news/hot
+2026-04-08 12:27:57,221 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:57,222 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:57,222 | INFO | sqlalchemy.engine.Engine | [cached since 214.8s ago] (1,)
+2026-04-08 12:27:57,225 | INFO | app.main | HTTP GET /news/central-docs
+2026-04-08 12:27:57,225 | INFO | app.main | HTTP GET /news/hot -> 200
+2026-04-08 12:27:57,227 | INFO | app.main | HTTP GET /news/with-images
+2026-04-08 12:27:57,227 | INFO | app.main | HTTP GET /news/central-docs -> 200
+2026-04-08 12:27:57,229 | INFO | app.main | HTTP GET /news/with-images -> 200
+2026-04-08 12:27:57,230 | INFO | app.main | HTTP GET /user/me -> 200
+2026-04-08 12:27:57,230 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:57,235 | INFO | app.main | HTTP GET /chat/
+2026-04-08 12:27:57,236 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:57,236 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:57,236 | INFO | sqlalchemy.engine.Engine | [cached since 214.8s ago] (1,)
+2026-04-08 12:27:57,238 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.user_id = ? AND chatmessage.is_deleted = 0
+2026-04-08 12:27:57,238 | INFO | sqlalchemy.engine.Engine | [cached since 214s ago] (1,)
+2026-04-08 12:27:57,257 | INFO | app.main | HTTP GET /chat/ -> 200
+2026-04-08 12:27:57,258 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:57,268 | INFO | app.main | HTTP GET /chat/68
+2026-04-08 12:27:57,269 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:57,269 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:57,269 | INFO | sqlalchemy.engine.Engine | [cached since 214.9s ago] (1,)
+2026-04-08 12:27:57,270 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text AS chatmessage_original_text, chatmessage.file_url AS chatmessage_file_url, chatmessage.target_audience AS chatmessage_target_audience, chatmessage.handling_matter AS chatmessage_handling_matter, chatmessage.time_deadline AS chatmessage_time_deadline, chatmessage.location_entrance AS chatmessage_location_entrance, chatmessage.required_materials AS chatmessage_required_materials, chatmessage.handling_process AS chatmessage_handling_process, chatmessage.precautions AS chatmessage_precautions, chatmessage.risk_warnings AS chatmessage_risk_warnings, chatmessage.original_text_mapping AS chatmessage_original_text_mapping, chatmessage.chat_analysis AS chatmessage_chat_analysis, chatmessage.user_id AS chatmessage_user_id, chatmessage.id AS chatmessage_id, chatmessage.created_time AS chatmessage_created_time, chatmessage.is_deleted AS chatmessage_is_deleted, chatmessage.source_chat_id AS chatmessage_source_chat_id, chatmessage.session_json_path AS chatmessage_session_json_path 
+FROM chatmessage 
+WHERE chatmessage.id = ?
+2026-04-08 12:27:57,270 | INFO | sqlalchemy.engine.Engine | [cached since 214s ago] (68,)
+2026-04-08 12:27:57,273 | INFO | app.main | HTTP GET /chat/68 -> 200
+2026-04-08 12:27:57,273 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:57,280 | INFO | app.main | HTTP GET /favorite/
+2026-04-08 12:27:57,281 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:27:57,282 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:27:57,282 | INFO | sqlalchemy.engine.Engine | [cached since 214.9s ago] (1,)
+2026-04-08 12:27:57,282 | INFO | sqlalchemy.engine.Engine | SELECT favorite.id, favorite.user_id, favorite.chat_message_id, favorite.note, favorite.created_time 
+FROM favorite 
+WHERE favorite.user_id = ? ORDER BY favorite.created_time DESC
+2026-04-08 12:27:57,282 | INFO | sqlalchemy.engine.Engine | [cached since 214s ago] (1,)
+2026-04-08 12:27:57,283 | INFO | app.main | HTTP GET /favorite/ -> 200
+2026-04-08 12:27:57,283 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:27:57,288 | INFO | app.main | HTTP GET /news/keywords
+2026-04-08 12:27:57,290 | INFO | app.main | HTTP GET /news/keywords -> 200
+2026-04-08 12:28:10,210 | INFO | app.main | HTTP GET /analysis/me
+2026-04-08 12:28:10,211 | INFO | app.main | HTTP GET /admin/analysis/all
+2026-04-08 12:28:10,213 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:28:10,214 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:28:10,214 | INFO | sqlalchemy.engine.Engine | [cached since 227.8s ago] (1,)
+2026-04-08 12:28:10,215 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:28:10,215 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:28:10,215 | INFO | sqlalchemy.engine.Engine | [cached since 227.8s ago] (1,)
+2026-04-08 12:28:10,216 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.user_id = ? AND chatmessage.is_deleted = 0
+2026-04-08 12:28:10,216 | INFO | sqlalchemy.engine.Engine | [cached since 227s ago] (1,)
+2026-04-08 12:28:10,217 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.is_deleted = 0
+2026-04-08 12:28:10,217 | INFO | sqlalchemy.engine.Engine | [cached since 149.6s ago] ()
+2026-04-08 12:28:10,227 | INFO | sqlalchemy.engine.Engine | SELECT ragusage.id, ragusage.user_id, ragusage.created_time, ragusage."query", ragusage.top_k, ragusage.result_count, ragusage.avg_score, ragusage.source 
+FROM ragusage 
+WHERE ragusage.user_id = ?
+2026-04-08 12:28:10,229 | INFO | sqlalchemy.engine.Engine | [cached since 149.6s ago] (1,)
+2026-04-08 12:28:10,229 | INFO | sqlalchemy.engine.Engine | SELECT ragusage.id, ragusage.user_id, ragusage.created_time, ragusage."query", ragusage.top_k, ragusage.result_count, ragusage.avg_score, ragusage.source 
+FROM ragusage
+2026-04-08 12:28:10,229 | INFO | sqlalchemy.engine.Engine | [cached since 149.6s ago] ()
+2026-04-08 12:28:10,249 | INFO | app.main | HTTP GET /analysis/me -> 200
+2026-04-08 12:28:10,265 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:28:10,266 | INFO | app.main | HTTP GET /admin/analysis/all -> 200
+2026-04-08 12:28:10,267 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:28:10,271 | INFO | app.main | HTTP GET /chat/
+2026-04-08 12:28:10,274 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:28:10,274 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:28:10,274 | INFO | sqlalchemy.engine.Engine | [cached since 227.9s ago] (1,)
+2026-04-08 12:28:10,275 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.user_id = ? AND chatmessage.is_deleted = 0
+2026-04-08 12:28:10,275 | INFO | sqlalchemy.engine.Engine | [cached since 227.1s ago] (1,)
+2026-04-08 12:28:10,286 | INFO | app.main | HTTP GET /chat/ -> 200
+2026-04-08 12:28:10,287 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:28:12,427 | INFO | app.main | HTTP GET /user/me
+2026-04-08 12:28:12,428 | INFO | app.main | HTTP GET /news/central-docs
+2026-04-08 12:28:12,428 | INFO | app.main | HTTP GET /news/hot
+2026-04-08 12:28:12,431 | INFO | app.main | HTTP GET /news/with-images
+2026-04-08 12:28:12,433 | INFO | app.main | HTTP GET /news/central-docs -> 200
+2026-04-08 12:28:12,434 | INFO | app.main | HTTP GET /news/hot -> 200
+2026-04-08 12:28:12,434 | INFO | app.main | HTTP GET /news/with-images -> 200
+2026-04-08 12:28:12,435 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:28:12,435 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:28:12,435 | INFO | sqlalchemy.engine.Engine | [cached since 230s ago] (1,)
+2026-04-08 12:28:12,436 | INFO | app.main | HTTP GET /user/me -> 200
+2026-04-08 12:28:12,437 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:28:12,441 | INFO | app.main | HTTP GET /chat/
+2026-04-08 12:28:12,442 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:28:12,442 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:28:12,442 | INFO | sqlalchemy.engine.Engine | [cached since 230s ago] (1,)
+2026-04-08 12:28:12,444 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text, chatmessage.file_url, chatmessage.target_audience, chatmessage.handling_matter, chatmessage.time_deadline, chatmessage.location_entrance, chatmessage.required_materials, chatmessage.handling_process, chatmessage.precautions, chatmessage.risk_warnings, chatmessage.original_text_mapping, chatmessage.chat_analysis, chatmessage.user_id, chatmessage.id, chatmessage.created_time, chatmessage.is_deleted, chatmessage.source_chat_id, chatmessage.session_json_path 
+FROM chatmessage 
+WHERE chatmessage.user_id = ? AND chatmessage.is_deleted = 0
+2026-04-08 12:28:12,444 | INFO | sqlalchemy.engine.Engine | [cached since 229.2s ago] (1,)
+2026-04-08 12:28:12,464 | INFO | app.main | HTTP GET /chat/ -> 200
+2026-04-08 12:28:12,465 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:28:12,474 | INFO | app.main | HTTP GET /chat/68
+2026-04-08 12:28:12,475 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:28:12,475 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:28:12,475 | INFO | sqlalchemy.engine.Engine | [cached since 230.1s ago] (1,)
+2026-04-08 12:28:12,476 | INFO | sqlalchemy.engine.Engine | SELECT chatmessage.original_text AS chatmessage_original_text, chatmessage.file_url AS chatmessage_file_url, chatmessage.target_audience AS chatmessage_target_audience, chatmessage.handling_matter AS chatmessage_handling_matter, chatmessage.time_deadline AS chatmessage_time_deadline, chatmessage.location_entrance AS chatmessage_location_entrance, chatmessage.required_materials AS chatmessage_required_materials, chatmessage.handling_process AS chatmessage_handling_process, chatmessage.precautions AS chatmessage_precautions, chatmessage.risk_warnings AS chatmessage_risk_warnings, chatmessage.original_text_mapping AS chatmessage_original_text_mapping, chatmessage.chat_analysis AS chatmessage_chat_analysis, chatmessage.user_id AS chatmessage_user_id, chatmessage.id AS chatmessage_id, chatmessage.created_time AS chatmessage_created_time, chatmessage.is_deleted AS chatmessage_is_deleted, chatmessage.source_chat_id AS chatmessage_source_chat_id, chatmessage.session_json_path AS chatmessage_session_json_path 
+FROM chatmessage 
+WHERE chatmessage.id = ?
+2026-04-08 12:28:12,476 | INFO | sqlalchemy.engine.Engine | [cached since 229.2s ago] (68,)
+2026-04-08 12:28:12,480 | INFO | app.main | HTTP GET /chat/68 -> 200
+2026-04-08 12:28:12,481 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:28:12,488 | INFO | app.main | HTTP GET /favorite/
+2026-04-08 12:28:12,489 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2026-04-08 12:28:12,489 | INFO | sqlalchemy.engine.Engine | SELECT user.uname AS user_uname, user.email AS user_email, user.phone AS user_phone, user.avatar_url AS user_avatar_url, user.is_admin AS user_is_admin, user.uid AS user_uid, user.hashed_pwd AS user_hashed_pwd, user.created_time AS user_created_time, user.last_login AS user_last_login, user.email_verified AS user_email_verified, user.email_verification_code AS user_email_verification_code, user.email_verification_sent_at AS user_email_verification_sent_at 
+FROM user 
+WHERE user.uid = ?
+2026-04-08 12:28:12,489 | INFO | sqlalchemy.engine.Engine | [cached since 230.1s ago] (1,)
+2026-04-08 12:28:12,490 | INFO | sqlalchemy.engine.Engine | SELECT favorite.id, favorite.user_id, favorite.chat_message_id, favorite.note, favorite.created_time 
+FROM favorite 
+WHERE favorite.user_id = ? ORDER BY favorite.created_time DESC
+2026-04-08 12:28:12,490 | INFO | sqlalchemy.engine.Engine | [cached since 229.2s ago] (1,)
+2026-04-08 12:28:12,491 | INFO | app.main | HTTP GET /favorite/ -> 200
+2026-04-08 12:28:12,492 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2026-04-08 12:28:12,499 | INFO | app.main | HTTP GET /news/keywords
+2026-04-08 12:28:12,502 | INFO | app.main | HTTP GET /news/keywords -> 200
+2026-04-08 12:31:21,147 | INFO | app.main | Stopping Redis worker thread...
+2026-04-08 12:31:21,147 | INFO | app.services.worker | Stopping Redis queue worker...

@@ -235,26 +235,49 @@ const features = [
   },
 ]
 
+const whyUsImageModules = import.meta.glob('/src/assets/photos/landing/why-us/*.{jpg,jpeg,png,webp}', { eager: true })
+const whyUsImages = Object.entries(whyUsImageModules)
+  .sort(([a], [b]) => a.localeCompare(b, 'zh-CN'))
+  .map(([, mod]) => mod.default)
+
+const partnerLogoModules = import.meta.glob('/src/assets/photos/partners/*.{svg,png,jpg,jpeg,webp}', { eager: true })
+const partnerLogoEntries = Object.entries(partnerLogoModules).sort(([a], [b]) => a.localeCompare(b, 'zh-CN'))
+const formatPartnerName = (path) =>
+  path
+    .split('/')
+    .pop()
+    ?.replace(/\.[^.]+$/, '')
+    .replace(/^material-icon-theme--/i, '')
+    .replace(/\s*\(\d+\)\s*/g, '')
+    .replace(/[-_]+/g, ' ')
+    .trim() || 'Partner'
+
 const advantageCards = [
-  { title: '极速智能解析', desc: 'AI 驱动的文件解析技术，秒级提取关键信息，节省 90% 阅读时间', image: null },
-  { title: '多版本改写', desc: '一键生成老人版、学生版、极简版等多种表达风格，真正做到人人可读', image: null },
-  { title: '实时政策追踪', desc: '全网政策动态实时更新，第一时间掌握最新政务信息', image: null },
+  { title: '极速智能解析', desc: 'AI 驱动的文件解析技术，秒级提取关键信息，节省 90% 阅读时间', image: whyUsImages[0] || null },
+  { title: '多版本改写', desc: '一键生成老人版、学生版、极简版等多种表达风格，真正做到人人可读', image: whyUsImages[1] || null },
+  { title: '实时政策追踪', desc: '全网政策动态实时更新，第一时间掌握最新政务信息', image: whyUsImages[2] || null },
 ]
 
 const disadvantageCards = [
-  { title: '传统方式效率低', desc: '人工阅读政策文件耗时长，关键信息难以快速定位', image: null },
-  { title: '信息获取不及时', desc: '其他平台更新滞后，错过重要政策发布时机', image: null },
-  { title: '专业术语难理解', desc: '政策文件充斥专业术语，普通用户理解困难', image: null },
+  { title: '传统方式效率低', desc: '人工阅读政策文件耗时长，关键信息难以快速定位', image: whyUsImages[3] || null },
+  { title: '信息获取不及时', desc: '其他平台更新滞后，错过重要政策发布时机', image: whyUsImages[4] || null },
+  { title: '专业术语难理解', desc: '政策文件充斥专业术语，普通用户理解困难', image: whyUsImages[5] || null },
 ]
 
-const sponsors = [
-  { name: '腾讯云', logo: null },
-  { name: '字节跳动', logo: null },
-  { name: '阿里云', logo: null },
-  { name: '华为云', logo: null },
-  { name: '百度智能云', logo: null },
-  { name: '京东云', logo: null },
-]
+const sponsors = (partnerLogoEntries.length
+  ? partnerLogoEntries
+  : [
+      ['tencent-cloud', { default: null }],
+      ['bytedance', { default: null }],
+      ['aliyun', { default: null }],
+      ['huawei-cloud', { default: null }],
+      ['baidu-cloud', { default: null }],
+      ['jd-cloud', { default: null }],
+    ]
+).map(([path, mod]) => ({
+  name: formatPartnerName(path),
+  logo: mod.default,
+}))
 
 const flowSteps = [
   { title: '注册账号', desc: '免费注册，邮箱验证后即可使用' },

@@ -9,7 +9,7 @@
     <div class="top-section">
       <div class="carousel-area">
         <transition name="slide-fade" mode="out-in">
-          <div class="carousel-slide" :key="slideIdx" :style="{ background: topDocs[slideIdx]?.bg || '#c0392b' }">
+          <div class="carousel-slide" :key="slideIdx" :style="getCarouselStyle(topDocs[slideIdx])">
             <div class="slide-overlay"></div>
             <div class="slide-inner">
               <span class="slide-tag">{{ topDocs[slideIdx]?.category || '政务文件' }}</span>
@@ -156,12 +156,25 @@ const wordcloudRef = ref(null)
 const loadMoreRef = ref(null)
 
 const SLIDE_COLORS = ['#c0392b', '#2980b9', '#27ae60', '#8e44ad', '#e67e22']
+const carouselImageModules = import.meta.glob('/src/assets/photos/opinion-carousel/*.{jpg,jpeg,png,webp}', { eager: true })
+const carouselImages = Object.entries(carouselImageModules)
+  .sort(([a], [b]) => a.localeCompare(b, 'zh-CN'))
+  .map(([, mod]) => mod.default)
 
 let slideTimer = null
 let observer = null
 
 const prevSlide = () => { slideIdx.value = (slideIdx.value - 1 + topDocs.value.length) % topDocs.value.length }
 const nextSlide = () => { slideIdx.value = (slideIdx.value + 1) % topDocs.value.length }
+const getCarouselStyle = (doc) => {
+  const style = { background: doc?.bg || '#c0392b' }
+  if (doc?.bgImage) {
+    style.backgroundImage = `url(${doc.bgImage})`
+    style.backgroundSize = 'cover'
+    style.backgroundPosition = 'center'
+  }
+  return style
+}
 
 const opTypeLabel = (t) => ({ review: '落地评价', correction: '解析纠错', message: '办事留言' }[t] || t)
 
@@ -243,11 +256,15 @@ onMounted(async () => {
   // 加载已审核政务文件
   try {
     const res = await apiClient.get(API_ROUTES.POLICY_DOCS_APPROVED, { params: { limit: 10 } })
-    const docs = res.data.map((d, i) => ({ ...d, bg: SLIDE_COLORS[i % SLIDE_COLORS.length] }))
+    const docs = res.data.map((d, i) => ({
+      ...d,
+      bg: SLIDE_COLORS[i % SLIDE_COLORS.length],
+      bgImage: carouselImages.length ? carouselImages[i % carouselImages.length] : ''
+    }))
     topDocs.value = docs.slice(0, 5)
     hotDocs.value = [...docs].sort((a, b) => (b.view_count + b.like_count) - (a.view_count + a.like_count)).slice(0, 5)
   } catch (e) {
-    topDocs.value = [{ title: '暂无政策文件', bg: '#c0392b', view_count: 0, like_count: 0 }]
+    topDocs.value = [{ title: '暂无政策文件', bg: '#c0392b', bgImage: carouselImages[0] || '', view_count: 0, like_count: 0 }]
   }
 
   // 认证主体加载自己的评议

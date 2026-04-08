@@ -306,9 +306,6 @@ import { useRouter } from 'vue-router';
 import { getHotNews, getCentralDocs, getDailySummary, searchNews } from '@/api/news';
 import { apiClient, API_ROUTES } from '@/router/api_routes';
 import { useUserStore } from '@/stores/auth.js';
-import slide1Img from '@/assets/photos/discover/slide1.jpg';
-import slide2Img from '@/assets/photos/discover/slide2.jpg';
-import slide3Img from '@/assets/photos/discover/slide3.jpg';
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -316,35 +313,53 @@ let slideTimer = null;
 let searchDebounceTimer = null;
 // ── 轮播 ──────────────────────────────────────────────────────────────────────
 const slideIdx = ref(0);
-const slides = [
+const discoverSlideModules = import.meta.glob('/src/assets/photos/discover/*.jpg', { eager: true });
+const discoverSlideImages = Object.entries(discoverSlideModules)
+  .sort(([a], [b]) => a.localeCompare(b, 'zh-CN'))
+  .map(([, mod]) => mod.default);
+
+const slideMetaPool = [
   {
     tag: '智能解析',
     title: '极速识别文件',
     desc: '上传通知、政策文件，AI 秒级提取关键信息',
-    btnText: '立即体验',
     bg: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
-    img: slide1Img,
     action: () => router.push('/'),
   },
   {
     tag: '多版本改写',
     title: '适配不同人群',
     desc: '老人版、学生版、极简版，一键切换表达风格',
-    btnText: '去改写',
     bg: 'linear-gradient(135deg, #c0392b 0%, #8e44ad 100%)',
-    img: slide2Img,
     action: () => router.push('/rewrite'),
   },
   {
     tag: '数据分析',
     title: '可视化政务数据',
     desc: '多维度图表，直观呈现文件处理统计',
-    btnText: '查看分析',
     bg: 'linear-gradient(135deg, #16a085 0%, #2980b9 100%)',
-    img: slide3Img,
     action: () => router.push('/feature-b'),
   },
+  {
+    tag: '政策广场',
+    title: '文件与情报统一检索',
+    desc: '从热点问题到政策文件，快速定位关键信息',
+    bg: 'linear-gradient(135deg, #1f6feb 0%, #0ea5e9 100%)',
+    action: () => router.push('/search'),
+  },
+  {
+    tag: '效能数据',
+    title: '监测与趋势可视化',
+    desc: '联通政务场景与访问数据，支持决策分析',
+    bg: 'linear-gradient(135deg, #e67e22 0%, #f39c12 100%)',
+    action: () => router.push('/data-analysis-and-visualization'),
+  },
 ];
+
+const slides = (discoverSlideImages.length ? discoverSlideImages : ['']).map((img, idx) => {
+  const meta = slideMetaPool[idx % slideMetaPool.length];
+  return { ...meta, img };
+});
 // ── 传送带 ────────────────────────────────────────────────────────────────────
 // 使用 CSS animation，无需 JS timer
 

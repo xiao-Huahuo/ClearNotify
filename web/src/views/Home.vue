@@ -146,7 +146,7 @@
               <div v-for="(ex, index) in examples" :key="ex.id" class="example-card">
                 <div class="card-image-wrapper">
                   <div class="breakout-image">
-                    <img :src="getExampleImage(index + 1)" alt="example document" />
+                    <img :src="ex.image" alt="example document" />
                   </div>
                 </div>
                 <div class="card-content">
@@ -351,9 +351,6 @@ import { apiClient, API_ROUTES } from '@/router/api_routes.js';
 import KnowledgeGraphPanel from '@/components/Home/KnowledgeGraphPanel.vue';
 import PolicyTitle from '@/components/common/PolicyTitle.vue';
 
-import ex1 from '@/assets/photos/main-examples/example1.png';
-import ex2 from '@/assets/photos/main-examples/example2.jpeg';
-import ex3 from '@/assets/photos/main-examples/example3.png';
 
 const userStore = useUserStore();
 const router = useRouter();
@@ -468,18 +465,25 @@ const kgPayload = computed(() => {
 const currentTitle = computed(() => getMessageTitle(aiResponse.value));
 
 // ── 示例数据 ──────────────────────────────────────────────────────────────────
-const examples = ref([
-  { id: 1, title: '书籍摘要', tags: ['书籍', '文化', '摘要'] },
-  { id: 2, title: '政务文件', tags: ['政策', '解读', '官方'] },
-  { id: 3, title: '学术任务', tags: ['教育', '学生', '计算机'] },
-]);
-
-const getExampleImage = (num) => {
-  if (num === 1) return ex1;
-  if (num === 2) return ex2;
-  if (num === 3) return ex3;
-  return ex1;
-};
+const EXAMPLE_META_POOL = [
+  { title: '书籍摘要', tags: ['书籍', '文化', '摘要'] },
+  { title: '政务文件', tags: ['政策', '解读', '官方'] },
+  { title: '学术任务', tags: ['教育', '学生', '计算机'] },
+];
+const exampleImageModules = import.meta.glob('/src/assets/photos/main-examples/*.png', { eager: true });
+const exampleImageEntries = Object.entries(exampleImageModules).sort(([a], [b]) => a.localeCompare(b, 'zh-CN'));
+const examples = ref(
+  exampleImageEntries.map(([path, mod], idx) => {
+    const meta = EXAMPLE_META_POOL[idx % EXAMPLE_META_POOL.length];
+    const fileName = path.split('/').pop()?.replace(/\.[^.]+$/, '') || `example-${idx + 1}`;
+    return {
+      id: idx + 1,
+      title: meta?.title || fileName,
+      tags: meta?.tags || ['示例'],
+      image: mod.default,
+    };
+  })
+);
 
 // ── 生命周期 ──────────────────────────────────────────────────────────────────
 onMounted(async () => {

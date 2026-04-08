@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "exported_at": "2026-03-22T20:25:46.001984",
+  "message": {
+    "original_text": "你是谁",
+    "time_deadline": "即时",
+    "precautions": "保持对话的礼貌和专业性",
+    "user_id": 1,
+    "source_chat_id": null,
+    "target_audience": "用户",
+    "location_entrance": null,
+    "risk_warnings": null,
+    "session_json_path": null,
+    "id": 133,
+    "required_materials": null,
+    "original_text_mapping": null,
+    "created_time": "2026-03-22T20:25:46.001984",
+    "handling_matter": "身份确认",
+    "file_url": null,
+    "handling_process": "通过对话确认身份",
+    "chat_analysis": {
+      "parse_mode": "ai",
+      "agent_name": "通知办理智能体",
+      "confidence": 0.55,
+      "goal": null,
+      "scene": null
+    },
+    "is_deleted": false,
+    "estimated_time_saved_minutes": 2
+  }
+}

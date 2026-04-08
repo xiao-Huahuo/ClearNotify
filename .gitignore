@@ -1,17 +1,1 @@
-database.db
-.env
-.venv
-.idea
-.vscode
-web/node_modules
-build
-dist
-**/__pycache__/
-*.py[cod]
-*$py.class
-# 上传的文件目录
-uploads
-mail_outbox
-# 日志
-logs
-chroma_store
+__pycache__/ 

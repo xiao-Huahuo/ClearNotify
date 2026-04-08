@@ -1,0 +1,412 @@
+{
+  "version": 1,
+  "exported_at": "2026-04-05T19:32:01.704305",
+  "message": {
+    "required_materials": null,
+    "original_text_mapping": null,
+    "created_time": "2026-04-05T19:32:01.704305",
+    "file_url": "/media/docs/doc_1_272eedb8.doc",
+    "handling_matter": null,
+    "handling_process": null,
+    "chat_analysis": {
+      "version": "kg_v1",
+      "parse_mode": "ai",
+      "language_complexity": "低",
+      "handling_complexity": "中",
+      "risk_level": "低",
+      "notice_type": "graph",
+      "content": "DOCX 解析失败: file 'D:\\Projects\\Python\\CloudPolicy\\uploads\\docs\\doc_1_272eedb8.doc' is not a Word file, content type is 'application/vnd.openxmlformats-officedocument.themeManager+xml'",
+      "nodes": [
+        {
+          "id": "payload_root",
+          "label": "error",
+          "type": "实体",
+          "importance": 0.98,
+          "layer": "L0",
+          "group": "payload",
+          "parent_id": null,
+          "properties": {}
+        },
+        {
+          "id": "payload_root_error_1",
+          "label": "error",
+          "type": "实体",
+          "importance": 0.74,
+          "layer": "L1",
+          "group": "payload",
+          "parent_id": "payload_root",
+          "properties": {}
+        },
+        {
+          "id": "payload_root_error_1_type_2",
+          "label": "type",
+          "type": "实体",
+          "importance": 0.6599999999999999,
+          "layer": "L2",
+          "group": "payload",
+          "parent_id": "payload_root_error_1",
+          "properties": {}
+        },
+        {
+          "id": "payload_root_error_1_type_2_DOCX_Parsing_Failure_3",
+          "label": "DOCX Parsing Failure",
+          "type": "实体",
+          "importance": 0.48,
+          "layer": "L3",
+          "group": "payload",
+          "parent_id": "payload_root_error_1_type_2_DOCX_Parsing",
+          "properties": {}
+        },
+        {
+          "id": "payload_root_error_1_message_2",
+          "label": "message",
+          "type": "实体",
+          "importance": 0.6599999999999999,
+          "layer": "L2",
+          "group": "payload",
+          "parent_id": "payload_root_error_1",
+          "properties": {}
+        },
+        {
+          "id": "payload_root_error_1_message_2_The_file_is_not_a_Word_file_3",
+          "label": "The file is not a Word file.",
+          "type": "实体",
+          "importance": 0.48,
+          "layer": "L3",
+          "group": "payload",
+          "parent_id": "payload_root_error_1_message_2_The_file_is_not_a_Word",
+          "properties": {}
+        },
+        {
+          "id": "payload_root_error_1_file_path_2",
+          "label": "file_path",
+          "type": "实体",
+          "importance": 0.6599999999999999,
+          "layer": "L2",
+          "group": "payload",
+          "parent_id": "payload_root_error_1_file",
+          "properties": {}
+        },
+        {
+          "id": "payload_root_error_1_file_path_2_D_Projects_Python_CloudPolicy_uploa_3",
+          "label": "D:\\Projects\\Python\\CloudPolicy\\uploads\\docs\\doc_1_272eedb8.doc",
+          "type": "实体",
+          "importance": 0.48,
+          "layer": "L3",
+          "group": "payload",
+          "parent_id": "payload_root_error_1_file_path_2_D_Projects_Python_CloudPolicy",
+          "properties": {}
+        },
+        {
+          "id": "payload_root_error_1_content_type_2",
+          "label": "content_type",
+          "type": "实体",
+          "importance": 0.6599999999999999,
+          "layer": "L2",
+          "group": "payload",
+          "parent_id": "payload_root_error_1_content",
+          "properties": {}
+        },
+        {
+          "id": "payload_root_error_1_content_type_2_application_vnd_openxmlformats_offic_3",
+          "label": "application/vnd.openxmlformats-officedocument.themeManager+xml",
+          "type": "实体",
+          "importance": 0.48,
+          "layer": "L3",
+          "group": "payload",
+          "parent_id": "payload_root_error_1_content_type_2_application_vnd_openxmlformats",
+          "properties": {}
+        }
+      ],
+      "links": [
+        {
+          "source": "payload_root",
+          "target": "payload_root_error_1",
+          "relation": "",
+          "logic_type": "positive",
+          "strength": 0.6399999999999999,
+          "evidence": null
+        },
+        {
+          "source": "payload_root_error_1",
+          "target": "payload_root_error_1_type_2",
+          "relation": "",
+          "logic_type": "positive",
+          "strength": 0.58,
+          "evidence": null
+        },
+        {
+          "source": "payload_root_error_1_type_2",
+          "target": "payload_root_error_1_type_2_DOCX_Parsing_Failure_3",
+          "relation": "",
+          "logic_type": "positive",
+          "strength": 0.44999999999999996,
+          "evidence": null
+        },
+        {
+          "source": "payload_root_error_1",
+          "target": "payload_root_error_1_message_2",
+          "relation": "",
+          "logic_type": "positive",
+          "strength": 0.58,
+          "evidence": null
+        },
+        {
+          "source": "payload_root_error_1_message_2",
+          "target": "payload_root_error_1_message_2_The_file_is_not_a_Word_file_3",
+          "relation": "",
+          "logic_type": "positive",
+          "strength": 0.44999999999999996,
+          "evidence": null
+        },
+        {
+          "source": "payload_root_error_1",
+          "target": "payload_root_error_1_file_path_2",
+          "relation": "",
+          "logic_type": "positive",
+          "strength": 0.58,
+          "evidence": null
+        },
+        {
+          "source": "payload_root_error_1_file_path_2",
+          "target": "payload_root_error_1_file_path_2_D_Projects_Python_CloudPolicy_uploa_3",
+          "relation": "",
+          "logic_type": "positive",
+          "strength": 0.44999999999999996,
+          "evidence": null
+        },
+        {
+          "source": "payload_root_error_1",
+          "target": "payload_root_error_1_content_type_2",
+          "relation": "",
+          "logic_type": "positive",
+          "strength": 0.58,
+          "evidence": null
+        },
+        {
+          "source": "payload_root_error_1_content_type_2",
+          "target": "payload_root_error_1_content_type_2_application_vnd_openxmlformats_offic_3",
+          "relation": "",
+          "logic_type": "positive",
+          "strength": 0.44999999999999996,
+          "evidence": null
+        }
+      ],
+      "dynamic_payload": {
+        "error": {
+          "type": "DOCX Parsing Failure",
+          "message": "The file is not a Word file.",
+          "file_path": "D:\\Projects\\Python\\CloudPolicy\\uploads\\docs\\doc_1_272eedb8.doc",
+          "content_type": "application/vnd.openxmlformats-officedocument.themeManager+xml"
+        }
+      },
+      "visual_config": {
+        "focus_node": "payload_root",
+        "initial_zoom": 1.0,
+        "text_mapping": {}
+      }
+    },
+    "is_deleted": false,
+    "original_text": "DOCX 解析失败: file 'D:\\Projects\\Python\\CloudPolicy\\uploads\\docs\\doc_1_272eedb8.doc' is not a Word file, content type is 'application/vnd.openxmlformats-officedocument.themeManager+xml'",
+    "time_deadline": null,
+    "precautions": null,
+    "user_id": 1,
+    "source_chat_id": null,
+    "target_audience": null,
+    "location_entrance": null,
+    "session_json_path": null,
+    "risk_warnings": null,
+    "id": 63,
+    "content": "DOCX 解析失败: file 'D:\\Projects\\Python\\CloudPolicy\\uploads\\docs\\doc_1_272eedb8.doc' is not a Word file, content type is 'application/vnd.openxmlformats-officedocument.themeManager+xml'",
+    "nodes": [
+      {
+        "id": "payload_root",
+        "label": "error",
+        "type": "实体",
+        "importance": 0.98,
+        "layer": "L0",
+        "group": "payload",
+        "parent_id": null,
+        "properties": {}
+      },
+      {
+        "id": "payload_root_error_1",
+        "label": "error",
+        "type": "实体",
+        "importance": 0.74,
+        "layer": "L1",
+        "group": "payload",
+        "parent_id": "payload_root",
+        "properties": {}
+      },
+      {
+        "id": "payload_root_error_1_type_2",
+        "label": "type",
+        "type": "实体",
+        "importance": 0.6599999999999999,
+        "layer": "L2",
+        "group": "payload",
+        "parent_id": "payload_root_error_1",
+        "properties": {}
+      },
+      {
+        "id": "payload_root_error_1_type_2_DOCX_Parsing_Failure_3",
+        "label": "DOCX Parsing Failure",
+        "type": "实体",
+        "importance": 0.48,
+        "layer": "L3",
+        "group": "payload",
+        "parent_id": "payload_root_error_1_type_2_DOCX_Parsing",
+        "properties": {}
+      },
+      {
+        "id": "payload_root_error_1_message_2",
+        "label": "message",
+        "type": "实体",
+        "importance": 0.6599999999999999,
+        "layer": "L2",
+        "group": "payload",
+        "parent_id": "payload_root_error_1",
+        "properties": {}
+      },
+      {
+        "id": "payload_root_error_1_message_2_The_file_is_not_a_Word_file_3",
+        "label": "The file is not a Word file.",
+        "type": "实体",
+        "importance": 0.48,
+        "layer": "L3",
+        "group": "payload",
+        "parent_id": "payload_root_error_1_message_2_The_file_is_not_a_Word",
+        "properties": {}
+      },
+      {
+        "id": "payload_root_error_1_file_path_2",
+        "label": "file_path",
+        "type": "实体",
+        "importance": 0.6599999999999999,
+        "layer": "L2",
+        "group": "payload",
+        "parent_id": "payload_root_error_1_file",
+        "properties": {}
+      },
+      {
+        "id": "payload_root_error_1_file_path_2_D_Projects_Python_CloudPolicy_uploa_3",
+        "label": "D:\\Projects\\Python\\CloudPolicy\\uploads\\docs\\doc_1_272eedb8.doc",
+        "type": "实体",
+        "importance": 0.48,
+        "layer": "L3",
+        "group": "payload",
+        "parent_id": "payload_root_error_1_file_path_2_D_Projects_Python_CloudPolicy",
+        "properties": {}
+      },
+      {
+        "id": "payload_root_error_1_content_type_2",
+        "label": "content_type",
+        "type": "实体",
+        "importance": 0.6599999999999999,
+        "layer": "L2",
+        "group": "payload",
+        "parent_id": "payload_root_error_1_content",
+        "properties": {}
+      },
+      {
+        "id": "payload_root_error_1_content_type_2_application_vnd_openxmlformats_offic_3",
+        "label": "application/vnd.openxmlformats-officedocument.themeManager+xml",
+        "type": "实体",
+        "importance": 0.48,
+        "layer": "L3",
+        "group": "payload",
+        "parent_id": "payload_root_error_1_content_type_2_application_vnd_openxmlformats",
+        "properties": {}
+      }
+    ],
+    "links": [
+      {
+        "source": "payload_root",
+        "target": "payload_root_error_1",
+        "relation": "",
+        "logic_type": "positive",
+        "strength": 0.6399999999999999,
+        "evidence": null
+      },
+      {
+        "source": "payload_root_error_1",
+        "target": "payload_root_error_1_type_2",
+        "relation": "",
+        "logic_type": "positive",
+        "strength": 0.58,
+        "evidence": null
+      },
+      {
+        "source": "payload_root_error_1_type_2",
+        "target": "payload_root_error_1_type_2_DOCX_Parsing_Failure_3",
+        "relation": "",
+        "logic_type": "positive",
+        "strength": 0.44999999999999996,
+        "evidence": null
+      },
+      {
+        "source": "payload_root_error_1",
+        "target": "payload_root_error_1_message_2",
+        "relation": "",
+        "logic_type": "positive",
+        "strength": 0.58,
+        "evidence": null
+      },
+      {
+        "source": "payload_root_error_1_message_2",
+        "target": "payload_root_error_1_message_2_The_file_is_not_a_Word_file_3",
+        "relation": "",
+        "logic_type": "positive",
+        "strength": 0.44999999999999996,
+        "evidence": null
+      },
+      {
+        "source": "payload_root_error_1",
+        "target": "payload_root_error_1_file_path_2",
+        "relation": "",
+        "logic_type": "positive",
+        "strength": 0.58,
+        "evidence": null
+      },
+      {
+        "source": "payload_root_error_1_file_path_2",
+        "target": "payload_root_error_1_file_path_2_D_Projects_Python_CloudPolicy_uploa_3",
+        "relation": "",
+        "logic_type": "positive",
+        "strength": 0.44999999999999996,
+        "evidence": null
+      },
+      {
+        "source": "payload_root_error_1",
+        "target": "payload_root_error_1_content_type_2",
+        "relation": "",
+        "logic_type": "positive",
+        "strength": 0.58,
+        "evidence": null
+      },
+      {
+        "source": "payload_root_error_1_content_type_2",
+        "target": "payload_root_error_1_content_type_2_application_vnd_openxmlformats_offic_3",
+        "relation": "",
+        "logic_type": "positive",
+        "strength": 0.44999999999999996,
+        "evidence": null
+      }
+    ],
+    "dynamic_payload": {
+      "error": {
+        "type": "DOCX Parsing Failure",
+        "message": "The file is not a Word file.",
+        "file_path": "D:\\Projects\\Python\\CloudPolicy\\uploads\\docs\\doc_1_272eedb8.doc",
+        "content_type": "application/vnd.openxmlformats-officedocument.themeManager+xml"
+      }
+    },
+    "visual_config": {
+      "focus_node": "payload_root",
+      "initial_zoom": 1.0,
+      "text_mapping": {}
+    },
+    "estimated_time_saved_minutes": 2
+  }
+}

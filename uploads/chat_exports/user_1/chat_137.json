@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "exported_at": "2026-04-01T23:07:32.685985",
+  "message": {
+    "original_text_mapping": null,
+    "created_time": "2026-04-01T23:07:32.685985",
+    "handling_matter": "DOCX 解析失败: file 'D:\\Projects\\Python\\CloudPolicy\\uploads\\docs...",
+    "file_url": "/media/docs/doc_1_db7d8234.doc",
+    "handling_process": null,
+    "chat_analysis": {
+      "language_complexity": "高",
+      "handling_complexity": "高",
+      "risk_level": "中",
+      "notice_type": "文件解析错误",
+      "parse_mode": "ai"
+    },
+    "is_deleted": false,
+    "original_text": "DOCX 解析失败: file 'D:\\Projects\\Python\\CloudPolicy\\uploads\\docs\\doc_1_db7d8234.doc' is not a Word file, content type is 'application/vnd.openxmlformats-officedocument.themeManager+xml'",
+    "time_deadline": null,
+    "precautions": "在上传文件时，请确保文件格式正确，DOCX文件应为Word文档格式，而非其他类型如主题管理器XML。",
+    "user_id": 1,
+    "source_chat_id": null,
+    "session_json_path": null,
+    "target_audience": null,
+    "location_entrance": null,
+    "risk_warnings": "错误的文件格式可能导致文件解析失败，影响信息处理和数据提取。",
+    "id": 137,
+    "required_materials": null,
+    "estimated_time_saved_minutes": 2
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "exported_at": "2026-03-21T15:36:21.093429",
+  "message": {
+    "handling_matter": "智能体查询",
+    "handling_process": "直接对话",
+    "chat_analysis": {
+      "parse_mode": "ai",
+      "agent_name": "通知办理智能体",
+      "confidence": 0.55,
+      "goal": "办理清单与风险校验",
+      "scene": null
+    },
+    "is_deleted": false,
+    "file_url": null,
+    "source_chat_id": null,
+    "time_deadline": "即时",
+    "precautions": "无需额外操作",
+    "user_id": 1,
+    "session_json_path": null,
+    "original_text": "你是什么智能体?",
+    "location_entrance": null,
+    "risk_warnings": null,
+    "id": 103,
+    "target_audience": "用户",
+    "required_materials": null,
+    "original_text_mapping": null,
+    "created_time": "2026-03-21T15:36:21.093429",
+    "estimated_time_saved_minutes": 2
+  }
+}

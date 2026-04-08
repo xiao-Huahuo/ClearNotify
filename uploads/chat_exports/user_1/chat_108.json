@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "exported_at": "2026-03-21T16:33:35.600291",
+  "message": {
+    "handling_matter": "身份确认",
+    "handling_process": "直接询问以确认身份",
+    "chat_analysis": {
+      "parse_mode": "ai",
+      "agent_name": "通知办理智能体",
+      "confidence": 0.642,
+      "goal": null,
+      "scene": null
+    },
+    "is_deleted": false,
+    "file_url": null,
+    "source_chat_id": null,
+    "time_deadline": "无具体截止时间",
+    "precautions": "请确保在安全和适当的环境下进行身份确认",
+    "user_id": 1,
+    "session_json_path": null,
+    "original_text": "我是谁",
+    "location_entrance": "无具体地点",
+    "risk_warnings": "无",
+    "id": 108,
+    "target_audience": "用户",
+    "required_materials": "无需提供材料",
+    "original_text_mapping": null,
+    "created_time": "2026-03-21T16:33:35.600291",
+    "estimated_time_saved_minutes": 2
+  }
+}

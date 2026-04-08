@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "exported_at": "2026-03-21T15:36:52.036952",
+  "message": {
+    "handling_matter": "文档解析",
+    "handling_process": "从用户提供的官方通知或长文本中提取关键业务信息，返回标准JSON对象",
+    "chat_analysis": {
+      "parse_mode": "ai",
+      "agent_name": "通知办理智能体",
+      "confidence": 0.593,
+      "goal": "办理清单与风险校验",
+      "scene": null
+    },
+    "is_deleted": false,
+    "file_url": null,
+    "source_chat_id": null,
+    "time_deadline": "根据任务要求",
+    "precautions": "确保提取的信息准确无误，不编造具体日期、地点或特定材料名称",
+    "user_id": 1,
+    "session_json_path": null,
+    "original_text": "你能完成什么业务/",
+    "location_entrance": null,
+    "risk_warnings": null,
+    "id": 104,
+    "target_audience": "用户",
+    "required_materials": "用户提供的官方通知或长文本",
+    "original_text_mapping": null,
+    "created_time": "2026-03-21T15:36:52.036952",
+    "estimated_time_saved_minutes": 2
+  }
+}

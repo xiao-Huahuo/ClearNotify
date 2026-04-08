@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "exported_at": "2026-03-21T17:53:23.126153",
+  "message": {
+    "original_text": "分析它\n\n【文件解析】1.4.5种子.txt\n1.4.4之前的种子:\n醉酒世界05162020:猩红+腐化,两种三矿+两种新三矿,10倍世界树,地牢生成在枯萎生命树下\n庆典世界05162021:沙漠和树被染色,微光湖下全变成微光,BOSS微小化,100倍世界树\n蜜蜂世界not the bees:丛林地表,到处生成蜂王幼虫\n传奇世界for the worthy:难度提升一个等级,地表岩浆,BOSS新AI,松脆蜂蜜块流岩浆\n饥荒世界the constant:怕黑,饥饿\n陷阱世界no traps:陷阱数量提升100倍,必然死人箱,弹力巨石和生命水晶巨石\n颠倒世界dont dig up:出生在地狱,太空高度降低,地表全腐化\n天顶世界get fixed boi:以上全都有,从下到上为地狱-发光蘑菇+松脆蜂蜜块层-伪地表森林-洞穴层-松脆蜂蜜块层-蜂巢层-邪恶丛林层,\n左右六分之一分别被猩红和腐化完全贯穿,地表大量生成邪恶洞穴.\n\n1.4.5种子:\n空岛种子:只有一个空岛和一个微光岛\n\n\n1.4.5隐藏种子:\n无感染世界,但有感染的洞fish mox   \n感染世界purify this   \n部分彩虹rainbow road   \n世界充满腐化形状的洞穴jagged rocks   \n小行星世界planetoids   \n水下世界waterpark   \n双地牢   电脑版double daring dangers 手机版dual dungeons   \n透视世界xray vision   \n隐形世界invisible plane   \n生成错误的世界i am error   \n雨中世界bring a towel   \n废弃房屋直冲云霄abandoned manors   \n随机出生点how did i get here   \n添加传送机beam me up   \n箱子里有传送枪we don't even test for that\n困难模式开局too easy   \n屎世界truck stop   \n灰色世界monochrome   \n负片世界negative infinity\n无地表mole people   \n更多,超大生命树save the rainforest   \n更多空岛the care bears movie\n开局墓地+血月night of the living dead   \n天顶太空高度such great heights   \n神圣世界does that sparkle\n蘑菇世界toadstool\n沙漠世界sandy britches\n无蜘蛛世界arachnophobia\n无陷阱世界more traps please\n冰雪世界winter is coming\n万圣节pumpkin season\n无尽万圣节hocus pocus\n无尽圣诞节jingle all the way\n吸血鬼what a horrible night to have a curse\n团队大逃杀royale with cheese",
+    "time_deadline": null,
+    "precautions": "1. 确保游戏版本支持所选种子。\n2. 注意不同种子世界的难度和风险，选择合适的种子进行探索。\n3. 部分种子可能需要特定的游戏模式或条件才能体验。",
+    "user_id": 1,
+    "source_chat_id": null,
+    "target_audience": "游戏玩家",
+    "location_entrance": "游戏内",
+    "risk_warnings": "部分种子世界难度较高，可能存在游戏失败的风险，请谨慎选择。",
+    "session_json_path": null,
+    "id": 131,
+    "required_materials": null,
+    "original_text_mapping": null,
+    "created_time": "2026-03-21T17:53:23.126153",
+    "file_url": null,
+    "handling_matter": "探索不同主题的世界种子",
+    "handling_process": "1. 选择并加载特定的种子代码进入游戏。\n2. 根据种子描述，探索对应的特色世界。\n3. 体验每个种子世界的独特环境和挑战。",
+    "chat_analysis": {
+      "parse_mode": "ai",
+      "agent_name": "通知办理智能体",
+      "confidence": 0.555,
+      "goal": null,
+      "scene": null
+    },
+    "is_deleted": false,
+    "estimated_time_saved_minutes": 7
+  }
+}

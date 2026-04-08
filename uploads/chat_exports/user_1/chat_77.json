@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "exported_at": "2026-03-20T22:53:23.028693",
+  "message": {
+    "handling_matter": "学习网页制作基础",
+    "handling_process": "1. 打开电脑 2. 连上网络 3. 学习HTML5建网页 4. 学习CSS3美化网页 5. 学习JavaScript让网页动起来",
+    "chat_analysis": {
+      "language_complexity": "低",
+      "handling_complexity": "低",
+      "risk_level": "低",
+      "notice_type": "技术介绍"
+    },
+    "is_deleted": false,
+    "file_url": "/media/docs/ocr_1_6fcd6ed0.png",
+    "source_chat_id": null,
+    "session_json_path": "D:\\Projects\\Python\\ClearNotify\\uploads\\chat_exports\\user_1\\chat_77.json",
+    "time_deadline": "尽快开始",
+    "precautions": "不懂就问，别怕麻烦",
+    "user_id": 1,
+    "original_text": "{\"content\":\"基础技术\\nHTML5\\nCSS3\\n\\u003e\\nJavaScript\\n超文本标记语言，\\n层叠样式表，用于\\n用于实现网页交互\\n用于构建网页结构\\n设计和美化网页外\\n和动态功能的编程\\n和内容。\\n观。\\n语言。\",\"file_type\":\"image/png\",\"filename\":\"image10.png\",\"title\":\"\",\"type\":\"file\"}",
+    "id": 77,
+    "location_entrance": "家里电脑",
+    "risk_warnings": "小心网上骗子，别乱点链接",
+    "target_audience": "老人版",
+    "created_time": "2026-03-20T22:53:23.028693",
+    "required_materials": "电脑，网络",
+    "original_text_mapping": null,
+    "estimated_time_saved_minutes": 2
+  }
+}

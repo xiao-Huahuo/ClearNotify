@@ -6,6 +6,7 @@ from pathlib import Path
 from threading import Thread
 from threading import Lock
 from typing import Any, Callable, Dict, Optional
+import time
 
 from app.ai.document_parser import parse_document
 from app.agent_plugin.agent.agent import AgentCore
@@ -22,10 +23,23 @@ _INGEST_LOCK = Lock()
 _INGEST_STARTED = False
 
 
+def _console(text: str) -> None:
+    print(text, flush=True)
+
+
 def warmup_agent_plugin() -> None:
     if not GlobalConfig.AGENT_PLUGIN_ENABLED:
+        _console("[AgentPlugin] AGENT_PLUGIN_ENABLED=false，跳过预热")
         return
+    started = time.perf_counter()
+    _console("\n" + "=" * 80)
+    _console("Agent 插件预热开始".center(80))
+    _console("=" * 80)
+    _console(">>> [1/2] 初始化 Agent Core（包含 embedding 检查）...")
     _get_agent_core()
+    _console(">>> [2/2] Agent Core 初始化完成")
+    _console(f"✓ Agent 插件预热完成，用时 {time.perf_counter() - started:.2f}s")
+    _console("=" * 80 + "\n")
 
 
 def _ensure_agent_embedding_ready() -> None:
@@ -34,8 +48,10 @@ def _ensure_agent_embedding_ready() -> None:
 
     embedding_path = Path(str(AgentConfig.EMBEDDING_MODEL))
     if embedding_path.exists():
+        _console(f"✓ Embedding 已存在：{embedding_path}")
         return
 
+    _console(f">>> Embedding 缺失，开始下载：{embedding_path}")
     logger.warning(
         "Agent plugin enabled but embedding missing, preparing download: %s",
         embedding_path,
@@ -51,12 +67,14 @@ def _ensure_agent_embedding_ready() -> None:
             cache_folder=str(GlobalConfig.EMBEDDING_MODELS_DIR),
         )
         model.save(str(embedding_path))
+        _console(f"✓ Embedding 下载完成并已保存：{embedding_path}")
         logger.info(
             "Agent embedding download completed: model=%s, saved_to=%s",
             model_name,
             embedding_path,
         )
     except Exception as exc:
+        _console(f"✗ Embedding 下载失败：{exc}")
         logger.exception("Agent embedding prepare failed: %s", exc)
         raise RuntimeError(
             f"Agent plugin enabled but embedding unavailable: {embedding_path}"

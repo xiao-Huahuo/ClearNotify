@@ -67,3 +67,6 @@ web/pnpm-debug.log*
 coverage.xml
 .junit.xml
 .VSCodeCounter
+
+# Embedding Model
+embedding

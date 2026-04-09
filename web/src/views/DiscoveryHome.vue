@@ -1,5 +1,5 @@
 <template>
-  <div class="discover-page">
+  <div class="discover-page" ref="pageScrollRef" @scroll="handleNewsScroll">
 
     <!-- ══ 顶部区域：轮播 + 内嵌搜索 + 内嵌概况卡 ══ -->
     <div class="top-section">
@@ -155,7 +155,12 @@
         </div>
 
         <!-- 列表模式 -->
-        <div v-if="viewMode === 'list'" class="news-list-view">
+        <div
+          v-if="viewMode === 'list'"
+          ref="newsScrollRef"
+          class="news-list-view"
+          @scroll="handleNewsScroll"
+        >
           <div v-if="newsLoading" class="news-skeleton">
             <div v-for="i in 5" :key="i" class="skeleton-row">
               <div class="sk-tag"></div>
@@ -188,7 +193,12 @@
         </div>
 
         <!-- 卡片模式 -->
-        <div v-else class="news-card-view">
+        <div
+          v-else
+          ref="newsScrollRef"
+          class="news-card-view"
+          @scroll="handleNewsScroll"
+        >
           <div v-if="newsLoading" class="news-skeleton card-skeleton">
             <div v-for="i in 6" :key="i" class="skeleton-card"></div>
           </div>
@@ -303,7 +313,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue';
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { getHotNews, getCentralDocs, getDailySummary, searchNews } from '@/api/news';
 import { apiClient, API_ROUTES } from '@/router/api_routes';
@@ -496,12 +506,16 @@ const likeDoc = async (doc) => {
 // ── 新闻列表 ──────────────────────────────────────────────────────────────────
 const newsList = ref([]);
 const newsLoading = ref(true);
-const viewMode = ref('list');
+const viewMode = ref('card');
 const cardColors = ['#c0392b', '#2980b9', '#27ae60', '#e67e22', '#8e44ad', '#16a085'];
+const newsScrollRef = ref(null);
+const pageScrollRef = ref(null);
 
 // ── 热点文件 ──────────────────────────────────────────────────────────────────
 const hotDocs = ref([]);
+const allHotDocs = ref([]);
 const docsLoading = ref(true);
+const HOT_DOCS_BASE_COUNT = 5;
 
 // ── 生命周期 ──────────────────────────────────────────────────────────────────
 onMounted(() => {
@@ -530,10 +544,12 @@ async function loadSummary() {
 
 async function loadNews() {
   try {
-    const newsRes = await getHotNews(10);
+    const newsRes = await getHotNews(16);
     const news = (newsRes.data.items || []).map(i => ({ ...i, source_type: 'news' }));
     newsList.value = news;
     recentNews.value = news.slice(0, 3);
+    await nextTick();
+    syncHotDocsByNewsScroll();
   } catch (e) {
     console.warn('新闻加载失败', e);
   } finally {
@@ -543,18 +559,66 @@ async function loadNews() {
 
 async function loadDocs() {
   try {
-    const res = await getCentralDocs(5);
-    hotDocs.value = res.data.items || [];
-    recentDocs.value = hotDocs.value;
+    const [docsRes, hotNewsRes] = await Promise.all([
+      getCentralDocs(50),
+      getHotNews(50),
+    ]);
+    const docs = docsRes.data.items || [];
+    const hotNews = hotNewsRes.data.items || [];
+    const merged = [...docs, ...hotNews];
+    const dedup = [];
+    const seen = new Set();
+    for (const item of merged) {
+      const key = item.link || item.title;
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      dedup.push(item);
+    }
+    allHotDocs.value = dedup;
+    hotDocs.value = allHotDocs.value.slice(0, HOT_DOCS_BASE_COUNT);
+    recentDocs.value = docs.slice(0, HOT_DOCS_BASE_COUNT);
     // 合并政策文件到新闻列表
-    const docs = hotDocs.value.map(i => ({ ...i, source_type: 'policy' }));
-    newsList.value = [...newsList.value, ...docs];
+    const policyDocsForNews = recentDocs.value.map(i => ({ ...i, source_type: 'policy' }));
+    newsList.value = [...newsList.value, ...policyDocsForNews];
+    await nextTick();
+    syncHotDocsByNewsScroll();
   } catch (e) {
     console.warn('热点文件加载失败', e);
   } finally {
     docsLoading.value = false;
   }
 }
+
+const syncHotDocsByNewsScroll = () => {
+  if (!allHotDocs.value.length) return;
+  const getProgress = () => {
+    const leftEl = newsScrollRef.value;
+    if (leftEl) {
+      const leftMax = leftEl.scrollHeight - leftEl.clientHeight;
+      if (leftMax > 8) {
+        return Math.min(1, Math.max(0, leftEl.scrollTop / leftMax));
+      }
+    }
+    const pageEl = pageScrollRef.value;
+    if (pageEl) {
+      const pageMax = pageEl.scrollHeight - pageEl.clientHeight;
+      if (pageMax > 8) {
+        return Math.min(1, Math.max(0, pageEl.scrollTop / pageMax));
+      }
+    }
+    return 0;
+  };
+
+  const progress = getProgress();
+  const maxByNews = newsList.value.length ? Math.min(allHotDocs.value.length, newsList.value.length) : allHotDocs.value.length;
+  const extra = Math.ceil((maxByNews - HOT_DOCS_BASE_COUNT) * progress);
+  const target = HOT_DOCS_BASE_COUNT + extra;
+  hotDocs.value = allHotDocs.value.slice(0, Math.max(HOT_DOCS_BASE_COUNT, target));
+};
+
+const handleNewsScroll = () => {
+  syncHotDocsByNewsScroll();
+};
 
 const openLink = (url) => { if (url) window.open(url, '_blank'); };
 const goSearch = () => { if (searchInput.value.trim()) router.push({ path: '/search', query: { q: searchInput.value } }); };
@@ -597,6 +661,11 @@ watch(searchInput, (val) => {
       searchLoading.value = false;
     }
   }, 220);
+});
+
+watch(viewMode, async () => {
+  await nextTick();
+  syncHotDocsByNewsScroll();
 });
 const stripHtml = (html) => {
   if (!html) return '';
@@ -1035,13 +1104,20 @@ const getComplexityClass = (item) => {
 .news-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
+  position: relative;
   padding: 10px 16px 8px;
-  background: linear-gradient(90deg, #7f8c8d 0%, #95a5a6 100%);
-  border-radius: 12px 12px 0 0;
+  background: transparent;
+  border-radius: 0;
   flex-shrink: 0;
 }
-.news-header .section-label { color: #fff; margin: 0; }
+.news-header .section-label {
+  color: #fff;
+  margin: 0;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
 .view-toggle {
   display: flex;
   gap: 4px;
@@ -1127,13 +1203,13 @@ const getComplexityClass = (item) => {
   overflow-y: auto;
   padding: 12px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
   align-content: start;
 }
 .news-card {
   border-radius: 10px;
-  border: 1px solid #eee;
+  border: none;
   background: #fff;
   overflow: hidden;
   cursor: pointer;
@@ -1144,7 +1220,7 @@ const getComplexityClass = (item) => {
 .news-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
 .nc-header {
   position: relative;
-  height: 60px;
+  height: 240px;
   display: flex;
   align-items: flex-end;
   padding: 8px 10px;
@@ -1187,7 +1263,7 @@ const getComplexityClass = (item) => {
 .sk-tag { width: 36px; height: 18px; border-radius: 10px; background: #f0f0f0; flex-shrink: 0; }
 .sk-title { flex: 1; height: 14px; border-radius: 6px; background: #f0f0f0; }
 .sk-meta { width: 60px; height: 12px; border-radius: 6px; background: #f0f0f0; }
-.card-skeleton { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.card-skeleton { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 .skeleton-card { height: 140px; border-radius: 10px; background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
 
 /* 热点文件面板 */
@@ -1198,6 +1274,7 @@ const getComplexityClass = (item) => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  align-self: start;
 }
 .hdp-header {
   display: flex;
@@ -1209,7 +1286,7 @@ const getComplexityClass = (item) => {
 }
 .hdp-dot { width: 8px; height: 8px; border-radius: 50%; background: #c0392b; flex-shrink: 0; }
 .hdp-title { font-size: 13px; font-weight: 700; color: #111; }
-.hdp-list { flex: 1; overflow-y: auto; padding: 6px 0; }
+.hdp-list { flex: none; overflow: visible; padding: 6px 0; }
 .hdp-item {
   display: flex;
   align-items: flex-start;
@@ -1254,6 +1331,8 @@ const getComplexityClass = (item) => {
   .hero-dots { left: 50%; transform: translateX(-50%); }
   .bottom-section { grid-template-columns: 1fr; }
   .masonry-wall { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .news-card-view { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .card-skeleton { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 768px) {
@@ -1276,6 +1355,8 @@ const getComplexityClass = (item) => {
   .search-popover { left: 0; width: 100%; }
   .masonry-wall { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .brick-item { grid-column: span 4 !important; grid-row: span 2 !important; }
+  .news-card-view { grid-template-columns: 1fr; }
+  .card-skeleton { grid-template-columns: 1fr; }
   .hero-arrow { width: 32px; height: 32px; }
   .hero-arrow.left { left: 8px; }
   .hero-arrow.right { right: 8px; }

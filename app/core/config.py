@@ -32,6 +32,7 @@ class GlobalConfig:
     CHAT_EXPORT_DIR = UPLOAD_DIR / "chat_exports"
     KNOWLEDGE_DIR = PROJECT_ROOT / "app" / "resources"
     KNOWLEDGE_BASE_PATH = KNOWLEDGE_DIR / "policy_knowledge.json"
+    DB_INIT_DATA_PATH=PROJECT_ROOT/"seed_data.json"
     LOG_DIR = PROJECT_ROOT / "logs"
     APP_LOG_PATH = LOG_DIR / "app.log"
     MAIL_OUTBOX_DIR = PROJECT_ROOT / "mail_outbox"

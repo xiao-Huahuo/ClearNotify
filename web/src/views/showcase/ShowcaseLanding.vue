@@ -1,6 +1,6 @@
 <template>
   <div class="landing">
-    <ShowcaseHeader />
+    <ShowcaseHeader top-text="light" />
 
     <!-- Hero -->
     <section class="hero">

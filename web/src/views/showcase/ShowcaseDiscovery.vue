@@ -1,6 +1,6 @@
 <template>
   <div class="sc-discovery">
-    <ShowcaseHeader :transparent-top="true" />
+    <ShowcaseHeader :transparent-top="true" top-text="light" />
     <div class="sc-discovery-body">
       <DiscoveryHome />
     </div>

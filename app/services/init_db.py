@@ -119,12 +119,12 @@ def import_admin_original_data(session: Session, admin_uid: int):
 
 
 def seed_demo_data(session: Session, admin_uid: int):
-    """从 seed_data.json 导入演示数据"""
+    """从 DB_INIT_DATA_PATH 导入演示数据"""
     from datetime import datetime
 
-    seed_file = GlobalConfig.PROJECT_ROOT / "seed_data.json"
+    seed_file = GlobalConfig.DB_INIT_DATA_PATH
     if not seed_file.exists():
-        print("No seed_data.json found, skipping demo data.")
+        print("No database initiation file found, skipping demo data.")
         return
 
     with open(seed_file, 'r', encoding='utf-8') as f:
@@ -229,4 +229,4 @@ def seed_demo_data(session: Session, admin_uid: int):
         ))
     session.commit()
 
-    print("Demo data seeded from seed_data.json.")
+    print(f"Demo data seeded from {GlobalConfig.DB_INIT_DATA_PATH}.")

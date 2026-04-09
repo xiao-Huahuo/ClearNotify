@@ -15,6 +15,7 @@ from app.agent_plugin.agent.config import AgentConfig
 
 
 logger = logging.getLogger(__name__)
+GLOBAL_KNOWLEDGE_USER_ID = "__global_knowledge__"
 
 
 def _dir_size_mb(path: Path) -> float:
@@ -173,31 +174,41 @@ class LongTermMemory:
 
     def rag_query_top_k(self, query: str, user_id: str, rag_top_k: Optional[int] = None) -> List[str]:
         top_k = rag_top_k if rag_top_k is not None else AgentConfig.RAG_TOP_K
-
-        results = self.collection.query(
-            query_texts=[query],
-            n_results=top_k,
-            where={"user_id": user_id},
-            include=["documents", "distances"],
-        )
-
-        documents = (results.get("documents") or [[]])[0]
-        distances = (results.get("distances") or [[]])[0]
-        if not documents:
-            return []
-
         threshold = AgentConfig.RAG_SCORE_THRESHOLD
-        filtered: List[str] = []
-        for index, doc in enumerate(documents):
-            if not distances:
-                filtered.append(doc)
-                continue
-            distance = distances[index] if index < len(distances) else None
-            score = 1 - float(distance) if distance is not None else 0.0
-            if score >= threshold:
-                filtered.append(doc)
+        owners = [str(user_id)]
+        if str(user_id) != GLOBAL_KNOWLEDGE_USER_ID:
+            owners.append(GLOBAL_KNOWLEDGE_USER_ID)
 
-        return filtered
+        merged: List[str] = []
+        seen = set()
+
+        for owner in owners:
+            results = self.collection.query(
+                query_texts=[query],
+                n_results=top_k,
+                where={"user_id": owner},
+                include=["documents", "distances"],
+            )
+            documents = (results.get("documents") or [[]])[0]
+            distances = (results.get("distances") or [[]])[0]
+            for index, doc in enumerate(documents):
+                if not isinstance(doc, str):
+                    continue
+                normalized = doc.strip()
+                if not normalized or normalized in seen:
+                    continue
+
+                if distances:
+                    distance = distances[index] if index < len(distances) else None
+                    score = 1 - float(distance) if distance is not None else 0.0
+                    if score < threshold:
+                        continue
+
+                seen.add(normalized)
+                merged.append(normalized)
+                if len(merged) >= top_k:
+                    return merged
+        return merged
 
     # 兼容旧命名
     def rag_query_tok_k(self, query: str, user_id: str, rag_top_k: Optional[int] = None) -> List[str]:

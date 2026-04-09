@@ -1,7 +1,7 @@
 <template>
   <div class="opinion-hall">
     <div class="hall-header">
-      <PolicyTitle title="民意评议大厅" />
+      <PolicyTitle title="民生评议大厅" />
       <p class="hall-desc">全站用户对各项政策的落地评价、智能解析纠错和办事留言公开展示</p>
     </div>
 
@@ -452,6 +452,11 @@ onUnmounted(() => {
   box-shadow: 0 2px 8px color-mix(in srgb, var(--bubble-color) 20%, transparent);
 }
 
+:global([data-theme="dark"]) .bubble-word {
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--bubble-color) 60%, transparent);
+}
+
 .bubble-word:hover {
   transform: scale(1.18);
   box-shadow: 0 6px 20px color-mix(in srgb, var(--bubble-color) 35%, transparent);
@@ -473,11 +478,21 @@ onUnmounted(() => {
   padding: 20px;
 }
 
+:global([data-theme="dark"]) .certified-section {
+  background: var(--card-bg);
+  border-color: rgba(255,255,255,0.1);
+}
+
 /* 信息流 */
 .feed-section {
   background: var(--color-bg-card, #fff);
   border: 1px solid var(--color-border, #e8e8e8);
   padding: 20px;
+}
+
+:global([data-theme="dark"]) .feed-section {
+  background: var(--card-bg);
+  border-color: rgba(255,255,255,0.1);
 }
 
 .feed-header {
@@ -518,6 +533,12 @@ onUnmounted(() => {
   transition: box-shadow 0.2s;
 }
 .opinion-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+
+:global([data-theme="dark"]) .opinion-card {
+  border-color: rgba(255,255,255,0.1);
+}
+:global([data-theme="dark"]) .opinion-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+
 .certified-card { border-left-color: #1a56db; }
 
 .op-meta {
@@ -535,7 +556,12 @@ onUnmounted(() => {
 .op-user { font-size: 12px; font-weight: 600; }
 .op-time { font-size: 11px; color: #999; margin-left: auto; }
 
+:global([data-theme="dark"]) .op-user { color: #e2e8f0; }
+:global([data-theme="dark"]) .op-time { color: #94a3b8; }
+
 .op-content { font-size: 14px; line-height: 1.6; margin: 0 0 8px; color: var(--color-text, #333); }
+
+:global([data-theme="dark"]) .op-content { color: #cbd5e1; }
 
 .op-rating { display: flex; gap: 2px; margin-bottom: 8px; }
 .star { color: #ddd; font-size: 14px; }

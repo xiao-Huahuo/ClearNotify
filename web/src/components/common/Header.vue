@@ -1,5 +1,13 @@
 <template>
   <header class="app-header">
+    <!-- Back button -->
+    <button class="icon-btn back-btn" @click="goBack" title="返回">
+      <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+    </button>
+
     <!-- Hamburger button: only visible in icon mode -->
     <button v-if="isIconMode" class="icon-btn hamburger-btn" @click="$emit('update:isIconMode', false)" title="展开侧边栏">
       <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -149,6 +157,7 @@ const displayAvatar = computed(() => {
   return url;
 });
 
+const goBack = () => router.back();
 const emitLoginEvent = () => window.dispatchEvent(new CustomEvent('open-login-modal'));
 const handleUserClick = () => { if (userStore.token) router.push('/profile'); };
 const handleLogout = () => { if (confirm('确定要退出登录吗？')) { userStore.logout(); router.push('/'); } };
@@ -176,6 +185,11 @@ onBeforeUnmount(() => themeObserver?.disconnect());
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
+  flex-shrink: 0;
+}
+
+.back-btn {
+  margin-right: 8px;
   flex-shrink: 0;
 }
 

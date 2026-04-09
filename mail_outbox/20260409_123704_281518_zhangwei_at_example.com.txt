@@ -1,0 +1,4 @@
+TO: zhangwei@example.com
+SUBJECT: ClearNotify 权限变更通知
+
+您好，您的账户权限已变更为：管理员。

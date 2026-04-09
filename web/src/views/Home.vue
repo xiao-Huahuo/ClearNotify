@@ -79,19 +79,6 @@
 
       <!-- ── 中栏：文件处理 ────────────────────────────────────── -->
       <main class="center-panel">
-        <!-- 标题区域 -->
-        <div class="hero-section" v-if="!showResult">
-          <div class="hero-header-row">
-            <PolicyTitle
-              class="hero-title-block"
-              title="看见政策"
-              subtitle="多模态 · 可视化 · 富呈现"
-            />
-            <div class="hero-actions">
-              <button class="hero-action-btn" @click="triggerImportConversation">导入会话</button>
-            </div>
-          </div>
-        </div>
         <input ref="importInput" type="file" hidden accept=".json,application/json" @change="handleImportConversation" />
 
         <!-- 初始视图：上传区 -->
@@ -103,12 +90,24 @@
             @drop.prevent="handleDrop"
             :class="{ 'disabled': loading }"
           >
-            <div class="upload-buttons">
-              <button class="action-btn upload-round-btn" @click.stop="triggerFileUpload" :disabled="loading">本地上传</button>
-              <button class="action-btn upload-round-btn" @click.stop="handleUrlUpload" :disabled="loading">URL上传</button>
-              <button class="action-btn upload-round-btn" @click.stop="handleScreenshot" :disabled="loading">截图</button>
+            <!-- 卷轴装饰 -->
+            <div class="scroll-decoration left-scroll"></div>
+            <div class="scroll-decoration right-scroll"></div>
+
+            <div class="upload-content">
+              <PolicyTitle
+                class="upload-title-block"
+                title="看见政策"
+                subtitle="多模态 · 可视化 · 富呈现"
+              />
+              <div class="upload-buttons">
+                <button class="action-btn upload-round-btn" @click.stop="triggerFileUpload" :disabled="loading">本地上传</button>
+                <button class="action-btn upload-round-btn" @click.stop="handleUrlUpload" :disabled="loading">URL上传</button>
+                <button class="action-btn upload-round-btn" @click.stop="handleScreenshot" :disabled="loading">截图</button>
+              </div>
+              <p class="upload-hint">点击或拖拽上传 (支持文档、图片、PDF)</p>
             </div>
-            <p class="upload-hint">点击或拖拽上传 (支持文档、图片、PDF)</p>
+
             <div v-if="showUrlInput" class="url-float" @click.stop>
               <div class="url-float-title">URL 上传</div>
               <input
@@ -143,7 +142,13 @@
           <div class="examples-section">
             <h2 class="section-title">示例</h2>
             <div class="examples-grid">
-              <div v-for="(ex, index) in examples" :key="ex.id" class="example-card">
+              <div
+                v-for="(ex, index) in examples"
+                :key="ex.id"
+                class="example-card"
+                :style="{ animationDelay: `${index * 0.15}s` }"
+                @click="handleExampleClick(ex)"
+              >
                 <div class="card-image-wrapper">
                   <div class="breakout-image">
                     <img :src="ex.image" alt="example document" />
@@ -381,7 +386,7 @@ const newsLoading = ref(true);
 const carouselIndex = ref(0);
 let carouselTimer = null;
 const rightPanelMode = ref('docs');
-const rightDrawerOpen = ref(true);
+const rightDrawerOpen = ref(false);
 
 // 最近解析记录
 const recentMessages = ref([]);
@@ -635,7 +640,7 @@ const fetchRecentHistory = async () => {
   }
   historyLoading.value = true;
   try {
-    const res = await getChatMessages({ limit: 6, sort_by: 'created_time', sort_order: 'desc' });
+    const res = await getChatMessages({ limit: 15, sort_by: 'created_time', sort_order: 'desc' });
     recentMessages.value = res.data || [];
     if (recentMessages.value.length === 0) {
       selectedHistoryId.value = null;
@@ -794,6 +799,21 @@ const triggerFileUpload = () => {
   if (fileInput.value) {
     fileInput.value.value = '';
     fileInput.value.click();
+  }
+};
+
+const handleExampleClick = async (example) => {
+  if (loading.value) return;
+  if (!userStore.token) { requestLoginModal(); return; }
+
+  // 将示例图片转换为文件并处理
+  try {
+    const response = await fetch(example.image);
+    const blob = await response.blob();
+    const file = new File([blob], `${example.title}.png`, { type: 'image/png' });
+    processFile(file);
+  } catch (error) {
+    console.error('处理示例失败:', error);
   }
 };
 
@@ -1297,6 +1317,7 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
   gap: 6px;
   overflow-y: auto;
   flex: 1;
+  max-height: 600px;
 }
 
 .history-item {
@@ -1577,20 +1598,83 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
 .upload-area {
   background: #fff;
   border: 2px dashed #e0e0e0;
-  border-radius: 0;
-  border-left: 4px solid #c0392b;
-  padding: 36px 40px;
+  border-radius: 12px;
+  padding: 48px 60px;
   text-align: center;
   cursor: pointer;
-  transition: all 0.2s;
-  margin: 0 auto 16px;
-  max-width: 680px;
-  width: 100%;
+  transition: all 0.3s;
+  margin: 0 auto 24px;
+  width: 50%;
+  min-width: 600px;
+  max-width: 800px;
   flex-shrink: 0;
   position: relative;
+  overflow: hidden;
 }
 .upload-area:hover { border-color: #c0392b; background: #fdf5f5; }
 .upload-area.disabled { opacity: 0.6; cursor: not-allowed; pointer-events: none; }
+
+/* 卷轴装饰 */
+.scroll-decoration {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 40px;
+  background: linear-gradient(90deg, #d4a574 0%, #c89968 50%, #d4a574 100%);
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.2);
+  z-index: 1;
+}
+.left-scroll {
+  left: 0;
+  animation: scrollUnrollLeft 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  transform-origin: left center;
+}
+.right-scroll {
+  right: 0;
+  animation: scrollUnrollRight 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  transform-origin: right center;
+}
+
+@keyframes scrollUnrollLeft {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes scrollUnrollRight {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+.upload-content {
+  position: relative;
+  z-index: 2;
+}
+
+.upload-title-block {
+  margin-bottom: 24px;
+}
+
+/* 打字机效果 */
+.upload-title-block :deep(.policy-title) {
+  overflow: hidden;
+  border-right: 2px solid #c0392b;
+  white-space: nowrap;
+  animation: typing 1.5s steps(4) 0.3s both, blink 0.75s step-end infinite;
+}
+
+.upload-title-block :deep(.policy-subtitle) {
+  overflow: hidden;
+  white-space: nowrap;
+  animation: typing 2s steps(12) 1.8s both;
+}
+
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes blink {
+  50% { border-color: transparent; }
+}
 
 .upload-buttons {
   display: flex;
@@ -1756,58 +1840,131 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
 }
 
 /* 示例区域 */
-.examples-section { margin-top: 12px; }
+.examples-section {
+  margin-top: 32px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+}
 .section-title { font-size: 14px; color: #000; margin-bottom: 14px; font-weight: bold; }
-.examples-grid { display: flex; gap: 16px; flex-wrap: wrap; }
+.examples-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
 .example-card {
-  flex: 1;
-  min-width: 160px;
-  max-width: 260px;
   background: #fff;
-  border-radius: 0;
+  border-radius: 8px;
   border: 1px solid #e8e8e8;
-  border-top: 3px solid #c0392b;
   display: flex;
   flex-direction: column;
   cursor: pointer;
-  transition: box-shadow 0.2s;
+  transition: all 0.3s;
+  opacity: 0;
+  animation: exampleFadeIn 0.6s ease forwards, exampleShake 0.5s ease forwards;
+  position: relative;
+  overflow: visible;
 }
-.example-card:hover { box-shadow: 0 4px 16px rgba(192,57,43,0.12); }
+
+@keyframes exampleFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes exampleShake {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-3px) rotate(-2deg); }
+  50% { transform: translateY(0) rotate(0deg); }
+  75% { transform: translateY(-3px) rotate(2deg); }
+}
+
+.example-card:hover {
+  box-shadow: 0 8px 24px rgba(192,57,43,0.15);
+  transform: translateY(-4px);
+}
 .example-card:hover .breakout-image {
-  transform: translateY(-20px) rotate(0deg);
-  box-shadow: 0 16px 30px rgba(0,0,0,0.18);
+  transform: translateY(-8px) rotate(0deg) scale(1.05);
+  box-shadow: 0 16px 30px rgba(0,0,0,0.2);
 }
 .card-image-wrapper {
-  height: 120px;
+  height: 140px;
   background: linear-gradient(135deg, #fdf5f5, #f5e6e6);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
+  overflow: visible;
+  border-radius: 8px 8px 0 0;
 }
 .breakout-image {
   position: absolute;
-  bottom: -30px;
-  right: 12px;
-  width: 140px;
-  border-radius: 0;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  transform: translateY(0) rotate(3deg);
+  bottom: -35px;
+  left: 50%;
+  transform: translateX(-50%) rotate(2deg);
+  width: 85%;
+  max-width: 180px;
+  border-radius: 4px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   z-index: 10;
+  background: #fff;
+  padding: 4px;
 }
-.breakout-image img { width: 100%; height: auto; display: block; }
+.breakout-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 2px;
+}
 .card-content {
-  padding: 10px 12px;
+  padding: 48px 16px 16px;
   background: #fff;
   flex: 1;
   z-index: 1;
   position: relative;
-  margin-top: 20px;
+  border-radius: 0 0 8px 8px;
 }
-.card-title { font-size: 13px; margin: 0 0 6px; color: #222; font-weight: 600; }
+.card-title {
+  font-size: 13px;
+  margin: 0 0 8px;
+  color: #222;
+  font-weight: 600;
+  line-height: 1.4;
+  min-height: 36px;
+}
 .card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
-.tag { background: #fff0f0; padding: 2px 8px; border-radius: 0; font-size: 11px; color: #c0392b; border: 1px solid #f5c6c6; }
+.tag {
+  background: #fff0f0;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  color: #c0392b;
+  border: 1px solid #f5c6c6;
+}
+
+:global([data-theme="dark"]) .example-card {
+  background: var(--card-bg);
+  border-color: rgba(255,255,255,0.1);
+}
+
+:global([data-theme="dark"]) .card-content {
+  background: var(--card-bg);
+}
+
+:global([data-theme="dark"]) .card-title {
+  color: #e2e8f0;
+}
+
+:global([data-theme="dark"]) .tag {
+  background: rgba(192,57,43,0.2);
+  border-color: rgba(192,57,43,0.4);
+}
 
 /* 热点资讯图片横条 */
 .news-image-strip { margin-top: 20px; }

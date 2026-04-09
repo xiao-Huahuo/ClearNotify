@@ -604,9 +604,12 @@ input:checked + .slider:before {
 :global([data-theme="dark"]) .settings-container .section-title,
 :global([data-theme="dark"]) .settings-container .username,
 :global([data-theme="dark"]) .settings-container .name,
-:global([data-theme="dark"]) .settings-container .user-email,
+:global([data-theme="dark"]) .settings-container .user-email {
+  color: #ffffff !important;
+}
+
 :global([data-theme="dark"]) .settings-container .desc {
-  color: #f5f5f5 !important;
+  color: #cccccc !important;
 }
 
 :global([data-theme="dark"]) .settings-container .danger-text {

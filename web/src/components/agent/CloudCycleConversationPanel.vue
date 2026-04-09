@@ -4,9 +4,7 @@
       <div v-if="showLanding && !messages.length" class="landing-stage">
         <p class="landing-mark">CloudCycle</p>
         <h1>云小圆</h1>
-        <p class="landing-subtitle">
-          一个既能直接聊天，也能进入自主推理循环的 Agent 中心。
-        </p>
+        <p class="landing-subtitle">一个既能直接聊天，也能进入自主推理循环的 Agent 中心。</p>
         <div class="landing-pills">
           <button class="landing-pill" :class="{ active: runMode === 'agent' }" type="button" @click="$emit('set-mode', 'agent')">
             Agent 模式
@@ -48,37 +46,34 @@
           <div
             v-if="message.role === 'assistant' && (message.traceEntries?.length || message.traceStreaming)"
             class="thinking-shell"
-            :class="{
-              collapsed: !message.traceExpanded && !message.traceStreaming,
-              streaming: message.traceStreaming,
-            }"
+            :class="{ streaming: message.traceStreaming }"
           >
             <button class="thinking-toggle" type="button" @click="$emit('toggle-trace', message.id)">
               <div>
                 <span>思考过程与工具调用</span>
-                <small>
-                  {{ message.traceEntries?.length || 0 }} 条{{ message.traceStreaming ? '，正在更新' : '' }}
-                </small>
+                <small>{{ message.traceEntries?.length || 0 }} 条{{ message.traceStreaming ? '，正在更新' : '' }}</small>
               </div>
               <strong>{{ message.traceExpanded || message.traceStreaming ? '收起' : '展开' }}</strong>
             </button>
 
             <transition name="trace-reveal">
               <div v-if="message.traceExpanded || message.traceStreaming" class="thinking-body">
-                <article
-                  v-for="trace in message.traceEntries || []"
-                  :key="trace.id"
-                  class="thinking-item"
-                  :class="trace.kind"
-                >
-                  <div class="thinking-item-meta">
-                    <span>{{ trace.kind === 'thought' ? '思考' : trace.title }}</span>
-                    <small>{{ trace.time }}</small>
-                  </div>
-                  <p>{{ trace.title }}</p>
-                  <p v-if="trace.input" class="trace-io"><strong>输入：</strong>{{ trace.input }}</p>
-                  <p v-if="trace.output" class="trace-io"><strong>输出：</strong>{{ trace.output }}</p>
-                </article>
+                <TransitionGroup name="trace-item-fade" tag="div" class="thinking-list">
+                  <article
+                    v-for="trace in message.traceEntries || []"
+                    :key="trace.id"
+                    class="thinking-item"
+                    :class="trace.kind"
+                  >
+                    <div class="thinking-item-meta">
+                      <span>{{ trace.kind === 'thought' ? '思考' : trace.title }}</span>
+                      <small>{{ trace.time }}</small>
+                    </div>
+                    <p>{{ trace.title }}</p>
+                    <p v-if="trace.input" class="trace-io"><strong>输入：</strong>{{ trace.input }}</p>
+                    <p v-if="trace.output" class="trace-io"><strong>输出：</strong>{{ trace.output }}</p>
+                  </article>
+                </TransitionGroup>
               </div>
             </transition>
           </div>
@@ -104,7 +99,7 @@
       <div class="composer-shell">
         <textarea
           :value="inputText"
-          rows="4"
+          rows="2"
           class="composer-input"
           placeholder="给云小圆一句明确指令，或直接上传材料。Enter 发送，Shift + Enter 换行。"
           @input="$emit('update:inputText', $event.target.value)"
@@ -130,14 +125,8 @@ import MarkdownIt from 'markdown-it';
 import 'github-markdown-css/github-markdown-light.css';
 
 const props = defineProps({
-  messages: {
-    type: Array,
-    default: () => [],
-  },
-  pendingFiles: {
-    type: Array,
-    default: () => [],
-  },
+  messages: { type: Array, default: () => [] },
+  pendingFiles: { type: Array, default: () => [] },
   inputText: { type: String, default: '' },
   loading: { type: Boolean, default: false },
   canSend: { type: Boolean, default: false },
@@ -147,11 +136,7 @@ const props = defineProps({
 
 const emit = defineEmits(['update:inputText', 'send', 'pick-file', 'remove-file', 'toggle-trace', 'set-mode']);
 
-const markdown = new MarkdownIt({
-  linkify: true,
-  breaks: true,
-});
-
+const markdown = new MarkdownIt({ linkify: true, breaks: true });
 const scrollWrapRef = ref(null);
 
 const renderMarkdown = (text) => markdown.render(text || '');
@@ -185,6 +170,7 @@ watch(
 .conversation-panel {
   display: flex;
   flex-direction: column;
+  height: 100%;
   min-height: 0;
   border-radius: 34px;
   background:
@@ -223,7 +209,7 @@ watch(
   margin: auto;
   padding: 24px;
   text-align: center;
-  transform: translateY(-8%);
+  transform: translateY(-4%);
   animation: landingRise 0.9s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -272,7 +258,6 @@ watch(
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.45s ease;
 }
 
 .landing-pill.active {
@@ -313,11 +298,6 @@ watch(
   max-width: min(80%, 920px);
   padding: 16px 18px;
   border-radius: 24px;
-  transition:
-    background 0.45s ease,
-    border-color 0.45s ease,
-    box-shadow 0.45s ease,
-    color 0.45s ease;
 }
 
 .message-card.assistant {
@@ -381,11 +361,6 @@ watch(
     linear-gradient(180deg, rgba(17, 39, 76, 0.05), rgba(17, 39, 76, 0.02)),
     rgba(255, 255, 255, 0.62);
   border: 1px solid rgba(17, 39, 76, 0.06);
-  transition:
-    background 0.45s ease,
-    border-color 0.45s ease,
-    box-shadow 0.45s ease,
-    transform 0.35s ease;
 }
 
 .thinking-shell.streaming {
@@ -431,6 +406,9 @@ watch(
 
 .thinking-body {
   padding: 0 16px 16px;
+}
+
+.thinking-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -441,7 +419,6 @@ watch(
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.58);
   border: 1px solid rgba(17, 39, 76, 0.05);
-  animation: traceItemIn 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .thinking-item-meta {
@@ -500,8 +477,10 @@ watch(
 }
 
 .composer-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 0 22px 22px;
-  transition: padding 0.45s ease;
 }
 
 .composer-panel.landing {
@@ -513,6 +492,8 @@ watch(
   flex-wrap: wrap;
   gap: 10px;
   margin-bottom: 12px;
+  width: min(40vw, 760px);
+  max-width: 100%;
 }
 
 .pending-chip {
@@ -524,7 +505,6 @@ watch(
   background: rgba(255, 255, 255, 0.62);
   color: #15315c;
   font-size: 12px;
-  transition: all 0.45s ease;
 }
 
 .pending-chip button {
@@ -535,17 +515,65 @@ watch(
 }
 
 .composer-shell {
-  padding: 14px;
+  position: relative;
+  width: min(40vw, 760px);
+  max-width: 100%;
+  padding: 10px 12px 8px;
   border-radius: 28px;
   background: rgba(255, 255, 255, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.76);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.72),
     0 22px 44px rgba(16, 33, 63, 0.08);
+  overflow: visible;
+}
+
+.composer-shell::before,
+.composer-shell::after {
+  content: '';
+  position: absolute;
+  border-radius: inherit;
+  pointer-events: none;
   transition:
-    background 0.45s ease,
-    border-color 0.45s ease,
-    box-shadow 0.45s ease;
+    opacity 0.4s ease,
+    box-shadow 0.4s ease,
+    filter 0.4s ease,
+    transform 0.4s ease;
+}
+
+.composer-shell::before {
+  inset: -4px;
+  border: 1px solid rgba(101, 145, 240, 0.26);
+  box-shadow:
+    0 0 0 1px rgba(96, 208, 195, 0.12),
+    0 0 18px rgba(89, 137, 255, 0.12),
+    0 0 30px rgba(69, 210, 192, 0.08);
+  opacity: 0.88;
+  z-index: 0;
+}
+
+.composer-shell::after {
+  inset: -16px;
+  background:
+    radial-gradient(circle at 18% 50%, rgba(95, 147, 255, 0.16), transparent 36%),
+    radial-gradient(circle at 82% 50%, rgba(60, 214, 195, 0.14), transparent 32%);
+  filter: blur(18px);
+  animation: composerGlowPulse 5.2s ease-in-out infinite;
+  opacity: 0.78;
+  z-index: -1;
+}
+
+.composer-shell:focus-within::before {
+  border-color: rgba(101, 145, 240, 0.38);
+  box-shadow:
+    0 0 0 1px rgba(96, 208, 195, 0.2),
+    0 0 24px rgba(89, 137, 255, 0.16),
+    0 0 38px rgba(69, 210, 192, 0.12);
+}
+
+.composer-shell:focus-within::after {
+  opacity: 0.96;
+  filter: blur(20px);
 }
 
 .composer-input {
@@ -555,9 +583,11 @@ watch(
   background: transparent;
   color: #10213f;
   font-size: 15px;
-  line-height: 1.75;
+  line-height: 1.65;
+  min-height: 68px;
   outline: none;
-  transition: color 0.45s ease;
+  position: relative;
+  z-index: 1;
 }
 
 .composer-input::placeholder {
@@ -569,7 +599,9 @@ watch(
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-top: 12px;
+  margin-top: 8px;
+  position: relative;
+  z-index: 1;
 }
 
 .secondary-btn,
@@ -580,11 +612,6 @@ watch(
   cursor: pointer;
   font-size: 13px;
   font-weight: 700;
-  transition:
-    background 0.45s ease,
-    color 0.45s ease,
-    box-shadow 0.45s ease,
-    transform 0.3s ease;
 }
 
 .secondary-btn {
@@ -596,11 +623,6 @@ watch(
   background: linear-gradient(135deg, #4d85ff, #32d2c3);
   color: #ffffff;
   box-shadow: 0 18px 32px rgba(53, 114, 220, 0.24);
-}
-
-.secondary-btn:hover,
-.primary-btn:hover {
-  transform: translateY(-1px);
 }
 
 .primary-btn:disabled {
@@ -620,6 +642,21 @@ watch(
   transform: translateY(-8px);
 }
 
+.trace-item-fade-enter-active,
+.trace-item-fade-leave-active {
+  transition: all 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.trace-item-fade-enter-from,
+.trace-item-fade-leave-to {
+  opacity: 0;
+  transform: translateY(8px) scale(0.98);
+}
+
+.trace-item-fade-move {
+  transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 @keyframes landingRise {
   from {
     opacity: 0;
@@ -631,14 +668,14 @@ watch(
   }
 }
 
-@keyframes traceItemIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
+@keyframes composerGlowPulse {
+  0%, 100% {
+    opacity: 0.64;
+    transform: scale(0.995);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  50% {
+    opacity: 0.9;
+    transform: scale(1.015);
   }
 }
 
@@ -656,6 +693,11 @@ watch(
   .composer-actions {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .pending-files,
+  .composer-shell {
+    width: 100%;
   }
 }
 
@@ -703,5 +745,19 @@ watch(
   background:
     linear-gradient(135deg, rgba(64, 117, 255, 0.24), rgba(41, 187, 173, 0.18)),
     rgba(255, 255, 255, 0.08);
+}
+
+:global([data-theme='dark']) .composer-shell::before {
+  border-color: rgba(118, 156, 255, 0.3);
+  box-shadow:
+    0 0 0 1px rgba(73, 204, 188, 0.14),
+    0 0 22px rgba(90, 135, 255, 0.18),
+    0 0 36px rgba(73, 204, 188, 0.12);
+}
+
+:global([data-theme='dark']) .composer-shell::after {
+  background:
+    radial-gradient(circle at 18% 50%, rgba(95, 147, 255, 0.18), transparent 36%),
+    radial-gradient(circle at 82% 50%, rgba(60, 214, 195, 0.16), transparent 32%);
 }
 </style>

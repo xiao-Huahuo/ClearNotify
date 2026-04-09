@@ -172,10 +172,6 @@ async def agent_ws(websocket: WebSocket, token: str = Query(...)):
                 await websocket.send_json(
                     {"type": "result", "conversation_id": conversation_id, "agent_result": result}
                 )
-                if result.get("tool_calls"):
-                    await websocket.send_json(
-                        {"type": "trace", "tool_calls": result.get("tool_calls", [])}
-                    )
                 logger.info("agent ws result sent %s", conversation_id)
                 for ch in reply_text:
                     await websocket.send_json({"type": "chunk", "content": ch})

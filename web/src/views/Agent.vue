@@ -1,5 +1,11 @@
 <template>
-  <div class="cloudcycle-page">
+  <div
+    class="cloudcycle-page"
+    :class="{
+      'sidebar-visible': sidebarOpen && !isMobile,
+      'inspector-visible': inspectorOpen && !isMobile,
+    }"
+  >
     <div class="ambient ambient-one"></div>
     <div class="ambient ambient-two"></div>
     <div class="ambient ambient-three"></div>
@@ -26,7 +32,7 @@
       @close="sidebarOpen = false"
     />
 
-    <main class="cloudcycle-center" :class="{ ready: !showIntro, compact: !messages.length }">
+    <main class="cloudcycle-center" :class="{ ready: !showIntro }">
       <div v-if="!showIntro && messages.length" class="stage-toolbar">
         <div class="mode-switcher">
           <button class="mode-btn" :class="{ active: runMode === 'agent' }" type="button" @click="setRunMode('agent')">
@@ -73,6 +79,7 @@
       class="edge-handle edge-handle-left"
       type="button"
       :class="{ open: sidebarOpen }"
+      :style="leftHandleStyle"
       @click="sidebarOpen = !sidebarOpen"
     >
       <span>{{ sidebarOpen ? '收起会话' : '历史会话' }}</span>
@@ -83,6 +90,7 @@
       class="edge-handle edge-handle-right"
       type="button"
       :class="{ open: inspectorOpen }"
+      :style="rightHandleStyle"
       @click="inspectorOpen = !inspectorOpen"
     >
       <span>{{ inspectorOpen ? '收起轨迹' : '推理轨迹' }}</span>
@@ -135,9 +143,19 @@ let messageIdSeed = 1;
 let traceIdSeed = 1;
 let traceSeenSignatures = new Set();
 let currentAssistantMessageId = null;
+const traceQueue = ref([]);
+let traceQueueTimer = null;
 
 const canSend = computed(() => Boolean(inputText.value.trim() || pendingFiles.value.length));
 const introSessionKey = computed(() => `cloudcycle_intro_seen_${userStore.token || 'guest'}`);
+const leftHandleStyle = computed(() => {
+  if (isMobile.value) return null;
+  return { left: sidebarOpen.value ? '288px' : '10px' };
+});
+const rightHandleStyle = computed(() => {
+  if (isMobile.value) return null;
+  return { right: inspectorOpen.value ? '360px' : '10px' };
+});
 const connectionText = computed(() => {
   if (connectionState.value === 'ready') return '已连接';
   if (connectionState.value === 'connecting') return '连接中';
@@ -239,11 +257,35 @@ const appendTraceTimeline = (entry) => {
   assistantMessage.traceExpanded = true;
 };
 
+const clearTraceQueueTimer = () => {
+  if (traceQueueTimer) {
+    clearTimeout(traceQueueTimer);
+    traceQueueTimer = null;
+  }
+};
+
+const scheduleTraceQueue = () => {
+  if (traceQueueTimer || !traceQueue.value.length) return;
+  traceQueueTimer = setTimeout(() => {
+    traceQueueTimer = null;
+    const nextEntry = traceQueue.value.shift();
+    if (nextEntry) appendTraceTimeline(nextEntry);
+    if (traceQueue.value.length) scheduleTraceQueue();
+  }, 220);
+};
+
+const enqueueTrace = (entry) => {
+  traceQueue.value.push(entry);
+  scheduleTraceQueue();
+};
+
 const resetRunRuntime = () => {
   traceTimeline.value = [];
   traceSeenSignatures = new Set();
   agentResult.value = null;
   currentAssistantMessageId = null;
+  traceQueue.value = [];
+  clearTraceQueueTimer();
 };
 
 const toggleMessageTrace = (messageId) => {
@@ -331,13 +373,8 @@ const handleSocketMessage = (raw) => {
     return;
   }
 
-  if (data.type === 'trace') {
-    (data.tool_calls || []).forEach((item) => appendTraceTimeline(item));
-    return;
-  }
-
   if (data.type === 'trace_step') {
-    appendTraceTimeline(data.tool_call || {});
+    enqueueTrace(data.tool_call || {});
     return;
   }
 
@@ -578,15 +615,14 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   window.removeEventListener('resize', updateResponsiveState);
   socketRef.value?.close();
+  clearTraceQueueTimer();
 });
 </script>
 
 <style scoped>
 .cloudcycle-page {
   position: relative;
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 0;
+  display: block;
   min-height: calc(100vh - 96px);
   height: calc(100vh - 96px);
   overflow: hidden;
@@ -633,18 +669,23 @@ onBeforeUnmount(() => {
 .cloudcycle-center {
   position: relative;
   z-index: 1;
-  min-width: 0;
+  width: auto;
   display: flex;
   flex-direction: column;
   gap: 18px;
+  height: 100%;
   min-height: 0;
   padding: 24px;
+  margin-left: 0;
+  margin-right: 0;
   opacity: 0;
   transform: scale(0.985) translateY(10px);
   transition:
     opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
     transform 0.8s cubic-bezier(0.22, 1, 0.36, 1),
-    padding 0.45s ease;
+    padding 0.45s ease,
+    margin-left 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    margin-right 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .cloudcycle-center.ready {
@@ -652,8 +693,12 @@ onBeforeUnmount(() => {
   transform: scale(1) translateY(0);
 }
 
-.cloudcycle-center.compact {
-  justify-content: center;
+.cloudcycle-page.sidebar-visible .cloudcycle-center {
+  margin-left: 306px;
+}
+
+.cloudcycle-page.inspector-visible .cloudcycle-center {
+  margin-right: 378px;
 }
 
 .stage-toolbar {
@@ -729,6 +774,7 @@ onBeforeUnmount(() => {
   flex: 1;
   min-height: 0;
   display: flex;
+  overflow: hidden;
 }
 
 .conversation-stage :deep(.conversation-panel) {
@@ -736,10 +782,24 @@ onBeforeUnmount(() => {
   height: 100%;
 }
 
+.cloudcycle-page :deep(.cloudcycle-sidebar:not(.mobile)) {
+  position: absolute;
+  left: 0;
+  top: 24px;
+  bottom: 24px;
+}
+
+.cloudcycle-page :deep(.inspector-panel:not(.mobile)) {
+  position: absolute;
+  right: 0;
+  top: 24px;
+  bottom: 24px;
+}
+
 .edge-handle {
   position: absolute;
   top: 50%;
-  z-index: 5;
+  z-index: 90;
   border: none;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.64)),
@@ -754,6 +814,8 @@ onBeforeUnmount(() => {
   text-orientation: mixed;
   letter-spacing: 0.12em;
   transition:
+    left 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    right 0.55s cubic-bezier(0.22, 1, 0.36, 1),
     opacity 0.4s ease,
     transform 0.4s ease,
     background 0.45s ease,
@@ -775,6 +837,7 @@ onBeforeUnmount(() => {
 
 .edge-handle.open {
   opacity: 0.78;
+  box-shadow: 0 22px 46px rgba(17, 41, 83, 0.16);
 }
 
 .hidden-input {
@@ -819,13 +882,14 @@ onBeforeUnmount(() => {
 
 @media (max-width: 1180px) {
   .cloudcycle-page {
-    grid-template-columns: 1fr;
     height: auto;
     min-height: calc(100vh - 96px);
   }
 
   .cloudcycle-center {
     padding: 18px 14px;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
   }
 
   .stage-toolbar {

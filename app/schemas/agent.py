@@ -8,6 +8,7 @@ class AgentRunRequest(BaseModel):
     file_url: Optional[str] = Field(default=None, description="原文件 URL")
     goal: Optional[str] = Field(default=None, description="任务目标")
     scene: Optional[str] = Field(default=None, description="场景描述")
+    mode: str = Field(default="agent", description="运行模式: agent | chat")
     use_rag: bool = Field(default=True, description="是否启用 RAG")
     top_k: int = Field(default=5, ge=1, le=10, description="RAG 检索条数")
     save_to_history: bool = Field(default=True, description="是否保存到历史")
@@ -21,12 +22,21 @@ class AgentEvidence(BaseModel):
     tags: List[str] = []
 
 
+class AgentToolCall(BaseModel):
+    tool: str
+    input: str = ""
+    output: str = ""
+
+
 class AgentRunResponse(BaseModel):
     agent_name: str
     parse_mode: str
     confidence: float
     summary: str
     structured: Dict[str, Any]
+    assistant_reply: str = ""
+    mode: str = "agent"
+    tool_calls: List[AgentToolCall] = []
     checklist: List[Dict[str, Any]]
     timeline: List[Dict[str, Any]]
     process_steps: List[str]
@@ -36,3 +46,4 @@ class AgentRunResponse(BaseModel):
     rag_metrics: Dict[str, Any]
     evidence: List[AgentEvidence]
     chat_message_id: Optional[int] = None
+    user_audience: Optional[str] = None

@@ -24,6 +24,7 @@ from app.models.user import User
 class AgentState(TypedDict):
     messages: Annotated[list, add_messages]
     user_id: str
+    mode: str
     decision: str
     input_safety_decision: str
     tool_guard_decision: str
@@ -241,6 +242,11 @@ class AgentCore:
             return "answer"
 
     def _decide_need_tools(self, state: AgentState):
+        mode = str(state.get("mode", "agent") or "agent").strip().lower()
+        if mode == "chat":
+            return {"decision": "answer", "thought_event": "模式切换：Chat 模式，直接回答"}
+        if mode == "agent":
+            return {"decision": "tools", "thought_event": "模式切换：Agent 模式，进入工具循环"}
         user_text = self._extract_user_text(state)
         decide_prompt = SystemMessage(
             content=(
@@ -339,13 +345,14 @@ class AgentCore:
             return {"messages": [AIMessage(content=safe_text)], "thought_event": thought}
         return {"thought_event": thought}
 
-    def stream_run(self, prompt: str, user_id: str, thread_id: str) -> Generator[str, None, None]:
+    def stream_run(self, prompt: str, user_id: str, thread_id: str, mode: str = "agent") -> Generator[str, None, None]:
         """
         同步生成器：驱动图运行并输出 SSE 数据流。
         """
         inputs = {
             "messages": [HumanMessage(content=prompt)],
             "user_id": user_id,
+            "mode": mode,
         }
         config = {
             "configurable": {"thread_id": thread_id},

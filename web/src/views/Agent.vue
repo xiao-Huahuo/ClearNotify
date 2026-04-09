@@ -1,339 +1,222 @@
-﻿<template>
-  <div class="agent-page">
-    <aside class="agent-sidebar" :class="{ closed: !sidebarOpen }">
-      <div class="sidebar-header">
-        <span class="title">对话</span>
-        <div class="sidebar-actions">
-          <button class="new-btn" @click="createConversation">新建</button>
-          <button class="hide-btn" @click="toggleSidebar">收起</button>
-        </div>
-      </div>
-      <div class="conversation-list">
-        <button
-          v-for="item in conversations"
-          :key="item.id"
-          class="conversation-item"
-          :class="{ active: item.id === activeConversationId }"
-          @click="selectConversation(item.id)"
-        >
-          <span class="name">{{ item.title }}</span>
-          <span class="time">{{ formatTime(item.updated_time) }}</span>
-        </button>
-      </div>
-    </aside>
+<template>
+  <div class="cloudcycle-page">
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+    <div class="ambient ambient-three"></div>
+    <div class="grid-haze"></div>
 
-    <main class="agent-main" :class="{ shifted: drawerOpen }">
-      <div class="agent-header">
-        <div>
-          <PolicyTitle title="智能体中心" subtitle="简洁、可执行、可追溯。" :center="false" />
-        </div>
-      </div>
+    <transition name="intro-fade">
+      <CloudCycleHero
+        v-if="showIntro"
+        :run-mode="runMode"
+        :leaving="introLeaving"
+        @enter="enterMainStage"
+      />
+    </transition>
 
-      <div class="chat-panel">
-        <div class="chat-toolbar">
-          <div class="toolbar-actions">
-            <button class="tool-btn" @click="createConversation">新对话</button>
-            <button class="tool-btn ghost" @click="openHistory">历史记录</button>
-          </div>
-          <label class="llm-select">
-            <span class="label">LLM</span>
-            <select v-model="selectedModel" disabled>
-              <option value="kimi">KIMI</option>
-            </select>
-          </label>
-        </div>
-        <div ref="messageWrapRef" class="message-list">
-          <div
-            v-for="msg in messages"
-            :key="msg.id"
-            class="message-row"
-            :class="msg.role"
-          >
-            <div class="message-bundle" :class="{ trace: msg.role === 'trace' }">
-              <div v-if="msg.files?.length" class="file-stack">
-                <span v-for="(file, fIndex) in msg.files" :key="fIndex" class="file-chip">{{ file }}</span>
-              </div>
-              <div v-if="msg.content" class="bubble" :class="msg.role">
-                <div
-                  v-if="msg.role === 'assistant' || msg.role === 'trace'"
-                  class="bubble-content markdown-body"
-                  v-html="renderMarkdown(msg.content)"
-                ></div>
-                <div v-else-if="msg.content" class="bubble-content">{{ msg.content }}</div>
-              </div>
-            </div>
-          </div>
-          <div v-if="loading" class="typing">智能体正在分析...</div>
-        </div>
+    <CloudCycleSidebar
+      :open="sidebarOpen"
+      :is-mobile="isMobile"
+      :connection-state="connectionState"
+      :conversations="conversations"
+      :active-conversation-id="activeConversationId"
+      @create="createConversation"
+      @select="selectConversation"
+      @delete="deleteConversation"
+      @close="sidebarOpen = false"
+    />
 
-        <div class="quick-prompts">
-          <button
-            v-for="(prompt, index) in quickPrompts"
-            :key="index"
-            class="prompt-chip"
-            @click="sendMessage(prompt)"
-          >
-            {{ prompt }}
+    <main class="cloudcycle-center" :class="{ ready: !showIntro, compact: !messages.length }">
+      <div v-if="!showIntro && messages.length" class="stage-toolbar">
+        <div class="mode-switcher">
+          <button class="mode-btn" :class="{ active: runMode === 'agent' }" type="button" @click="setRunMode('agent')">
+            Agent
+          </button>
+          <button class="mode-btn" :class="{ active: runMode === 'chat' }" type="button" @click="setRunMode('chat')">
+            Chat
           </button>
         </div>
-
-        <div class="chat-input">
-          <div class="input-tools">
-            <label class="upload-btn">
-              上传文件
-              <input type="file" hidden @change="handleFileUpload" />
-            </label>
-            <span class="file-name" v-if="uploadedFileName">{{ uploadedFileName }}</span>
-          </div>
-          <textarea
-            v-model="inputText"
-            rows="3"
-            placeholder="粘贴通知或描述办理需求..."
-            @keydown.enter.exact.prevent="sendMessage()"
-          ></textarea>
-          <button class="send-btn" :disabled="loading" @click="sendMessage()">发送</button>
-        </div>
+        <div class="toolbar-status" :class="connectionState">{{ connectionText }}</div>
       </div>
+
+      <section class="conversation-stage">
+        <CloudCycleConversationPanel
+          v-model:input-text="inputText"
+          :messages="messages"
+          :pending-files="pendingFiles"
+          :loading="loading"
+          :can-send="canSend"
+          :show-landing="!messages.length"
+          :run-mode="runMode"
+          @send="sendMessage()"
+          @pick-file="pickFile"
+          @remove-file="removePendingFile"
+          @toggle-trace="toggleMessageTrace"
+          @set-mode="setRunMode"
+        />
+      </section>
     </main>
 
-    <button class="sidebar-toggle" :class="{ open: sidebarOpen }" @click="toggleSidebar">
-      <span class="arrow">&gt;</span>
+    <CloudCycleInspector
+      :open="inspectorOpen"
+      :is-mobile="isMobile"
+      :loading="loading"
+      :run-mode="runMode"
+      :connection-state="connectionState"
+      :agent-result="agentResult"
+      :trace-timeline="traceTimeline"
+      @close="inspectorOpen = false"
+    />
+
+    <button
+      v-if="!showIntro"
+      class="edge-handle edge-handle-left"
+      type="button"
+      :class="{ open: sidebarOpen }"
+      @click="sidebarOpen = !sidebarOpen"
+    >
+      <span>{{ sidebarOpen ? '收起会话' : '历史会话' }}</span>
     </button>
 
-    <div class="drawer-toggle" @click="toggleDrawer">
-      <span class="arrow" :class="{ open: drawerOpen }">&gt;</span>
-    </div>
+    <button
+      v-if="!showIntro"
+      class="edge-handle edge-handle-right"
+      type="button"
+      :class="{ open: inspectorOpen }"
+      @click="inspectorOpen = !inspectorOpen"
+    >
+      <span>{{ inspectorOpen ? '收起轨迹' : '推理轨迹' }}</span>
+    </button>
 
-    <aside class="agent-drawer" :class="{ open: drawerOpen }">
-      <div class="drawer-content">
-        <div class="panel">
-          <div class="panel-title">结构化结果</div>
-          <div class="structured-grid">
-            <div class="structured-item">
-              <span class="label">办理事项</span>
-              <span class="value">{{ structured.handling_matter || '待生成' }}</span>
-            </div>
-            <div class="structured-item">
-              <span class="label">适用对象</span>
-              <span class="value">{{ structured.target_audience || '待生成' }}</span>
-            </div>
-            <div class="structured-item">
-              <span class="label">时间节点</span>
-              <span class="value">{{ structured.time_deadline || '待生成' }}</span>
-            </div>
-            <div class="structured-item">
-              <span class="label">地点/入口</span>
-              <span class="value">{{ structured.location_entrance || '待生成' }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-title">办理流程</div>
-          <ul class="list" v-if="(agentResult?.process_steps || []).length">
-            <li v-for="(item, index) in agentResult.process_steps" :key="index">{{ item }}</li>
-          </ul>
-          <div v-else class="placeholder">等待生成流程</div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-title">材料清单</div>
-          <ul class="list" v-if="(agentResult?.materials || []).length">
-            <li v-for="(item, index) in agentResult.materials" :key="index">{{ item }}</li>
-          </ul>
-          <div v-else class="placeholder">等待生成材料</div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-title">注意事项</div>
-          <ul class="list" v-if="(agentResult?.notices || []).length">
-            <li v-for="(item, index) in agentResult.notices" :key="index">{{ item }}</li>
-          </ul>
-          <div v-else class="placeholder">等待生成注意事项</div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-title">时间线</div>
-          <div v-if="(agentResult?.timeline || []).length" class="timeline">
-            <div class="timeline-item" v-for="(item, index) in agentResult.timeline" :key="index">
-              <span class="timeline-time">{{ item.time }}</span>
-              <span class="timeline-event">{{ item.event }}</span>
-            </div>
-          </div>
-          <div v-else class="placeholder">等待生成时间节点</div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-title">证据链</div>
-          <div v-if="(agentResult?.evidence || []).length" class="evidence-list">
-            <div class="evidence-item" v-for="(item, index) in agentResult.evidence" :key="index">
-              <div class="evidence-title">{{ item.title || '知识条目' }}</div>
-              <div class="evidence-meta">
-                <span class="score">相似度 {{ item.score }}</span>
-                <span class="tag" v-if="item.category">{{ item.category }}</span>
-                <span class="tag" v-for="(tag, tIndex) in (item.tags || []).slice(0,2)" :key="tIndex">{{ tag }}</span>
-              </div>
-              <div class="evidence-snippet">{{ item.snippet || '暂无片段' }}</div>
-            </div>
-          </div>
-          <div v-else class="placeholder">等待生成证据链</div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-title">执行过程</div>
-          <ul class="list" v-if="(agentResult?.tool_calls || []).length">
-            <li v-for="(item, index) in agentResult.tool_calls" :key="index">
-              {{ item.tool }} | 输入: {{ item.input }} | 输出: {{ item.output }}
-            </li>
-          </ul>
-          <div v-else class="placeholder">等待工具调用</div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-title">Agent思考轨迹</div>
-          <div v-if="traceTimeline.length" class="trace-timeline">
-            <div class="trace-item" v-for="item in traceTimeline" :key="item.id">
-              <div class="trace-meta">
-                <span class="trace-type">{{ item.kindLabel }}</span>
-                <span class="trace-time">{{ item.time }}</span>
-              </div>
-              <div class="trace-main">{{ item.title }}</div>
-              <div v-if="item.input" class="trace-io">输入: {{ item.input }}</div>
-              <div v-if="item.output" class="trace-io">输出: {{ item.output }}</div>
-            </div>
-          </div>
-          <div v-else class="placeholder">等待思考轨迹</div>
-        </div>
-      </div>
-    </aside>
+    <input
+      ref="fileInputRef"
+      class="hidden-input"
+      type="file"
+      accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,image/*"
+      multiple
+      @change="handleFileUpload"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, nextTick, onMounted, onBeforeUnmount } from 'vue';
-import MarkdownIt from 'markdown-it';
-import 'github-markdown-css/github-markdown-light.css';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { apiClient, API_ROUTES } from '@/router/api_routes.js';
 import { useUserStore } from '@/stores/auth.js';
-import PolicyTitle from '@/components/common/PolicyTitle.vue';
+import CloudCycleConversationPanel from '@/components/agent/CloudCycleConversationPanel.vue';
+import CloudCycleHero from '@/components/agent/CloudCycleHero.vue';
+import CloudCycleInspector from '@/components/agent/CloudCycleInspector.vue';
+import CloudCycleSidebar from '@/components/agent/CloudCycleSidebar.vue';
 
-const userStore = useUserStore();
 const route = useRoute();
+const userStore = useUserStore();
+
+const fileInputRef = ref(null);
 const inputText = ref('');
 const loading = ref(false);
-const agentResult = ref(null);
-const messageWrapRef = ref(null);
-const drawerOpen = ref(false);
-const sidebarOpen = ref(false);
+const messages = ref([]);
 const conversations = ref([]);
-const activeConversationId = ref(null);
-const uploadedFileName = ref('');
 const pendingFiles = ref([]);
-const selectedModel = ref('kimi');
-const markdown = new MarkdownIt({ linkify: true, breaks: true });
 const traceTimeline = ref([]);
-const liveProcessMessageId = ref(null);
+const agentResult = ref(null);
+const activeConversationId = ref(null);
+const runMode = ref(localStorage.getItem('cloudcycle_mode') || 'agent');
+const connectionState = ref('disconnected');
+const isMobile = ref(window.innerWidth <= 1180);
+const sidebarOpen = ref(false);
+const inspectorOpen = ref(false);
+const showIntro = ref(false);
+const introLeaving = ref(false);
+const socketRef = ref(null);
+
+let doneResolver = null;
 let messageIdSeed = 1;
 let traceIdSeed = 1;
 let traceSeenSignatures = new Set();
+let currentAssistantMessageId = null;
+
+const canSend = computed(() => Boolean(inputText.value.trim() || pendingFiles.value.length));
+const introSessionKey = computed(() => `cloudcycle_intro_seen_${userStore.token || 'guest'}`);
+const connectionText = computed(() => {
+  if (connectionState.value === 'ready') return '已连接';
+  if (connectionState.value === 'connecting') return '连接中';
+  if (connectionState.value === 'error') return '连接异常';
+  return '未连接';
+});
 
 const makeMessage = (role, content = '', extra = {}) => ({
   id: messageIdSeed++,
   role,
   content,
-  ...extra
+  traceEntries: [],
+  traceExpanded: false,
+  traceStreaming: false,
+  ...extra,
 });
 
-const messages = ref([
-  {
-    ...makeMessage('assistant', '我是通知办理智能体。把通知内容粘贴给我，我会生成办理清单、证据链和风险提示。')
-  }
-]);
+const requestLogin = () => window.dispatchEvent(new CustomEvent('open-login-modal'));
 
-const quickPrompts = [
-  '请输出办理清单与材料清单',
-  '帮我检查风险与注意事项',
-  '生成办理流程与时间线'
-];
-
-const structured = computed(() => agentResult.value?.structured || {});
-const renderMarkdown = (text) => markdown.render(text || '');
-
-const socketRef = ref(null);
-let doneResolver = null;
-
-const scrollToBottom = () => {
-  if (!messageWrapRef.value) return;
-  messageWrapRef.value.scrollTop = messageWrapRef.value.scrollHeight;
+const setRunMode = (mode) => {
+  runMode.value = mode === 'chat' ? 'chat' : 'agent';
+  localStorage.setItem('cloudcycle_mode', runMode.value);
 };
 
-const formatTime = (value) => {
-  if (!value) return '';
-  const date = new Date(value);
-  return `${date.getMonth() + 1}-${date.getDate()} ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+const updateResponsiveState = () => {
+  isMobile.value = window.innerWidth <= 1180;
 };
 
 const nowTimeLabel = () => {
-  const d = new Date();
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(
-    d.getSeconds()
+  const date = new Date();
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(
+    date.getSeconds()
   ).padStart(2, '0')}`;
 };
 
-const shortText = (value, max = 180) => {
-  const text = String(value ?? '').replace(/\s+/g, ' ').trim();
+const shortText = (value, max = 220) => {
+  const text = String(value || '').replace(/\s+/g, ' ').trim();
   if (!text) return '';
   return text.length > max ? `${text.slice(0, max)}...` : text;
+};
+
+const getCurrentAssistantMessage = () =>
+  messages.value.find((item) => item.id === currentAssistantMessageId && item.role === 'assistant');
+
+const ensureCurrentAssistantMessage = () => {
+  let message = getCurrentAssistantMessage();
+  if (message) return message;
+
+  message = makeMessage('assistant', '', {
+    streaming: false,
+    traceExpanded: true,
+    traceStreaming: true,
+    traceEntries: [],
+  });
+  messages.value.push(message);
+  currentAssistantMessageId = message.id;
+  return message;
 };
 
 const buildTraceView = (entry) => {
   const tool = String(entry?.tool || '').trim() || 'tool';
   const input = shortText(entry?.input || '');
   const output = shortText(entry?.output || '');
-  const isThought = tool === 'agent_thought';
-  if (isThought) {
-    const thoughtText = input || output || '无思考内容';
+
+  if (tool === 'agent_thought') {
     return {
       kind: 'thought',
-      kindLabel: '思考',
-      title: thoughtText,
+      title: input || output || '无思考内容',
       input: '',
-      output: ''
+      output: '',
     };
   }
+
   return {
     kind: 'tool',
-    kindLabel: '工具',
     title: tool,
     input,
-    output
+    output,
   };
-};
-
-const buildTraceChatContent = (view) => {
-  if (view.kind === 'thought') {
-    return `**思考过程**\n${view.title}`;
-  }
-  const lines = [`**工具调用**`, `- 工具: ${view.title}`];
-  if (view.input) lines.push(`- 输入: ${view.input}`);
-  if (view.output) lines.push(`- 输出: ${view.output}`);
-  return lines.join('\n');
-};
-
-const upsertLiveProcessMessage = (content) => {
-  if (!content) return;
-  const id = liveProcessMessageId.value;
-  if (id) {
-    const index = messages.value.findIndex((item) => item.id === id);
-    if (index >= 0) {
-      messages.value[index].content = content;
-      return;
-    }
-  }
-  const msg = makeMessage('trace', content, { transient: true });
-  messages.value.push(msg);
-  liveProcessMessageId.value = msg.id;
 };
 
 const appendTraceTimeline = (entry) => {
@@ -341,810 +224,663 @@ const appendTraceTimeline = (entry) => {
   const signature = `${view.kind}|${view.title}|${view.input}|${view.output}`;
   if (traceSeenSignatures.has(signature)) return;
   traceSeenSignatures.add(signature);
-  const traceItem = {
+
+  const normalized = {
     id: traceIdSeed++,
     time: nowTimeLabel(),
-    ...view
+    ...view,
   };
-  traceTimeline.value.push(traceItem);
-  upsertLiveProcessMessage(buildTraceChatContent(view));
-  nextTick(scrollToBottom);
+
+  traceTimeline.value.push(normalized);
+
+  const assistantMessage = ensureCurrentAssistantMessage();
+  assistantMessage.traceEntries = [...(assistantMessage.traceEntries || []), normalized];
+  assistantMessage.traceStreaming = true;
+  assistantMessage.traceExpanded = true;
 };
 
 const resetRunRuntime = () => {
-  liveProcessMessageId.value = null;
   traceTimeline.value = [];
   traceSeenSignatures = new Set();
+  agentResult.value = null;
+  currentAssistantMessageId = null;
+};
+
+const toggleMessageTrace = (messageId) => {
+  const target = messages.value.find((item) => item.id === messageId);
+  if (!target) return;
+  target.traceExpanded = !target.traceExpanded;
 };
 
 const fetchConversations = async () => {
-  const res = await apiClient.get(API_ROUTES.AGENT_CONVERSATIONS);
-  conversations.value = res.data || [];
+  if (!userStore.token) return;
+  const response = await apiClient.get(API_ROUTES.AGENT_CONVERSATIONS);
+  conversations.value = response.data || [];
 };
 
 const loadMessages = async (conversationId) => {
-  const res = await apiClient.get(API_ROUTES.AGENT_MESSAGES(conversationId));
-  messages.value = res.data?.map((item) => makeMessage(item.role, item.content)) || [];
+  const response = await apiClient.get(API_ROUTES.AGENT_MESSAGES(conversationId));
+  messages.value = (response.data || []).map((item) =>
+    makeMessage(item.role, item.content, {
+      traceEntries: [],
+      traceExpanded: false,
+      traceStreaming: false,
+    })
+  );
   resetRunRuntime();
-  agentResult.value = null;
-  await nextTick();
-  scrollToBottom();
 };
 
 const createConversation = async () => {
-  const now = new Date();
-  const title = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(
-    now.getDate()
-  ).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(
-    now.getMinutes()
-  ).padStart(2, '0')} 对话`;
-  const res = await apiClient.post(API_ROUTES.AGENT_CONVERSATIONS, { title });
-  await fetchConversations();
-  activeConversationId.value = res.data.id;
-  messages.value = [
-    makeMessage('assistant', '新对话已创建，请输入通知内容。')
-  ];
-  resetRunRuntime();
-  agentResult.value = null;
-};
-
-const selectConversation = async (id) => {
-  activeConversationId.value = id;
-  await loadMessages(id);
-};
-
-const openWebSocket = (wsUrl) => new Promise((resolve, reject) => {
-  console.log('[AgentWS] connecting', wsUrl);
-  const ws = new WebSocket(wsUrl);
-  const timer = setTimeout(() => {
-    console.warn('[AgentWS] timeout', wsUrl);
-    ws.close();
-    reject(new Error('timeout'));
-  }, 3000);
-  ws.onopen = () => {
-    console.log('[AgentWS] open', wsUrl);
-    clearTimeout(timer);
-    resolve(ws);
-  };
-  ws.onerror = () => {
-    console.error('[AgentWS] error', wsUrl);
-    clearTimeout(timer);
-    reject(new Error('error'));
-  };
-});
-
-const connectSocket = async () => {
-  if (!userStore.token) return;
-  const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-  const isDev = window.location.port === '5173';
-  const wsUrl = isDev
-    ? `${protocol}://127.0.0.1:8080/agent/ws?token=${encodeURIComponent(userStore.token)}`
-    : `${protocol}://${window.location.host}/agent/ws?token=${encodeURIComponent(userStore.token)}`;
-
-  try {
-    socketRef.value = await openWebSocket(wsUrl);
-  } catch (e) {
-    socketRef.value = null;
-  }
-
-  if (!socketRef.value) {
-    loading.value = false;
-    messages.value.push(makeMessage('assistant', '智能体连接失败，请确认后端已在 8080 端口启动。'));
+  if (!userStore.token) {
+    requestLogin();
     return;
   }
 
-  socketRef.value.onmessage = (event) => {
-    console.log('[AgentWS] message', event.data?.slice?.(0, 200));
-    const data = JSON.parse(event.data);
-    if (data.type === 'conversation') {
-      activeConversationId.value = data.conversation_id;
-      fetchConversations();
-      return;
+  const now = new Date();
+  const title = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(
+    now.getDate()
+  ).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} 对话`;
+  const response = await apiClient.post(API_ROUTES.AGENT_CONVERSATIONS, { title });
+  await fetchConversations();
+  activeConversationId.value = response.data.id;
+  messages.value = [];
+  resetRunRuntime();
+  if (isMobile.value) sidebarOpen.value = false;
+};
+
+const selectConversation = async (conversationId) => {
+  activeConversationId.value = conversationId;
+  await loadMessages(conversationId);
+  if (isMobile.value) sidebarOpen.value = false;
+};
+
+const deleteConversation = async (conversationId) => {
+  if (!window.confirm('确定删除这个对话吗？')) return;
+  await apiClient.delete(`/agent/conversations/${conversationId}`);
+  if (activeConversationId.value === conversationId) {
+    activeConversationId.value = null;
+    messages.value = [];
+    resetRunRuntime();
+  }
+  await fetchConversations();
+  if (!activeConversationId.value && conversations.value.length) {
+    await selectConversation(conversations.value[0].id);
+  }
+};
+
+const getWsUrl = () => {
+  const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+  const isDev = window.location.port === '5173';
+  if (isDev) {
+    return `${protocol}://127.0.0.1:8080/agent/ws?token=${encodeURIComponent(userStore.token)}`;
+  }
+  return `${protocol}://${window.location.host}/agent/ws?token=${encodeURIComponent(userStore.token)}`;
+};
+
+const handleSocketMessage = (raw) => {
+  const data = JSON.parse(raw);
+
+  if (data.type === 'conversation') {
+    activeConversationId.value = data.conversation_id;
+    fetchConversations();
+    return;
+  }
+
+  if (data.type === 'result') {
+    agentResult.value = data.agent_result || null;
+    return;
+  }
+
+  if (data.type === 'trace') {
+    (data.tool_calls || []).forEach((item) => appendTraceTimeline(item));
+    return;
+  }
+
+  if (data.type === 'trace_step') {
+    appendTraceTimeline(data.tool_call || {});
+    return;
+  }
+
+  if (data.type === 'chunk') {
+    const assistantMessage = ensureCurrentAssistantMessage();
+    assistantMessage.traceStreaming = false;
+    if (assistantMessage.traceEntries?.length) {
+      assistantMessage.traceExpanded = false;
     }
-    if (data.type === 'result') {
-      agentResult.value = data.agent_result;
-      if (!drawerOpen.value) drawerOpen.value = true;
-      return;
+    assistantMessage.streaming = true;
+    assistantMessage.content += data.content;
+    return;
+  }
+
+  if (data.type === 'done') {
+    const assistantMessage = getCurrentAssistantMessage();
+    if (assistantMessage) {
+      assistantMessage.streaming = false;
+      assistantMessage.traceStreaming = false;
     }
-    if (data.type === 'trace') {
-      (data.tool_calls || []).forEach((item) => appendTraceTimeline(item));
-      return;
+    currentAssistantMessageId = null;
+    loading.value = false;
+    fetchConversations();
+    if (doneResolver) {
+      doneResolver();
+      doneResolver = null;
     }
-    if (data.type === 'trace_step') {
-      appendTraceTimeline(data.tool_call || {});
-      return;
-    }
-    if (data.type === 'chunk') {
-      const last = messages.value[messages.value.length - 1];
-      if (!last || last.role !== 'assistant' || last.streaming !== true) {
-        messages.value.push(makeMessage('assistant', data.content, { streaming: true }));
-      } else {
-        last.content += data.content;
-      }
-      nextTick(scrollToBottom);
-      return;
-    }
-    if (data.type === 'done') {
-      const last = messages.value[messages.value.length - 1];
-      if (last) last.streaming = false;
-      loading.value = false;
-      fetchConversations();
-      if (doneResolver) {
-        doneResolver();
-        doneResolver = null;
-      }
-      nextTick(scrollToBottom);
-    }
-  };
-  socketRef.value.onclose = () => {
-    console.warn('[AgentWS] closed');
+  }
+};
+
+const connectSocket = async () => {
+  if (!userStore.token) return;
+  if (socketRef.value && socketRef.value.readyState === WebSocket.OPEN) return;
+
+  connectionState.value = 'connecting';
+
+  try {
+    socketRef.value = await new Promise((resolve, reject) => {
+      const ws = new WebSocket(getWsUrl());
+      const timer = setTimeout(() => {
+        ws.close();
+        reject(new Error('ws-timeout'));
+      }, 4000);
+
+      ws.onopen = () => {
+        clearTimeout(timer);
+        resolve(ws);
+      };
+      ws.onerror = () => {
+        clearTimeout(timer);
+        reject(new Error('ws-error'));
+      };
+    });
+
+    connectionState.value = 'ready';
+    socketRef.value.onmessage = (event) => handleSocketMessage(event.data);
+    socketRef.value.onclose = () => {
+      connectionState.value = 'disconnected';
+      socketRef.value = null;
+    };
+  } catch (error) {
+    connectionState.value = 'error';
     socketRef.value = null;
-  };
+    throw error;
+  }
 };
 
 const ensureSocketReady = async () => {
-  if (socketRef.value && socketRef.value.readyState === 1) return;
+  if (socketRef.value && socketRef.value.readyState === WebSocket.OPEN) return;
   await connectSocket();
-  await new Promise((resolve, reject) => {
-    const start = Date.now();
-    const check = () => {
-      if (socketRef.value && socketRef.value.readyState === 1) resolve();
-      else if (Date.now() - start > 6000) reject(new Error('ws-timeout'));
-      else setTimeout(check, 100);
-    };
-    check();
-  });
 };
 
 const ensureConversationReady = async () => {
   if (activeConversationId.value) return;
-  if (conversations.value.length > 0) {
+  if (conversations.value.length) {
     activeConversationId.value = conversations.value[0].id;
     await loadMessages(activeConversationId.value);
     return;
   }
-  const now = new Date();
-  const title = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(
-    now.getDate()
-  ).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(
-    now.getMinutes()
-  ).padStart(2, '0')} 对话`;
-  const res = await apiClient.post(API_ROUTES.AGENT_CONVERSATIONS, { title });
-  await fetchConversations();
-  activeConversationId.value = res.data.id;
+  await createConversation();
 };
 
-const sendMessage = async (textOverride) => {
-  const content = (textOverride ?? inputText.value).trim();
-  const hasFiles = pendingFiles.value.length > 0;
-  if (!content && !hasFiles) return;
-  inputText.value = '';
+const uploadPendingFiles = async () => {
+  const sections = [];
+  const labels = [];
+  const files = [...pendingFiles.value];
+  pendingFiles.value = [];
 
-  loading.value = true;
-  try {
-    await ensureSocketReady();
-  } catch (e) {
-    loading.value = false;
-    console.error('[AgentWS] ensure failed', e);
-    messages.value.push(makeMessage('assistant', '连接智能体失败，请刷新页面后重试。'));
-    return;
-  }
-  await ensureConversationReady();
-
-  const fileSections = [];
-  const fileLabels = [];
-  if (hasFiles) {
-    const files = [...pendingFiles.value];
-    pendingFiles.value = [];
-    uploadedFileName.value = '';
-    for (const item of files) {
-      const file = item.file;
-      const isImage = file.type.startsWith('image/');
-      const formData = new FormData();
-      formData.append('file', file);
-      try {
-        const url = isImage ? API_ROUTES.UPLOAD_OCR : API_ROUTES.UPLOAD_DOCUMENT;
-        const res = await apiClient.post(url, formData, {
-          headers: { 'Content-Type': 'multipart/form-data' }
-        });
-        const extracted = res.data?.extracted_text || '';
-        if (extracted.trim()) {
-          fileSections.push(`【文件解析】${item.name}\n${extracted}`);
-          fileLabels.push(item.name);
-        } else {
-          messages.value.push(makeMessage('assistant', `文件 ${item.name} 未能提取到可用文本。`));
-        }
-      } catch (e) {
-        messages.value.push(makeMessage('assistant', `文件 ${item.name} 解析失败。`));
-      }
+  for (const item of files) {
+    const formData = new FormData();
+    formData.append('file', item.file);
+    const isImage = String(item.file.type || '').startsWith('image/');
+    const routePath = isImage ? API_ROUTES.UPLOAD_OCR : API_ROUTES.UPLOAD_DOCUMENT;
+    const response = await apiClient.post(routePath, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    const extractedText = String(response.data?.extracted_text || '').trim();
+    if (extractedText) {
+      sections.push(`【文件解析】${item.name}\n${extractedText}`);
+      labels.push(item.name);
     }
   }
 
-  const combinedParts = [];
-  if (content) combinedParts.push(content);
-  if (fileSections.length) combinedParts.push(...fileSections);
-  const combinedText = combinedParts.join('\n\n');
-  if (!combinedText) return;
-
-  loading.value = true;
-  resetRunRuntime();
-  messages.value.push(makeMessage('user', content, { files: fileLabels }));
-  await nextTick();
-  scrollToBottom();
-
-  socketRef.value.send(
-    JSON.stringify({
-      message: combinedText,
-      conversation_id: activeConversationId.value,
-      use_rag: true,
-      top_k: 5
-    })
-  );
-  await new Promise((resolve) => {
-    doneResolver = resolve;
-  });
-
+  return { sections, labels };
 };
 
-const handleFileUpload = async (event) => {
-  const file = event.target.files?.[0];
-  if (!file) return;
-  pendingFiles.value.push({ file, name: file.name });
-  uploadedFileName.value = pendingFiles.value.map((item) => item.name).join('、');
+const sendMessage = async (textOverride) => {
+  if (!userStore.token) {
+    requestLogin();
+    return;
+  }
+
+  const content = String(textOverride ?? inputText.value).trim();
+  if (!content && !pendingFiles.value.length) return;
+
+  loading.value = true;
+
+  try {
+    await ensureSocketReady();
+    await ensureConversationReady();
+
+    const { sections, labels } = await uploadPendingFiles();
+    if (!content && !sections.length) {
+      loading.value = false;
+      messages.value.push(makeMessage('assistant', '上传文件里没有提取到可用文本，请换一个更清晰的文件或补充文字说明。'));
+      return;
+    }
+
+    const userVisibleContent = content || `请分析我上传的 ${labels.length} 个文件。`;
+    const requestParts = [content || '请分析以下材料，并给出结论。', ...sections].filter(Boolean);
+    const finalMessage = requestParts.join('\n\n');
+
+    if (!finalMessage) {
+      loading.value = false;
+      return;
+    }
+
+    inputText.value = '';
+    resetRunRuntime();
+    messages.value.push(makeMessage('user', userVisibleContent, { files: labels }));
+    ensureCurrentAssistantMessage();
+    await nextTick();
+
+    socketRef.value.send(
+      JSON.stringify({
+        message: finalMessage,
+        conversation_id: activeConversationId.value,
+        mode: runMode.value,
+        use_rag: true,
+        top_k: 5,
+      })
+    );
+
+    await new Promise((resolve) => {
+      doneResolver = resolve;
+    });
+  } catch (error) {
+    loading.value = false;
+    const assistantMessage = getCurrentAssistantMessage();
+    if (assistantMessage) {
+      assistantMessage.traceStreaming = false;
+      assistantMessage.streaming = false;
+      assistantMessage.content = '连接智能体失败，请确认后端已启动并重试。';
+    } else {
+      messages.value.push(makeMessage('assistant', '连接智能体失败，请确认后端已启动并重试。'));
+    }
+    currentAssistantMessageId = null;
+  }
+};
+
+const pickFile = () => fileInputRef.value?.click();
+
+const removePendingFile = (name) => {
+  pendingFiles.value = pendingFiles.value.filter((item) => item.name !== name);
+};
+
+const handleFileUpload = (event) => {
+  const files = Array.from(event.target.files || []);
+  files.forEach((file) => {
+    pendingFiles.value.push({ file, name: file.name });
+  });
   event.target.value = '';
 };
 
-const toggleDrawer = () => {
-  drawerOpen.value = !drawerOpen.value;
+const enterMainStage = () => {
+  sessionStorage.setItem(introSessionKey.value, '1');
+  introLeaving.value = true;
+  setTimeout(() => {
+    showIntro.value = false;
+    introLeaving.value = false;
+  }, 680);
 };
 
-const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value;
-};
+const initializePage = async () => {
+  if (!userStore.token) return;
+  showIntro.value = sessionStorage.getItem(introSessionKey.value) !== '1';
+  introLeaving.value = false;
 
-const openHistory = () => {
-  sidebarOpen.value = true;
-};
-
-onMounted(async () => {
-  if (!userStore.token) {
-    alert('请先登录后使用智能体');
-    return;
-  }
   await fetchConversations();
   const routeConversationId = Number(route.query.conversation_id || 0);
   if (routeConversationId) {
     activeConversationId.value = routeConversationId;
-    await loadMessages(activeConversationId.value);
-  } else if (conversations.value.length > 0) {
+    await loadMessages(routeConversationId);
+  } else if (conversations.value.length) {
     activeConversationId.value = conversations.value[0].id;
     await loadMessages(activeConversationId.value);
   }
-  await connectSocket();
+
+  try {
+    await connectSocket();
+  } catch (error) {
+    messages.value.push(makeMessage('assistant', 'Agent 连接失败，请稍后重试。'));
+  }
+};
+
+watch(
+  () => userStore.token,
+  async (token) => {
+    if (!token) {
+      conversations.value = [];
+      messages.value = [];
+      activeConversationId.value = null;
+      connectionState.value = 'disconnected';
+      socketRef.value?.close();
+      socketRef.value = null;
+      showIntro.value = false;
+      return;
+    }
+    await initializePage();
+  }
+);
+
+onMounted(async () => {
+  window.addEventListener('resize', updateResponsiveState);
+  await initializePage();
 });
 
 onBeforeUnmount(() => {
-  if (socketRef.value) socketRef.value.close();
+  window.removeEventListener('resize', updateResponsiveState);
+  socketRef.value?.close();
 });
 </script>
 
 <style scoped>
-.agent-page {
-  height: 100%;
-  display: flex;
-  background: #f6f4f2;
+.cloudcycle-page {
   position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 0;
+  min-height: calc(100vh - 96px);
+  height: calc(100vh - 96px);
   overflow: hidden;
+  transition: background 0.6s ease;
 }
 
-.agent-sidebar {
-  width: 220px;
-  background: #ffffff;
-  border-right: 1px solid #eee;
-  padding: 18px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  overflow: hidden;
-  transition: width 0.35s ease, opacity 0.35s ease, transform 0.35s ease;
-  min-width: 0;
+.cloudcycle-page,
+.cloudcycle-page * {
+  transition-property: background, background-color, border-color, color, box-shadow, opacity, filter;
+  transition-duration: 0.45s;
+  transition-timing-function: ease;
 }
-.agent-sidebar.closed {
-  width: 0;
-  padding: 18px 0;
-  border-right: none;
-  opacity: 0;
-  transform: translateX(-12px);
+
+.ambient,
+.grid-haze {
+  position: absolute;
+  inset: 0;
   pointer-events: none;
 }
 
-.sidebar-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.ambient-one {
+  background: radial-gradient(circle at 8% 18%, rgba(130, 179, 255, 0.34), transparent 28%);
+  animation: driftOne 18s ease-in-out infinite;
 }
 
-.sidebar-header .title {
-  font-weight: 800;
-  font-size: 14px;
-}
-.sidebar-actions {
-  display: flex;
-  gap: 6px;
+.ambient-two {
+  background: radial-gradient(circle at 90% 16%, rgba(121, 250, 231, 0.24), transparent 24%);
+  animation: driftTwo 22s ease-in-out infinite;
 }
 
-.new-btn {
-  background: #c0392b;
-  color: #fff;
-  border: none;
-  border-radius: 999px;
-  padding: 6px 12px;
-  font-size: 12px;
-  cursor: pointer;
-}
-.hide-btn {
-  background: #f0f0f0;
-  color: #333;
-  border: none;
-  border-radius: 999px;
-  padding: 6px 10px;
-  font-size: 12px;
-  cursor: pointer;
+.ambient-three {
+  background: radial-gradient(circle at 56% 88%, rgba(255, 189, 142, 0.16), transparent 22%);
+  animation: driftThree 20s ease-in-out infinite;
 }
 
-.conversation-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  overflow-y: auto;
+.grid-haze {
+  background-image:
+    linear-gradient(rgba(92, 130, 199, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(92, 130, 199, 0.06) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: radial-gradient(circle at center, rgba(0, 0, 0, 0.8), transparent 88%);
 }
 
-.conversation-item {
-  border: none;
-  background: #f9f9f9;
-  border-radius: 12px;
-  padding: 10px;
-  text-align: left;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.conversation-item.active {
-  background: #111;
-  color: #fff;
-}
-.conversation-item .name {
-  font-size: 13px;
-  font-weight: 700;
-}
-.conversation-item .time {
-  font-size: 11px;
-  color: inherit;
-  opacity: 0.7;
-}
-
-.agent-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  padding: 22px 28px;
-  gap: 12px;
+.cloudcycle-center {
+  position: relative;
+  z-index: 1;
   min-width: 0;
-  transition: margin-right 0.35s ease;
-  min-height: 0;
-}
-.agent-main.shifted {
-  margin-right: 380px;
-}
-
-.agent-header h1 {
-  margin: 0;
-  font-size: 26px;
-  font-weight: 900;
-}
-.agent-header p {
-  margin: 4px 0 0;
-  font-size: 13px;
-  color: #666;
-}
-
-.chat-panel {
-  flex: 1;
-  background: #fff;
-  border-radius: 18px;
-  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  border: 1px solid #eee;
-  transition: margin-right 0.35s ease;
+  gap: 18px;
   min-height: 0;
-}
-.agent-main.shifted .chat-panel {
-  margin-right: 16px;
+  padding: 24px;
+  opacity: 0;
+  transform: scale(0.985) translateY(10px);
+  transition:
+    opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+    padding 0.45s ease;
 }
 
-.chat-toolbar {
+.cloudcycle-center.ready {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+.cloudcycle-center.compact {
+  justify-content: center;
+}
+
+.stage-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 14px;
+  padding: 0 8px;
+  animation: toolbarFadeIn 0.9s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.toolbar-actions {
-  display: flex;
-  gap: 8px;
-}
-.tool-btn {
-  border: 1px solid #ddd;
-  background: #111;
-  color: #fff;
-  border-radius: 999px;
-  padding: 4px 10px;
-  font-size: 12px;
-  cursor: pointer;
-}
-.tool-btn.ghost {
-  background: #fff;
-  color: #111;
-}
-.llm-select {
-  display: flex;
+
+.mode-switcher {
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: #555;
-}
-.llm-select select {
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  padding: 4px 10px;
-  font-size: 12px;
-  background: #fafafa;
-}
-
-.message-list {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  min-height: 0;
-  scroll-behavior: smooth;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.52);
+  border: 1px solid rgba(255, 255, 255, 0.56);
+  box-shadow: 0 16px 36px rgba(17, 41, 83, 0.08);
+  transition:
+    background 0.45s ease,
+    border-color 0.45s ease,
+    box-shadow 0.45s ease;
 }
 
-.message-row {
-  display: flex;
-}
-.message-row.user { justify-content: flex-end; }
-.message-row.assistant { justify-content: flex-start; }
-.message-bundle {
-  max-width: 75%;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.message-row.user .message-bundle { align-items: flex-end; }
-.message-row.assistant .message-bundle { align-items: flex-start; }
-.message-bundle.trace { align-items: flex-start; opacity: 0.9; }
-
-.bubble {
-  max-width: 100%;
+.mode-btn {
+  border: none;
+  border-radius: 999px;
   padding: 10px 14px;
-  font-size: 14px;
-  line-height: 1.35;
-  border-radius: 14px;
-  background: #f2f2f2;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-.bubble-content * {
-  margin: 1px 0;
-}
-.bubble-content :first-child {
-  margin-top: 0;
-}
-.bubble-content :last-child {
-  margin-bottom: 0;
-}
-.bubble-content h1,
-.bubble-content h2,
-.bubble-content h3 {
-  margin: 1px 0;
-  font-size: 14px;
-}
-.bubble-content ul {
-  margin: 1px 0 1px 14px;
-  padding: 0;
-}
-.bubble-content li {
-  margin: 0;
-}
-.bubble-content p {
-  margin: 1px 0;
-}
-.bubble-content ol {
-  margin: 1px 0 1px 14px;
-  padding: 0;
-}
-.bubble-content blockquote {
-  margin: 1px 0;
-  padding-left: 10px;
-  border-left: 3px solid #ddd;
-  color: #555;
-}
-.file-stack {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.file-chip {
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: #111;
-  color: #fff;
-}
-.bubble.user {
-  background: #e74c3c;
-  color: #fff;
-  border-radius: 14px;
-}
-.bubble.trace {
-  background: #f7f7f7;
-  color: #555;
-  border: 1px dashed #ddd;
-  font-size: 12px;
-}
-
-.typing {
-  font-size: 12px;
-  color: #999;
-}
-
-.quick-prompts {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.prompt-chip {
-  background: #f0f0f0;
-  border: none;
-  border-radius: 999px;
-  padding: 6px 12px;
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.chat-input {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.input-tools {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.upload-btn {
-  background: #111;
-  color: #fff;
-  border-radius: 999px;
-  padding: 6px 12px;
-  font-size: 12px;
-  cursor: pointer;
-}
-.file-name {
-  font-size: 12px;
-  color: #666;
-}
-
-.chat-input textarea {
-  border: 1px solid #ddd;
-  border-radius: 16px;
-  padding: 10px;
-  resize: none;
+  background: transparent;
+  color: rgba(16, 33, 63, 0.58);
   font-size: 13px;
-}
-
-.send-btn {
-  align-self: flex-end;
-  background: #c0392b;
-  color: #fff;
-  border: none;
-  border-radius: 999px;
-  padding: 8px 18px;
   font-weight: 700;
   cursor: pointer;
+  transition:
+    background 0.35s ease,
+    color 0.35s ease,
+    transform 0.3s ease;
 }
-.send-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-.drawer-toggle {
-  position: absolute;
-  right: 0;
-  top: 40%;
-  width: 22px;
-  height: 60px;
-  background: #111;
-  color: #fff;
+.mode-btn.active {
+  background:
+    linear-gradient(135deg, rgba(76, 132, 255, 0.18), rgba(47, 211, 193, 0.16)),
+    rgba(255, 255, 255, 0.8);
+  color: #15305a;
+}
+
+.toolbar-status {
+  padding: 10px 14px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(16, 33, 63, 0.58);
+  background: rgba(255, 255, 255, 0.52);
+  border: 1px solid rgba(255, 255, 255, 0.56);
+  transition: all 0.45s ease;
+}
+
+.toolbar-status.ready {
+  color: #0a775c;
+}
+
+.toolbar-status.connecting {
+  color: #8b5b12;
+}
+
+.toolbar-status.error {
+  color: #a43a3a;
+}
+
+.conversation-stage {
+  flex: 1;
+  min-height: 0;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px 0 0 12px;
-  cursor: pointer;
-  z-index: 10;
 }
-.drawer-toggle .arrow {
-  font-size: 20px;
-  transition: transform 0.3s ease;
-}
-.drawer-toggle .arrow.open { transform: rotate(180deg); }
 
-.sidebar-toggle {
-  position: absolute;
-  left: 0;
-  top: 40%;
-  width: 22px;
-  height: 60px;
-  background: #111;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0 12px 12px 0;
-  cursor: pointer;
-  z-index: 10;
-  border: none;
-}
-.sidebar-toggle .arrow {
-  font-size: 20px;
-  transition: transform 0.3s ease;
-}
-.sidebar-toggle.open .arrow { transform: rotate(180deg); }
-
-.agent-drawer {
-  position: absolute;
-  top: 0;
-  right: -360px;
-  width: 360px;
+.conversation-stage :deep(.conversation-panel) {
+  flex: 1;
   height: 100%;
-  background: #fff;
-  border-left: 1px solid #eee;
-  transition: right 0.35s ease;
-  overflow-y: auto;
-}
-.agent-drawer.open { right: 0; }
-
-.drawer-content {
-  padding: 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
 }
 
-.panel {
-  border: 1px solid #eee;
-  border-radius: 16px;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.edge-handle {
+  position: absolute;
+  top: 50%;
+  z-index: 5;
+  border: none;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.84), rgba(255, 255, 255, 0.64)),
+    rgba(255, 255, 255, 0.6);
+  color: rgba(16, 33, 63, 0.68);
+  border-radius: 999px;
+  padding: 16px 12px;
+  cursor: pointer;
+  box-shadow: 0 18px 38px rgba(17, 41, 83, 0.1);
+  transform: translateY(-50%);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  letter-spacing: 0.12em;
+  transition:
+    opacity 0.4s ease,
+    transform 0.4s ease,
+    background 0.45s ease,
+    color 0.45s ease,
+    box-shadow 0.45s ease;
 }
 
-.panel-title {
-  font-size: 13px;
-  font-weight: 800;
+.edge-handle:hover {
+  transform: translateY(-50%) scale(1.03);
 }
 
-.structured-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-.structured-item {
-  background: #f8f8f8;
-  border-radius: 12px;
-  padding: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.structured-item .label { font-size: 11px; color: #777; }
-.structured-item .value { font-size: 12px; font-weight: 700; color: #111; }
-
-.list {
-  padding-left: 18px;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 12px;
-  color: #333;
+.edge-handle-left {
+  left: 10px;
 }
 
-.timeline {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.timeline-item {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  color: #333;
-}
-.timeline-time { font-weight: 700; }
-
-.evidence-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.evidence-item {
-  border: 1px solid #eee;
-  border-radius: 12px;
-  padding: 8px;
-  background: #fafafa;
-}
-.evidence-title { font-weight: 700; font-size: 12px; }
-.evidence-meta { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0; }
-.score { font-size: 11px; color: #c0392b; font-weight: 700; }
-.tag { font-size: 10px; background: #111; color: #fff; padding: 2px 6px; border-radius: 999px; }
-.evidence-snippet { font-size: 11px; color: #666; line-height: 1.5; }
-
-.placeholder {
-  font-size: 12px;
-  color: #aaa;
+.edge-handle-right {
+  right: 10px;
 }
 
-.trace-timeline {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.edge-handle.open {
+  opacity: 0.78;
 }
 
-.trace-item {
-  border: 1px dashed #e1e1e1;
-  border-radius: 10px;
-  padding: 8px;
-  background: #fcfcfc;
+.hidden-input {
+  display: none;
 }
 
-.trace-meta {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-  color: #666;
+.intro-fade-enter-active,
+.intro-fade-leave-active {
+  transition: opacity 0.85s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.trace-type {
-  font-weight: 700;
-  color: #111;
+.intro-fade-enter-from,
+.intro-fade-leave-to {
+  opacity: 0;
 }
 
-.trace-main {
-  margin-top: 4px;
-  font-size: 12px;
-  color: #222;
-  line-height: 1.4;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.trace-io {
-  margin-top: 4px;
-  font-size: 11px;
-  color: #555;
-  line-height: 1.4;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-@media (max-width: 1100px) {
-  .agent-sidebar {
-    display: none;
+@keyframes toolbarFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
+
+@keyframes driftOne {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(2%, 3%, 0); }
+}
+
+@keyframes driftTwo {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(-2%, 4%, 0); }
+}
+
+@keyframes driftThree {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(1%, -3%, 0); }
+}
+
+@media (max-width: 1180px) {
+  .cloudcycle-page {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: calc(100vh - 96px);
+  }
+
+  .cloudcycle-center {
+    padding: 18px 14px;
+  }
+
+  .stage-toolbar {
+    padding: 0 4px;
+  }
+
+  .edge-handle {
+    top: auto;
+    bottom: 16px;
+    transform: none;
+    writing-mode: horizontal-tb;
+    letter-spacing: 0;
+  }
+
+  .edge-handle:hover {
+    transform: scale(1.03);
+  }
+
+  .edge-handle-left {
+    left: 14px;
+  }
+
+  .edge-handle-right {
+    right: 14px;
+  }
+}
+
+:global([data-theme='dark']) .cloudcycle-page {
+  background: linear-gradient(180deg, rgba(4, 10, 22, 0.28), rgba(4, 10, 22, 0.12));
+}
+
+:global([data-theme='dark']) .grid-haze {
+  background-image:
+    linear-gradient(rgba(153, 181, 244, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(153, 181, 244, 0.05) 1px, transparent 1px);
+}
+
+:global([data-theme='dark']) .mode-switcher,
+:global([data-theme='dark']) .toolbar-status,
+:global([data-theme='dark']) .edge-handle {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.24);
+}
+
+:global([data-theme='dark']) .mode-btn,
+:global([data-theme='dark']) .toolbar-status,
+:global([data-theme='dark']) .edge-handle {
+  color: rgba(237, 244, 255, 0.72);
+}
+
+:global([data-theme='dark']) .mode-btn.active {
+  background:
+    linear-gradient(135deg, rgba(64, 117, 255, 0.24), rgba(41, 187, 173, 0.18)),
+    rgba(255, 255, 255, 0.08);
+  color: #edf4ff;
+}
 </style>
-
-

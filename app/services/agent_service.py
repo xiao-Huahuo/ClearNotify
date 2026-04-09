@@ -9,7 +9,7 @@ from app.models.chat_message import ChatMessage
 from app.models.settings import Settings
 from app.services import chat_message_service, agent_plugin_service
 
-AGENT_NAME = "通知办理智能体"
+AGENT_NAME = "云小圆 (CloudCycle)"
 
 _SPLIT_PATTERN = re.compile(r"[，,；;。\n、]+")
 _DATE_PATTERN = re.compile(r"(\d{4}年\d{1,2}月\d{1,2}日|\d{4}-\d{1,2}-\d{1,2}|\d{1,2}月\d{1,2}日)")
@@ -78,6 +78,27 @@ def _build_summary(parsed: Dict[str, Any]) -> str:
     return f"本次为 {matter}，面向 {audience}，关键时间节点：{time_deadline}。"
 
 
+def _normalize_evidence(items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    normalized: List[Dict[str, Any]] = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        title = item.get("title") or item.get("source") or item.get("category") or "知识条目"
+        snippet = item.get("snippet") or item.get("content") or ""
+        normalized.append(
+            {
+                "title": str(title),
+                "category": item.get("category") or item.get("source"),
+                "score": float(item.get("score", 0) or 0),
+                "snippet": str(snippet),
+                "tags": list(item.get("tags") or []),
+                "source": item.get("source"),
+                "content": item.get("content"),
+            }
+        )
+    return normalized
+
+
 def run_agent(
     session: Session,
     user_id: int,
@@ -85,6 +106,7 @@ def run_agent(
     file_url: Optional[str],
     goal: Optional[str],
     scene: Optional[str],
+    mode: str = "agent",
     use_rag: bool = True,
     top_k: int = 5,
     save_to_history: bool = True,
@@ -100,6 +122,7 @@ def run_agent(
         plugin_result = agent_plugin_service.run_agent_plugin(
             user_id=user_id,
             prompt=original_text,
+            mode=mode,
             conversation_id=conversation_id,
             trace_callback=trace_callback,
         )
@@ -148,7 +171,7 @@ def run_agent(
     avg_score = 0.0
     result_count = 0
     if use_rag and tool_state.get("evidence"):
-        evidence = tool_state.get("evidence", [])
+        evidence = _normalize_evidence(tool_state.get("evidence", []))
         result_count = len(evidence)
         avg_score = sum(item.get("score", 0) for item in evidence) / result_count if result_count else 0.0
 
@@ -181,6 +204,7 @@ def run_agent(
             "confidence": confidence,
             "goal": goal,
             "scene": scene,
+            "mode": mode,
         }
         parsed["chat_analysis"] = json.dumps(analysis_payload, ensure_ascii=False)
         message: ChatMessage = chat_message_service.create_message_from_payload(
@@ -197,6 +221,7 @@ def run_agent(
         "summary": summary,
         "structured": parsed,
         "assistant_reply": graph_reply,
+        "mode": mode,
         "tool_calls": tool_state.get("tool_calls", []),
         "checklist": checklist,
         "timeline": timeline,

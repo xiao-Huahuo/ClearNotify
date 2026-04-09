@@ -239,6 +239,7 @@ def _extract_evidence_from_tool_output(tool_name: str, output: str) -> list[dict
 def run_agent_plugin(
     user_id: int,
     prompt: str,
+    mode: str = "agent",
     conversation_id: Optional[int] = None,
     trace_callback: Optional[Callable[[Dict[str, Any]], None]] = None,
 ) -> Dict[str, Any]:
@@ -262,7 +263,12 @@ def run_agent_plugin(
 
     try:
         core = _get_agent_core()
-        for raw_chunk in core.stream_run(prompt=prompt, user_id=str(user_id), thread_id=thread_id):
+        for raw_chunk in core.stream_run(
+            prompt=prompt,
+            user_id=str(user_id),
+            thread_id=thread_id,
+            mode=mode,
+        ):
             payload = _parse_sse_chunk(raw_chunk)
             if not payload:
                 continue

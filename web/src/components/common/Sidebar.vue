@@ -154,11 +154,11 @@ const emitLogin = () => window.dispatchEvent(new CustomEvent('open-login-modal')
 
 /* ── Icon mode (narrow capsule) ── */
 .sidebar-icon-mode {
-  width: 68px;
+  width: 60px;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   border-radius: 999px;
-  padding: 14px 0;
+  padding: 10px 0;
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
 }
 
@@ -169,6 +169,7 @@ const emitLogin = () => window.dispatchEvent(new CustomEvent('open-login-modal')
   white-space: nowrap;
 }
 .sidebar-icon-mode .nav-label {
+  display: none;
   opacity: 0;
   max-width: 0;
 }
@@ -202,8 +203,14 @@ const emitLogin = () => window.dispatchEvent(new CustomEvent('open-login-modal')
   overflow-x: hidden;
 }
 .sidebar-icon-mode .nav-list {
-  padding: 8px 4px;
-  align-items: center;
+  flex: none;
+  width: 100%;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  padding: 4px 0;
+  gap: 1px;
+  overflow: hidden;
 }
 .nav-item {
   display: flex;
@@ -219,11 +226,19 @@ const emitLogin = () => window.dispatchEvent(new CustomEvent('open-login-modal')
   overflow: hidden;
 }
 .sidebar-icon-mode .nav-item {
-  padding: 10px;
+  padding: 6px;
+  gap: 0;
   border-radius: 50%;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  align-items: center;
+  width: 32px;
+  height: 32px;
+  margin: 0;
+}
+
+.sidebar-icon-mode .nav-item svg {
+  display: block;
+  margin: 0 auto;
 }
 .nav-item:hover { background: rgba(255,255,255,0.15); color: #fff; }
 .nav-item.active { background: rgba(255,255,255,0.25); color: #fff; }
@@ -360,4 +375,3 @@ const emitLogin = () => window.dispatchEvent(new CustomEvent('open-login-modal')
 }
 .dialog-close:hover { opacity: 0.85; }
 </style>
-

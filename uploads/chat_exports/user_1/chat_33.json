@@ -1,197 +1,40 @@
 {
   "version": 1,
-  "exported_at": "2026-04-02T20:44:40.562944",
+  "exported_at": "2026-04-10T21:05:50.252017",
   "message": {
-    "target_audience": "技术支持团队",
     "location_entrance": null,
-    "session_json_path": null,
-    "risk_warnings": "文件类型错误可能导致解析失败",
+    "risk_warnings": null,
     "id": 33,
-    "required_materials": "DOCX文件",
-    "original_text_mapping": "{\"n1\": [4, 8], \"n2\": [0, 6], \"n3\": [11, 15]}",
-    "created_time": "2026-04-02T20:44:40.562944",
-    "handling_matter": "DOCX文件解析失败报告",
-    "file_url": "/media/docs/doc_1_b101ff14.doc",
-    "handling_process": "1. 文件路径检查 2. 文件类型验证 3. 解析尝试",
+    "required_materials": null,
+    "original_text_mapping": null,
+    "created_time": "2026-04-10T21:05:50.252017",
+    "file_url": null,
+    "handling_matter": null,
+    "handling_process": null,
     "chat_analysis": {
-      "version": "kg_v1",
       "parse_mode": "ai",
-      "language_complexity": "低",
-      "handling_complexity": "中",
-      "risk_level": "中",
-      "notice_type": "知识图谱",
-      "content": "DOCX文件解析失败，文件路径'D:\\Projects\\Python\\CloudPolicy\\uploads\\docs\\doc_1_b101ff14.doc'不是Word文件，内容类型为'application/vnd.openxmlformats-officedocument.themeManager+xml'。",
-      "nodes": [
-        {
-          "id": "n1",
-          "label": "文件解析",
-          "type": "流程",
-          "importance": 1.0,
-          "properties": {}
-        },
-        {
-          "id": "n2",
-          "label": "DOCX文件",
-          "type": "材料",
-          "importance": 0.8,
-          "properties": {}
-        },
-        {
-          "id": "n3",
-          "label": "文件路径",
-          "type": "条件",
-          "importance": 0.7,
-          "properties": {
-            "path": "D:\\Projects\\Python\\CloudPolicy\\uploads\\docs\\doc_1_b101ff14.doc"
-          }
-        },
-        {
-          "id": "n4",
-          "label": "内容类型错误",
-          "type": "风险",
-          "importance": 0.9,
-          "properties": {
-            "content_type": "application/vnd.openxmlformats-officedocument.themeManager+xml"
-          }
-        }
-      ],
-      "links": [
-        {
-          "source": "n1",
-          "target": "n2",
-          "relation": "尝试解析",
-          "logic_type": "negative"
-        },
-        {
-          "source": "n2",
-          "target": "n3",
-          "relation": "位于",
-          "logic_type": "positive"
-        },
-        {
-          "source": "n2",
-          "target": "n4",
-          "relation": "内容类型",
-          "logic_type": "negative"
-        }
-      ],
-      "dynamic_payload": {
-        "summary_title": "DOCX文件解析失败报告",
-        "target_audience": "技术支持团队",
-        "time_deadline": "立即",
-        "required_materials": "DOCX文件",
-        "process_steps": "1. 文件路径检查 2. 文件类型验证 3. 解析尝试",
-        "precautions": "确保文件路径正确且文件类型为Word文档",
-        "risk_warnings": "文件类型错误可能导致解析失败",
-        "is_condensed_input": false
-      },
-      "visual_config": {
-        "focus_node": "n1",
-        "initial_zoom": 1.0,
-        "text_mapping": {
-          "n1": [
-            4,
-            8
-          ],
-          "n2": [
-            0,
-            6
-          ],
-          "n3": [
-            11,
-            15
-          ]
-        }
-      }
+      "agent_name": "云小圆 (CloudCycle)",
+      "confidence": 0.55,
+      "goal": null,
+      "scene": null,
+      "mode": "chat"
     },
     "is_deleted": false,
-    "original_text": "DOCX 解析失败: file 'D:\\Projects\\Python\\CloudPolicy\\uploads\\docs\\doc_1_b101ff14.doc' is not a Word file, content type is 'application/vnd.openxmlformats-officedocument.themeManager+xml'",
-    "time_deadline": "立即",
-    "precautions": "确保文件路径正确且文件类型为Word文档",
-    "user_id": 1,
+    "original_text": "现在是chat模式了,你好呀",
+    "time_deadline": null,
     "source_chat_id": null,
-    "content": "DOCX文件解析失败，文件路径'D:\\Projects\\Python\\CloudPolicy\\uploads\\docs\\doc_1_b101ff14.doc'不是Word文件，内容类型为'application/vnd.openxmlformats-officedocument.themeManager+xml'。",
-    "nodes": [
-      {
-        "id": "n1",
-        "label": "文件解析",
-        "type": "流程",
-        "importance": 1.0,
-        "properties": {}
-      },
-      {
-        "id": "n2",
-        "label": "DOCX文件",
-        "type": "材料",
-        "importance": 0.8,
-        "properties": {}
-      },
-      {
-        "id": "n3",
-        "label": "文件路径",
-        "type": "条件",
-        "importance": 0.7,
-        "properties": {
-          "path": "D:\\Projects\\Python\\CloudPolicy\\uploads\\docs\\doc_1_b101ff14.doc"
-        }
-      },
-      {
-        "id": "n4",
-        "label": "内容类型错误",
-        "type": "风险",
-        "importance": 0.9,
-        "properties": {
-          "content_type": "application/vnd.openxmlformats-officedocument.themeManager+xml"
-        }
-      }
-    ],
-    "links": [
-      {
-        "source": "n1",
-        "target": "n2",
-        "relation": "尝试解析",
-        "logic_type": "negative"
-      },
-      {
-        "source": "n2",
-        "target": "n3",
-        "relation": "位于",
-        "logic_type": "positive"
-      },
-      {
-        "source": "n2",
-        "target": "n4",
-        "relation": "内容类型",
-        "logic_type": "negative"
-      }
-    ],
-    "dynamic_payload": {
-      "summary_title": "DOCX文件解析失败报告",
-      "target_audience": "技术支持团队",
-      "time_deadline": "立即",
-      "required_materials": "DOCX文件",
-      "process_steps": "1. 文件路径检查 2. 文件类型验证 3. 解析尝试",
-      "precautions": "确保文件路径正确且文件类型为Word文档",
-      "risk_warnings": "文件类型错误可能导致解析失败",
-      "is_condensed_input": false
-    },
+    "precautions": null,
+    "user_id": 1,
+    "target_audience": null,
+    "session_json_path": null,
+    "content": "现在是chat模式了,你好呀",
+    "nodes": [],
+    "links": [],
+    "dynamic_payload": {},
     "visual_config": {
-      "focus_node": "n1",
+      "focus_node": null,
       "initial_zoom": 1.0,
-      "text_mapping": {
-        "n1": [
-          4,
-          8
-        ],
-        "n2": [
-          0,
-          6
-        ],
-        "n3": [
-          11,
-          15
-        ]
-      }
+      "text_mapping": {}
     },
     "estimated_time_saved_minutes": 2
   }

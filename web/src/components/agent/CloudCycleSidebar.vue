@@ -288,13 +288,16 @@ const formatTime = (value) => {
 }
 
 .conversation-card {
+  appearance: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
   width: 100%;
   padding: 14px;
+  border: none;
   border-radius: 18px;
+  outline: none;
   text-align: left;
   background: rgba(255, 255, 255, 0.62);
   color: #173159;
@@ -311,6 +314,12 @@ const formatTime = (value) => {
     linear-gradient(135deg, rgba(85, 136, 255, 0.18), rgba(57, 215, 194, 0.18)),
     rgba(255, 255, 255, 0.84);
   box-shadow: 0 20px 36px rgba(42, 88, 170, 0.16);
+}
+
+.conversation-card:focus-visible {
+  box-shadow:
+    0 0 0 2px rgba(77, 133, 255, 0.2),
+    0 16px 30px rgba(20, 43, 79, 0.12);
 }
 
 .conversation-main {

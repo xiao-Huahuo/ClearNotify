@@ -53,12 +53,13 @@
           :loading="loading"
           :can-send="canSend"
           :show-landing="!messages.length"
+          :dock-from-landing="composerDockFromLanding"
           :run-mode="runMode"
           @send="sendMessage()"
           @pick-file="pickFile"
           @remove-file="removePendingFile"
-          @toggle-trace="toggleMessageTrace"
           @set-mode="setRunMode"
+          @open-sidebar="sidebarOpen = true"
         />
       </section>
     </main>
@@ -109,7 +110,6 @@
 
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
 import { apiClient, API_ROUTES } from '@/router/api_routes.js';
 import { useUserStore } from '@/stores/auth.js';
 import CloudCycleConversationPanel from '@/components/agent/CloudCycleConversationPanel.vue';
@@ -117,7 +117,6 @@ import CloudCycleHero from '@/components/agent/CloudCycleHero.vue';
 import CloudCycleInspector from '@/components/agent/CloudCycleInspector.vue';
 import CloudCycleSidebar from '@/components/agent/CloudCycleSidebar.vue';
 
-const route = useRoute();
 const userStore = useUserStore();
 
 const fileInputRef = ref(null);
@@ -137,6 +136,7 @@ const inspectorOpen = ref(false);
 const showIntro = ref(false);
 const introLeaving = ref(false);
 const socketRef = ref(null);
+const composerDockFromLanding = ref(false);
 
 let doneResolver = null;
 let messageIdSeed = 1;
@@ -145,6 +145,13 @@ let traceSeenSignatures = new Set();
 let currentAssistantMessageId = null;
 const traceQueue = ref([]);
 let traceQueueTimer = null;
+let composerDockTimer = null;
+const pendingChunkBuffer = ref([]);
+const pendingDone = ref(false);
+const traceSourceDone = ref(false);
+const TRACE_MIN_STEP_DURATION_MS = 680;
+const TRACE_FINAL_SETTLE_DELAY_MS = 260;
+let traceVisibleUntil = 0;
 
 const canSend = computed(() => Boolean(inputText.value.trim() || pendingFiles.value.length));
 const introSessionKey = computed(() => `cloudcycle_intro_seen_${userStore.token || 'guest'}`);
@@ -168,7 +175,6 @@ const makeMessage = (role, content = '', extra = {}) => ({
   role,
   content,
   traceEntries: [],
-  traceExpanded: false,
   traceStreaming: false,
   ...extra,
 });
@@ -206,8 +212,7 @@ const ensureCurrentAssistantMessage = () => {
 
   message = makeMessage('assistant', '', {
     streaming: false,
-    traceExpanded: true,
-    traceStreaming: true,
+    traceStreaming: runMode.value === 'agent',
     traceEntries: [],
   });
   messages.value.push(message);
@@ -238,6 +243,7 @@ const buildTraceView = (entry) => {
 };
 
 const appendTraceTimeline = (entry) => {
+  if (runMode.value !== 'agent' || !loading.value || !currentAssistantMessageId) return;
   const view = buildTraceView(entry);
   const signature = `${view.kind}|${view.title}|${view.input}|${view.output}`;
   if (traceSeenSignatures.has(signature)) return;
@@ -251,10 +257,10 @@ const appendTraceTimeline = (entry) => {
 
   traceTimeline.value.push(normalized);
 
-  const assistantMessage = ensureCurrentAssistantMessage();
+  const assistantMessage = getCurrentAssistantMessage();
+  if (!assistantMessage || assistantMessage.content) return;
   assistantMessage.traceEntries = [...(assistantMessage.traceEntries || []), normalized];
   assistantMessage.traceStreaming = true;
-  assistantMessage.traceExpanded = true;
 };
 
 const clearTraceQueueTimer = () => {
@@ -264,19 +270,108 @@ const clearTraceQueueTimer = () => {
   }
 };
 
+const clearComposerDockTimer = () => {
+  if (composerDockTimer) {
+    clearTimeout(composerDockTimer);
+    composerDockTimer = null;
+  }
+};
+
+const triggerComposerDockAnimation = () => {
+  clearComposerDockTimer();
+  composerDockFromLanding.value = true;
+  composerDockTimer = setTimeout(() => {
+    composerDockFromLanding.value = false;
+    composerDockTimer = null;
+  }, 820);
+};
+
+const getTracePlaybackDelayMs = () => Math.max(0, traceVisibleUntil - Date.now());
+
+const scheduleTraceSettleFlush = () => {
+  if (traceQueueTimer || !traceSourceDone.value) return;
+  const assistantMessage = getCurrentAssistantMessage();
+  const settleDelay = assistantMessage?.traceEntries?.length ? TRACE_FINAL_SETTLE_DELAY_MS : 0;
+  traceQueueTimer = setTimeout(() => {
+    traceQueueTimer = null;
+    syncDeferredStreamState();
+  }, getTracePlaybackDelayMs() + settleDelay);
+};
+
 const scheduleTraceQueue = () => {
   if (traceQueueTimer || !traceQueue.value.length) return;
   traceQueueTimer = setTimeout(() => {
     traceQueueTimer = null;
     const nextEntry = traceQueue.value.shift();
-    if (nextEntry) appendTraceTimeline(nextEntry);
-    if (traceQueue.value.length) scheduleTraceQueue();
-  }, 220);
+    if (nextEntry) {
+      appendTraceTimeline(nextEntry);
+      traceVisibleUntil = Date.now() + TRACE_MIN_STEP_DURATION_MS;
+    }
+    if (traceQueue.value.length) {
+      scheduleTraceQueue();
+      return;
+    }
+    if (traceSourceDone.value) {
+      scheduleTraceSettleFlush();
+      return;
+    }
+    syncDeferredStreamState();
+  }, getTracePlaybackDelayMs());
 };
 
 const enqueueTrace = (entry) => {
   traceQueue.value.push(entry);
   scheduleTraceQueue();
+};
+
+const shouldBufferAssistantChunks = () => (
+  runMode.value === 'agent' && (!traceSourceDone.value || Boolean(traceQueue.value.length) || Boolean(traceQueueTimer))
+);
+
+const appendChunkContent = (content) => {
+  if (!content) return;
+  const assistantMessage = ensureCurrentAssistantMessage();
+  assistantMessage.traceStreaming = false;
+  assistantMessage.streaming = true;
+  assistantMessage.content += content;
+};
+
+const releaseBufferedChunks = () => {
+  if (!pendingChunkBuffer.value.length) return;
+  const buffered = pendingChunkBuffer.value.join('');
+  pendingChunkBuffer.value = [];
+  appendChunkContent(buffered);
+};
+
+const finalizeAssistantRun = () => {
+  const assistantMessage = getCurrentAssistantMessage();
+  if (assistantMessage) {
+    assistantMessage.streaming = false;
+    assistantMessage.traceStreaming = false;
+  }
+  traceSourceDone.value = false;
+  traceVisibleUntil = 0;
+  currentAssistantMessageId = null;
+  loading.value = false;
+  fetchConversations();
+  if (doneResolver) {
+    doneResolver();
+    doneResolver = null;
+  }
+};
+
+const syncDeferredStreamState = () => {
+  if (traceQueue.value.length) {
+    scheduleTraceQueue();
+    return;
+  }
+  if (traceQueueTimer) return;
+  if (!traceSourceDone.value) return;
+  releaseBufferedChunks();
+  if (pendingDone.value) {
+    pendingDone.value = false;
+    finalizeAssistantRun();
+  }
 };
 
 const resetRunRuntime = () => {
@@ -285,13 +380,11 @@ const resetRunRuntime = () => {
   agentResult.value = null;
   currentAssistantMessageId = null;
   traceQueue.value = [];
+  pendingChunkBuffer.value = [];
+  pendingDone.value = false;
+  traceSourceDone.value = false;
+  traceVisibleUntil = 0;
   clearTraceQueueTimer();
-};
-
-const toggleMessageTrace = (messageId) => {
-  const target = messages.value.find((item) => item.id === messageId);
-  if (!target) return;
-  target.traceExpanded = !target.traceExpanded;
 };
 
 const fetchConversations = async () => {
@@ -305,7 +398,6 @@ const loadMessages = async (conversationId) => {
   messages.value = (response.data || []).map((item) =>
     makeMessage(item.role, item.content, {
       traceEntries: [],
-      traceExpanded: false,
       traceStreaming: false,
     })
   );
@@ -345,9 +437,6 @@ const deleteConversation = async (conversationId) => {
     resetRunRuntime();
   }
   await fetchConversations();
-  if (!activeConversationId.value && conversations.value.length) {
-    await selectConversation(conversations.value[0].id);
-  }
 };
 
 const getWsUrl = () => {
@@ -374,34 +463,40 @@ const handleSocketMessage = (raw) => {
   }
 
   if (data.type === 'trace_step') {
+    if (runMode.value !== 'agent' || !loading.value || !currentAssistantMessageId) return;
     enqueueTrace(data.tool_call || {});
     return;
   }
 
-  if (data.type === 'chunk') {
-    const assistantMessage = ensureCurrentAssistantMessage();
-    assistantMessage.traceStreaming = false;
-    if (assistantMessage.traceEntries?.length) {
-      assistantMessage.traceExpanded = false;
+  if (data.type === 'trace_done') {
+    traceSourceDone.value = true;
+    if (traceQueue.value.length) {
+      scheduleTraceQueue();
+      return;
     }
-    assistantMessage.streaming = true;
-    assistantMessage.content += data.content;
+    scheduleTraceSettleFlush();
+    syncDeferredStreamState();
+    return;
+  }
+
+  if (data.type === 'chunk') {
+    if (shouldBufferAssistantChunks()) {
+      pendingChunkBuffer.value.push(data.content || '');
+      return;
+    }
+    appendChunkContent(data.content || '');
     return;
   }
 
   if (data.type === 'done') {
-    const assistantMessage = getCurrentAssistantMessage();
-    if (assistantMessage) {
-      assistantMessage.streaming = false;
-      assistantMessage.traceStreaming = false;
+    if (shouldBufferAssistantChunks() || pendingChunkBuffer.value.length) {
+      pendingDone.value = true;
+      syncDeferredStreamState();
+      return;
     }
-    currentAssistantMessageId = null;
-    loading.value = false;
-    fetchConversations();
-    if (doneResolver) {
-      doneResolver();
-      doneResolver = null;
-    }
+    traceQueue.value = [];
+    clearTraceQueueTimer();
+    finalizeAssistantRun();
   }
 };
 
@@ -449,11 +544,6 @@ const ensureSocketReady = async () => {
 
 const ensureConversationReady = async () => {
   if (activeConversationId.value) return;
-  if (conversations.value.length) {
-    activeConversationId.value = conversations.value[0].id;
-    await loadMessages(activeConversationId.value);
-    return;
-  }
   await createConversation();
 };
 
@@ -513,6 +603,7 @@ const sendMessage = async (textOverride) => {
     }
 
     inputText.value = '';
+    if (!messages.value.length) triggerComposerDockAnimation();
     resetRunRuntime();
     messages.value.push(makeMessage('user', userVisibleContent, { files: labels }));
     ensureCurrentAssistantMessage();
@@ -572,16 +663,15 @@ const initializePage = async () => {
   if (!userStore.token) return;
   showIntro.value = sessionStorage.getItem(introSessionKey.value) !== '1';
   introLeaving.value = false;
+  composerDockFromLanding.value = false;
+  clearComposerDockTimer();
+  inputText.value = '';
+  pendingFiles.value = [];
+  messages.value = [];
+  activeConversationId.value = null;
+  resetRunRuntime();
 
   await fetchConversations();
-  const routeConversationId = Number(route.query.conversation_id || 0);
-  if (routeConversationId) {
-    activeConversationId.value = routeConversationId;
-    await loadMessages(routeConversationId);
-  } else if (conversations.value.length) {
-    activeConversationId.value = conversations.value[0].id;
-    await loadMessages(activeConversationId.value);
-  }
 
   try {
     await connectSocket();
@@ -596,11 +686,16 @@ watch(
     if (!token) {
       conversations.value = [];
       messages.value = [];
+      pendingFiles.value = [];
+      inputText.value = '';
       activeConversationId.value = null;
       connectionState.value = 'disconnected';
       socketRef.value?.close();
       socketRef.value = null;
       showIntro.value = false;
+      composerDockFromLanding.value = false;
+      clearComposerDockTimer();
+      resetRunRuntime();
       return;
     }
     await initializePage();
@@ -616,6 +711,7 @@ onBeforeUnmount(() => {
   window.removeEventListener('resize', updateResponsiveState);
   socketRef.value?.close();
   clearTraceQueueTimer();
+  clearComposerDockTimer();
 });
 </script>
 

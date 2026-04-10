@@ -6,7 +6,11 @@ SQLALCHEMY_DATABASE_URL = f"sqlite:///{GlobalConfig.DB_PATH}"
 
 # 2. 创建 Engine
 # connect_args={"check_same_thread": False} 是 SQLite 特有的配置，允许在多线程环境中使用同一个连接
-engine = create_engine(SQLALCHEMY_DATABASE_URL, echo=True, connect_args={"check_same_thread": False})
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL,
+    echo=GlobalConfig.SQLALCHEMY_ECHO,
+    connect_args={"check_same_thread": False},
+)
 
 
 # 3. 初始化数据库函数

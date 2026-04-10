@@ -98,6 +98,7 @@ class GlobalConfig:
 
     # Agent plugin behavior params from env
     AGENT_PLUGIN_ENABLED = _to_bool(os.getenv("AGENT_PLUGIN_ENABLED"))
+    SQLALCHEMY_ECHO = _to_bool(os.getenv("SQLALCHEMY_ECHO"))
     _embedding_model_raw = os.getenv(
         "AGENT_PLUGIN_EMBEDDING_MODEL",
         "paraphrase-multilingual-MiniLM-L12-v2",

@@ -273,7 +273,12 @@ def run_agent_plugin(
             if not payload:
                 continue
 
-            if payload.get("node") in {"agent", "answer", "blocked", "output_safety"} and payload.get("content"):
+            node_name = str(payload.get("node", "") or "")
+            has_tool_calls = bool(payload.get("tool_calls"))
+            if payload.get("content") and (
+                node_name in {"answer", "blocked", "output_safety"}
+                or (node_name == "agent" and not has_tool_calls)
+            ):
                 assistant_reply = str(payload["content"])
             thought_event = str(payload.get("thought_event", "")).strip()
             if thought_event and trace_callback:

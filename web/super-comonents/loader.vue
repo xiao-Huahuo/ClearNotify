@@ -15,11 +15,11 @@
   }
 
   .jimu-primary-loading:before {
-    left: -19.992px;
+    left: -9.996px;
   }
 
   .jimu-primary-loading:after {
-    left: 19.992px;
+    left: 9.996px;
     -webkit-animation-delay: 0.32s !important;
     animation-delay: 0.32s !important;
   }
@@ -27,19 +27,19 @@
   .jimu-primary-loading:before,
   .jimu-primary-loading:after,
   .jimu-primary-loading {
-    background: #076fe5;
+    background: var(--loader-color, #076fe5);
     -webkit-animation: loading-keys-app-loading 0.8s infinite ease-in-out;
     animation: loading-keys-app-loading 0.8s infinite ease-in-out;
-    width: 13.6px;
-    height: 32px;
+    width: 6.8px;
+    height: 16px;
   }
 
   .jimu-primary-loading {
     text-indent: -9999em;
     margin: auto;
     position: absolute;
-    right: calc(50% - 6.8px);
-    top: calc(50% - 16px);
+    right: calc(50% - 3.4px);
+    top: calc(50% - 8px);
     -webkit-animation-delay: 0.16s !important;
     animation-delay: 0.16s !important;
   }
@@ -50,14 +50,14 @@
     80%,
     100% {
       opacity: .75;
-      box-shadow: 0 0 #076fe5;
-      height: 32px;
+      box-shadow: 0 0 var(--loader-color, #076fe5);
+      height: 16px;
     }
 
     40% {
       opacity: 1;
-      box-shadow: 0 -8px #076fe5;
-      height: 40px;
+      box-shadow: 0 -4px var(--loader-color, #076fe5);
+      height: 20px;
     }
   }
 
@@ -67,14 +67,14 @@
     80%,
     100% {
       opacity: .75;
-      box-shadow: 0 0 #076fe5;
-      height: 32px;
+      box-shadow: 0 0 var(--loader-color, #076fe5);
+      height: 16px;
     }
 
     40% {
       opacity: 1;
-      box-shadow: 0 -8px #076fe5;
-      height: 40px;
+      box-shadow: 0 -4px var(--loader-color, #076fe5);
+      height: 20px;
     }
   }
 </style>

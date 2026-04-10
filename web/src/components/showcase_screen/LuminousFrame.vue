@@ -1,15 +1,12 @@
 <template>
   <section class="luminous-frame" :class="{ compact }" :style="{ '--accent-start': accentStart, '--accent-end': accentEnd }">
     <div class="frame-glow"></div>
+    <svg class="frame-outline" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <path class="outline-base" pathLength="1000" d="M 1.5 7.5 L 7.5 1.5 L 88.5 1.5 L 98.5 11.5 L 98.5 92.5 L 92.5 98.5 L 11.5 98.5 L 1.5 88.5 Z" />
+      <path class="outline-trace outline-trace-a" pathLength="1000" d="M 1.5 7.5 L 7.5 1.5 L 88.5 1.5 L 98.5 11.5 L 98.5 92.5 L 92.5 98.5 L 11.5 98.5 L 1.5 88.5 Z" />
+      <path class="outline-trace outline-trace-b" pathLength="1000" d="M 1.5 7.5 L 7.5 1.5 L 88.5 1.5 L 98.5 11.5 L 98.5 92.5 L 92.5 98.5 L 11.5 98.5 L 1.5 88.5 Z" />
+    </svg>
     <div class="frame-shell">
-      <div class="frame-edge edge-top"></div>
-      <div class="frame-edge edge-right"></div>
-      <div class="frame-edge edge-bottom"></div>
-      <div class="frame-edge edge-left"></div>
-      <div class="frame-corner corner-tl"></div>
-      <div class="frame-corner corner-tr"></div>
-      <div class="frame-corner corner-br"></div>
-      <div class="frame-corner corner-bl"></div>
       <div class="frame-noise"></div>
       <FrameTitle v-if="title" :eyebrow="eyebrow" :title="title" :subtitle="subtitle" :accent-start="accentStart" :accent-end="accentEnd">
         <template v-if="$slots.actions" #right>
@@ -59,8 +56,11 @@ defineProps({
 <style scoped>
 .luminous-frame {
   position: relative;
+  display: flex;
   min-height: 0;
+  height: 100%;
   overflow: hidden;
+  isolation: isolate;
   filter:
     drop-shadow(0 18px 48px rgba(0, 0, 0, 0.35))
     drop-shadow(0 0 18px rgba(255, 143, 122, 0.12))
@@ -74,13 +74,18 @@ defineProps({
     radial-gradient(circle at 20% 20%, rgba(255, 143, 122, 0.18), transparent 18%),
     radial-gradient(circle at 80% 0%, rgba(88, 203, 255, 0.16), transparent 22%),
     radial-gradient(circle at 50% 100%, rgba(128, 250, 176, 0.12), transparent 26%);
-  animation: frame-glow-drift 8s ease-in-out infinite;
+  animation: frame-glow-settle 4.2s ease-out 1 both;
   pointer-events: none;
 }
 
 .frame-shell {
   position: relative;
-  min-height: 100%;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  height: 100%;
+  min-height: 0;
   isolation: isolate;
   padding: 18px 18px 16px;
   background:
@@ -92,104 +97,56 @@ defineProps({
       transparent 1px,
       transparent 6px
     );
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  clip-path: polygon(0 12px, 12px 0, calc(100% - 22px) 0, 100% 22px, 100% calc(100% - 12px), calc(100% - 12px) 100%, 22px 100%, 0 calc(100% - 22px));
+  clip-path: polygon(0 6px, 6px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 10px 100%, 0 calc(100% - 10px));
 }
 
-.frame-edge,
-.frame-corner,
+.frame-outline,
 .frame-noise,
 .frame-shell::after {
   position: absolute;
   pointer-events: none;
 }
 
-.frame-edge {
-  z-index: 0;
-  opacity: 0.96;
+.frame-outline {
+  inset: 0;
+  z-index: 3;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
   mix-blend-mode: screen;
+  filter:
+    drop-shadow(0 0 10px color-mix(in srgb, var(--accent-start) 36%, transparent))
+    drop-shadow(0 0 18px color-mix(in srgb, var(--accent-end) 32%, transparent));
 }
 
-.edge-top,
-.edge-bottom {
-  height: 2px;
-  background:
-    linear-gradient(90deg, transparent 0%, var(--accent-start) 22%, rgba(255, 255, 255, 0.95) 44%, var(--accent-end) 66%, transparent 88%);
-  background-size: 220% 100%;
-  box-shadow:
-    0 0 12px color-mix(in srgb, var(--accent-start) 38%, transparent),
-    0 0 18px color-mix(in srgb, var(--accent-end) 34%, transparent);
+.outline-base,
+.outline-trace {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+  stroke-linejoin: round;
+  stroke-linecap: round;
 }
 
-.edge-top {
-  top: 1px;
-  left: 16px;
-  right: 28px;
-  animation: edge-flow-x 4.8s linear infinite;
+.outline-base {
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 1.2;
 }
 
-.edge-bottom {
-  bottom: 1px;
-  left: 24px;
-  right: 16px;
-  animation: edge-flow-x-reverse 5.3s linear infinite;
+.outline-trace {
+  stroke-width: 2.1;
+  opacity: 0.98;
 }
 
-.edge-left,
-.edge-right {
-  width: 2px;
-  background:
-    linear-gradient(180deg, transparent 0%, var(--accent-start) 20%, rgba(255, 255, 255, 0.95) 48%, var(--accent-end) 72%, transparent 100%);
-  background-size: 100% 220%;
-  box-shadow:
-    0 0 12px color-mix(in srgb, var(--accent-start) 36%, transparent),
-    0 0 18px color-mix(in srgb, var(--accent-end) 30%, transparent);
+.outline-trace-a {
+  stroke: var(--accent-start);
+  stroke-dasharray: 220 780;
+  animation: outline-travel-a 8.2s linear infinite;
 }
 
-.edge-left {
-  left: 1px;
-  top: 16px;
-  bottom: 28px;
-  animation: edge-flow-y 5.2s linear infinite;
-}
-
-.edge-right {
-  right: 1px;
-  top: 24px;
-  bottom: 16px;
-  animation: edge-flow-y-reverse 4.9s linear infinite;
-}
-
-.frame-corner {
-  z-index: 0;
-  width: 24px;
-  height: 24px;
-  filter: blur(2px);
-  opacity: 0.72;
-}
-
-.corner-tl {
-  top: -2px;
-  left: -2px;
-  background: radial-gradient(circle at 70% 70%, var(--accent-start), transparent 72%);
-}
-
-.corner-tr {
-  top: -2px;
-  right: -2px;
-  background: radial-gradient(circle at 30% 70%, var(--accent-end), transparent 72%);
-}
-
-.corner-br {
-  right: -2px;
-  bottom: -2px;
-  background: radial-gradient(circle at 30% 30%, var(--accent-start), transparent 72%);
-}
-
-.corner-bl {
-  left: -2px;
-  bottom: -2px;
-  background: radial-gradient(circle at 70% 30%, var(--accent-end), transparent 72%);
+.outline-trace-b {
+  stroke: var(--accent-end);
+  stroke-dasharray: 180 820;
+  animation: outline-travel-b 9.4s linear infinite;
 }
 
 .frame-noise {
@@ -210,21 +167,21 @@ defineProps({
       transparent 1px,
       transparent 10px
     );
-  opacity: 0.26;
-  animation: frame-noise-shift 3.2s linear infinite;
+  opacity: 0.18;
 }
 
 .frame-shell::after {
   content: '';
   inset: 1px;
-  clip-path: inherit;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  z-index: 0;
+  clip-path: polygon(0 6px, 6px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 6px), calc(100% - 6px) 100%, 10px 100%, 0 calc(100% - 10px));
+  border: 1px solid rgba(255, 255, 255, 0.06);
   box-shadow:
-    inset 0 0 26px rgba(255, 143, 122, 0.08),
-    inset 0 0 34px rgba(88, 203, 255, 0.06);
+    inset 0 0 16px rgba(255, 143, 122, 0.08),
+    inset 0 0 26px rgba(88, 203, 255, 0.06);
 }
 
-.frame-shell > :not(.frame-edge):not(.frame-corner):not(.frame-noise) {
+.frame-shell > :not(.frame-noise) {
   position: relative;
   z-index: 1;
 }
@@ -232,6 +189,10 @@ defineProps({
 .frame-body {
   position: relative;
   z-index: 1;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  flex-direction: column;
 }
 
 .frame-body.with-title {
@@ -246,61 +207,33 @@ defineProps({
   margin-top: 24px;
 }
 
-@keyframes frame-glow-drift {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0);
+@keyframes frame-glow-settle {
+  0% {
+    transform: translate3d(-18px, 12px, 0) scale(0.98);
+    opacity: 0.84;
   }
-  50% {
-    transform: translate3d(10px, -8px, 0);
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 1;
   }
 }
 
-@keyframes edge-flow-x {
-  0% {
-    background-position: 170% 50%;
+@keyframes outline-travel-a {
+  from {
+    stroke-dashoffset: 0;
   }
-  100% {
-    background-position: -70% 50%;
-  }
-}
-
-@keyframes edge-flow-x-reverse {
-  0% {
-    background-position: -70% 50%;
-  }
-  100% {
-    background-position: 170% 50%;
+  to {
+    stroke-dashoffset: -1000;
   }
 }
 
-@keyframes edge-flow-y {
-  0% {
-    background-position: 50% 170%;
+@keyframes outline-travel-b {
+  from {
+    stroke-dashoffset: 480;
   }
-  100% {
-    background-position: 50% -70%;
-  }
-}
-
-@keyframes edge-flow-y-reverse {
-  0% {
-    background-position: 50% -70%;
-  }
-  100% {
-    background-position: 50% 170%;
+  to {
+    stroke-dashoffset: -520;
   }
 }
 
-@keyframes frame-noise-shift {
-  0% {
-    transform: translate3d(0, 0, 0);
-  }
-  50% {
-    transform: translate3d(0, 2px, 0);
-  }
-  100% {
-    transform: translate3d(0, 0, 0);
-  }
-}
 </style>

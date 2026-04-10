@@ -73,43 +73,56 @@ onUnmounted(() => {
 <style scoped>
 .feed-list {
   display: grid;
-  gap: 10px;
-  max-height: 320px;
+  gap: 8px;
+  height: 100%;
+  max-height: 304px;
   overflow: hidden;
+  align-content: start;
+  justify-items: center;
 }
 
 .feed-item {
   display: grid;
-  grid-template-columns: 72px minmax(0, 1fr) 64px;
+  grid-template-columns: 54px minmax(0, 1fr) 48px;
   align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
+  gap: 8px;
+  width: min(100%, 760px);
+  max-width: 80%;
+  padding: 7px 10px;
   background:
     linear-gradient(90deg, rgba(255, 143, 122, 0.08), transparent 24%, rgba(88, 203, 255, 0.08)),
     rgba(255, 255, 255, 0.03);
   clip-path: polygon(0 8px, 8px 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
 }
 
+.feed-item:nth-child(2n) {
+  max-width: 76%;
+}
+
+.feed-item:nth-child(3n) {
+  max-width: 72%;
+}
+
 .feed-type {
   display: inline-flex;
   justify-content: center;
-  padding: 6px 8px;
+  padding: 4px 6px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.08);
   color: rgba(255, 255, 255, 0.7);
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .feed-text {
   color: #eef4ff;
-  font-size: 13px;
-  line-height: 1.6;
+  font-size: 11px;
+  line-height: 1.45;
 }
 
 .feed-time {
   color: rgba(255, 255, 255, 0.46);
   font-family: 'Bahnschrift', 'DIN Alternate', sans-serif;
-  font-size: 12px;
+  font-size: 10px;
   text-align: right;
 }
 

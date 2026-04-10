@@ -64,7 +64,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import * as echarts from 'echarts'
 import LuminousFrame from './LuminousFrame.vue'
 import { formatCompactNumber, provinceCoords, screenPalette } from './screenTheme'
@@ -91,9 +91,10 @@ const targetTiltY = ref(0)
 const rafId = ref(0)
 
 let chart = null
+let resizeObserver = null
 
 const topRegions = computed(() => {
-  const sorted = [...props.geoData].sort((a, b) => b.value - a.value).slice(0, 6)
+  const sorted = [...props.geoData].sort((a, b) => b.value - a.value).slice(0, 5)
   const max = Math.max(...sorted.map((item) => item.value), 1)
   return sorted.map((item) => ({
     ...item,
@@ -232,7 +233,17 @@ const handlePointerLeave = () => {
 
 onMounted(() => {
   animateTilt()
-  renderMap()
+  nextTick(() => {
+    renderMap()
+    handleResize()
+  })
+  if (window.ResizeObserver && stageRef.value) {
+    resizeObserver = new ResizeObserver(() => {
+      renderMap()
+      handleResize()
+    })
+    resizeObserver.observe(stageRef.value)
+  }
   window.addEventListener('resize', handleResize)
 })
 
@@ -241,6 +252,7 @@ watch(() => props.geoData, renderMap, { deep: true })
 onUnmounted(() => {
   window.cancelAnimationFrame(rafId.value)
   window.removeEventListener('resize', handleResize)
+  resizeObserver?.disconnect()
   chart?.dispose()
 })
 </script>
@@ -248,14 +260,16 @@ onUnmounted(() => {
 <style scoped>
 .map-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.3fr) 280px;
-  gap: 18px;
+  grid-template-columns: 1fr;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 14px;
   align-items: stretch;
+  min-height: 0;
 }
 
 .map-stage {
   position: relative;
-  height: clamp(460px, calc(100vh - 320px), 620px);
+  height: clamp(420px, calc(100vh - 430px), 600px);
   perspective: 1200px;
   overflow: hidden;
 }
@@ -334,14 +348,15 @@ onUnmounted(() => {
 }
 
 .map-side {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: minmax(0, 0.98fr) minmax(0, 1.02fr) 188px;
+  gap: 8px;
+  align-items: stretch;
 }
 
 .side-group,
 .summary-chip {
-  padding: 16px 16px 18px;
+  padding: 9px 10px 10px;
   background:
     linear-gradient(135deg, rgba(255, 143, 122, 0.08), transparent 34%, rgba(88, 203, 255, 0.08)),
     rgba(255, 255, 255, 0.03);
@@ -349,50 +364,54 @@ onUnmounted(() => {
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.side-group {
+  height: 100%;
+}
+
 .side-label,
 .summary-chip span {
   display: block;
   color: rgba(255, 255, 255, 0.48);
-  font-size: 11px;
-  letter-spacing: 0.16em;
+  font-size: 10px;
+  letter-spacing: 0.14em;
 }
 
 .side-title {
   display: block;
-  margin-top: 10px;
+  margin-top: 6px;
   color: #fff;
-  font-size: 16px;
-  line-height: 1.55;
+  font-size: 13px;
+  line-height: 1.34;
 }
 
 .side-text {
-  margin: 10px 0 0;
+  margin: 6px 0 0;
   color: rgba(255, 255, 255, 0.62);
-  font-size: 12px;
-  line-height: 1.72;
+  font-size: 10px;
+  line-height: 1.52;
 }
 
 .region-list {
   display: grid;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 4px;
+  margin-top: 6px;
 }
 
 .region-item {
   display: grid;
-  grid-template-columns: 50px minmax(0, 1fr) auto;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .region-name,
 .region-value {
   color: #eef4ff;
-  font-size: 12px;
+  font-size: 10px;
 }
 
 .region-bar {
-  height: 8px;
+  height: 7px;
   background: rgba(255, 255, 255, 0.06);
   overflow: hidden;
   clip-path: polygon(0 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
@@ -406,16 +425,16 @@ onUnmounted(() => {
 
 .side-summary {
   display: grid;
-  gap: 12px;
-  margin-top: auto;
+  gap: 6px;
+  margin-top: 0;
 }
 
 .summary-chip strong {
   display: block;
-  margin-top: 10px;
+  margin-top: 6px;
   color: #fff;
   font-family: 'Bahnschrift', 'DIN Alternate', sans-serif;
-  font-size: 24px;
+  font-size: 17px;
 }
 
 @keyframes orbit-spin {
@@ -435,8 +454,23 @@ onUnmounted(() => {
   100% { transform: skewX(-18deg) translateX(120%); opacity: 0; }
 }
 
+@media (max-width: 1480px) {
+  .map-side {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .side-summary {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 1280px) {
-  .map-layout {
+  .map-side {
+    grid-template-columns: 1fr;
+  }
+
+  .side-summary {
     grid-template-columns: 1fr;
   }
 

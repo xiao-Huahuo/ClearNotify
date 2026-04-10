@@ -14,7 +14,7 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import * as echarts from 'echarts'
 import LuminousFrame from './LuminousFrame.vue'
 
@@ -31,7 +31,28 @@ const props = defineProps({
 })
 
 const chartRef = ref(null)
+let resizeObserver = null
 let chart = null
+
+const withAlpha = (hex, alpha) => {
+  if (!hex || typeof hex !== 'string' || !hex.startsWith('#')) return hex
+  let raw = hex.slice(1)
+  if (raw.length === 3) {
+    raw = raw.split('').map((char) => char + char).join('')
+  }
+  if (raw.length !== 6) return hex
+  const red = Number.parseInt(raw.slice(0, 2), 16)
+  const green = Number.parseInt(raw.slice(2, 4), 16)
+  const blue = Number.parseInt(raw.slice(4, 6), 16)
+  return `rgba(${red}, ${green}, ${blue}, ${alpha})`
+}
+
+const buildGradient = (color) =>
+  new echarts.graphic.LinearGradient(0, 0, 1, 1, [
+    { offset: 0, color: withAlpha(color, 0.96) },
+    { offset: 0.55, color: withAlpha(color, 0.62) },
+    { offset: 1, color: withAlpha('#ffffff', 0.1) },
+  ])
 
 const renderChart = () => {
   if (!chartRef.value) return
@@ -52,6 +73,102 @@ const renderChart = () => {
       label: { show: false },
       itemStyle: { borderColor: 'rgba(8,12,20,0.95)', borderWidth: 2 },
       data: props.items.map((item) => ({ name: item.label, value: item.value })),
+    }],
+  }
+
+  const deepDonutOption = {
+    tooltip: {
+      trigger: 'item',
+      backgroundColor: 'rgba(10, 14, 24, 0.92)',
+      borderColor: 'rgba(255,255,255,0.12)',
+      textStyle: { color: '#f4f7ff' },
+    },
+    series: [
+      {
+        type: 'pie',
+        radius: ['42%', '69%'],
+        center: ['50%', '58%'],
+        silent: true,
+        z: 1,
+        label: { show: false },
+        itemStyle: { borderWidth: 0 },
+        data: props.items.map((item) => ({
+          value: item.value,
+          name: item.label,
+          itemStyle: {
+            color: withAlpha(item.color, 0.24),
+            shadowBlur: 0,
+          },
+        })),
+      },
+      {
+        type: 'pie',
+        radius: ['45%', '73%'],
+        center: ['50%', '50%'],
+        z: 3,
+        label: { show: false },
+        itemStyle: {
+          borderWidth: 0,
+          shadowBlur: 24,
+          shadowColor: 'rgba(0, 0, 0, 0.22)',
+        },
+        data: props.items.map((item) => ({
+          value: item.value,
+          name: item.label,
+          itemStyle: {
+            color: buildGradient(item.color),
+            borderWidth: 0,
+          },
+        })),
+      },
+      {
+        type: 'pie',
+        radius: ['74%', '79%'],
+        center: ['50%', '50%'],
+        silent: true,
+        z: 2,
+        label: { show: false },
+        data: props.items.map((item) => ({
+          value: item.value,
+          name: item.label,
+          itemStyle: {
+            color: withAlpha(item.color, 0.2),
+          },
+        })),
+      },
+    ],
+  }
+
+  const roseOption = {
+    tooltip: {
+      trigger: 'item',
+      backgroundColor: 'rgba(10, 14, 24, 0.92)',
+      borderColor: 'rgba(255,255,255,0.12)',
+      textStyle: { color: '#f4f7ff' },
+    },
+    series: [{
+      type: 'pie',
+      roseType: 'radius',
+      radius: ['16%', '76%'],
+      center: ['50%', '54%'],
+      label: { show: false },
+      itemStyle: {
+        borderColor: 'rgba(8,12,20,0.9)',
+        borderWidth: 2,
+        shadowBlur: 22,
+        shadowColor: 'rgba(0, 0, 0, 0.28)',
+      },
+      data: props.items.map((item, index) => ({
+        name: item.label,
+        value: item.value,
+        itemStyle: {
+          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+            { offset: 0, color: withAlpha(item.color, 0.98) },
+            { offset: 0.6, color: withAlpha(item.color, 0.55) },
+            { offset: 1, color: withAlpha(props.items[(index + 1) % props.items.length]?.color || item.color, 0.28) },
+          ]),
+        },
+      })),
     }],
   }
 
@@ -85,13 +202,31 @@ const renderChart = () => {
     }],
   }
 
-  chart.setOption(props.mode === 'bar' ? barOption : pieOption, true)
+  const optionMap = {
+    bar: barOption,
+    rose: roseOption,
+    'deep-donut': deepDonutOption,
+    pie: pieOption,
+  }
+
+  chart.setOption(optionMap[props.mode] || pieOption, true)
 }
 
 const handleResize = () => chart?.resize()
 
 onMounted(() => {
-  renderChart()
+  nextTick(() => {
+    renderChart()
+    handleResize()
+  })
+  if (window.ResizeObserver && chartRef.value) {
+    resizeObserver = new ResizeObserver(() => {
+      if (!chartRef.value) return
+      renderChart()
+      handleResize()
+    })
+    resizeObserver.observe(chartRef.value)
+  }
   window.addEventListener('resize', handleResize)
 })
 
@@ -99,6 +234,7 @@ watch(() => [props.items, props.mode], renderChart, { deep: true })
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
+  resizeObserver?.disconnect()
   chart?.dispose()
 })
 </script>
@@ -108,16 +244,20 @@ onUnmounted(() => {
   display: grid;
   grid-template-columns: 150px minmax(0, 1fr);
   gap: 12px;
-  align-items: center;
+  align-items: stretch;
+  height: 100%;
+  min-height: 0;
 }
 
 .distribution-chart {
-  height: 160px;
+  height: 100%;
+  min-height: 156px;
 }
 
 .distribution-list {
   display: grid;
   gap: 10px;
+  align-content: center;
 }
 
 .distribution-row {
@@ -151,6 +291,10 @@ onUnmounted(() => {
 @media (max-width: 640px) {
   .distribution-layout {
     grid-template-columns: 1fr;
+  }
+
+  .distribution-chart {
+    min-height: 142px;
   }
 }
 </style>

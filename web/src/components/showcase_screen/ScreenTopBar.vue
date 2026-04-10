@@ -45,7 +45,7 @@ defineProps({
 .screen-topbar {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1.4fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) minmax(540px, auto) minmax(0, 1fr);
   align-items: center;
   gap: 18px;
   padding: 0 0 18px;
@@ -59,6 +59,12 @@ defineProps({
   bottom: 0;
   height: 1px;
   background: linear-gradient(90deg, transparent, rgba(255, 143, 122, 0.4), rgba(88, 203, 255, 0.45), transparent);
+}
+
+.topbar-title-block {
+  grid-column: 2;
+  justify-self: center;
+  text-align: center;
 }
 
 .topbar-eyebrow {
@@ -87,6 +93,8 @@ defineProps({
 }
 
 .topbar-center {
+  grid-column: 1;
+  justify-self: start;
   display: flex;
   gap: 10px;
   align-items: center;
@@ -121,6 +129,11 @@ defineProps({
   box-shadow: 0 0 12px #58cbff;
 }
 
+.topbar-right {
+  grid-column: 3;
+  justify-self: end;
+}
+
 .time-block {
   display: flex;
   flex-direction: column;
@@ -145,9 +158,17 @@ defineProps({
     grid-template-columns: 1fr;
   }
 
+  .topbar-title-block,
+  .topbar-center,
+  .topbar-right {
+    grid-column: auto;
+    justify-self: start;
+    text-align: left;
+  }
+
   .topbar-center,
   .time-block {
-    justify-self: flex-start;
+    justify-self: start;
     align-items: flex-start;
   }
 

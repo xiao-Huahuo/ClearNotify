@@ -1,15 +1,17 @@
 <template>
   <LuminousFrame :title="title" :eyebrow="eyebrow" :subtitle="subtitle" :accent-start="accentStart" :accent-end="accentEnd">
-    <div class="trend-headline">
-      <strong>{{ headlineValue }}</strong>
-      <span>{{ headlineLabel }}</span>
+    <div class="trend-panel">
+      <div class="trend-headline">
+        <strong>{{ headlineValue }}</strong>
+        <span>{{ headlineLabel }}</span>
+      </div>
+      <div ref="chartRef" class="trend-chart"></div>
     </div>
-    <div ref="chartRef" class="trend-chart"></div>
   </LuminousFrame>
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import * as echarts from 'echarts'
 import LuminousFrame from './LuminousFrame.vue'
 
@@ -27,6 +29,7 @@ const props = defineProps({
 })
 
 const chartRef = ref(null)
+let resizeObserver = null
 let chart = null
 
 const renderChart = () => {
@@ -36,7 +39,7 @@ const renderChart = () => {
   chart.setOption({
     animationDuration: 800,
     backgroundColor: 'transparent',
-    grid: { top: 16, right: 10, bottom: 24, left: 36 },
+    grid: { top: 8, right: 8, bottom: 18, left: 32, containLabel: true },
     tooltip: {
       trigger: 'axis',
       backgroundColor: 'rgba(10, 14, 24, 0.92)',
@@ -86,7 +89,18 @@ const renderChart = () => {
 const handleResize = () => chart?.resize()
 
 onMounted(() => {
-  renderChart()
+  nextTick(() => {
+    renderChart()
+    handleResize()
+  })
+  if (window.ResizeObserver && chartRef.value) {
+    resizeObserver = new ResizeObserver(() => {
+      if (!chartRef.value) return
+      renderChart()
+      handleResize()
+    })
+    resizeObserver.observe(chartRef.value)
+  }
   window.addEventListener('resize', handleResize)
 })
 
@@ -94,6 +108,7 @@ watch(() => props.items, renderChart, { deep: true })
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
+  resizeObserver?.disconnect()
   chart?.dispose()
 })
 </script>
@@ -102,7 +117,18 @@ onUnmounted(() => {
 .trend-headline {
   display: flex;
   align-items: baseline;
-  gap: 12px;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  min-height: 44px;
+}
+
+.trend-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 220px;
+  overflow: hidden;
 }
 
 .trend-headline strong {
@@ -118,7 +144,10 @@ onUnmounted(() => {
 }
 
 .trend-chart {
-  height: 220px;
-  margin-top: 12px;
+  flex: 1;
+  width: 100%;
+  min-height: 160px;
+  height: 100%;
+  margin-top: 6px;
 }
 </style>

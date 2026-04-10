@@ -12,18 +12,37 @@
 
       <section class="screen-grid">
         <div class="screen-column side-column side-column-left">
-          <DataTowerGroup class="widget-span-2" :towers="towers" :accent-start="screenPalette.coral" :accent-end="screenPalette.sky" />
+          <DataTowerGroup class="screen-widget widget-span-2" :towers="towers" :accent-start="screenPalette.coral" :accent-end="screenPalette.sky" />
           <DistributionPanel
-            class="screen-widget"
+            class="screen-widget role-panel"
             title="公众参与结构"
             eyebrow="Role Distribution"
             subtitle="普通用户、认证主体与管理员构成的参与层级"
             :accent-start="screenPalette.sky"
             :accent-end="screenPalette.coral"
             :items="roleItems"
+            mode="deep-donut"
           />
+          <DistributionPanel
+            class="screen-widget rating-panel"
+            title="评分能级分布"
+            eyebrow="Rating Spectrum"
+            subtitle="从一星到五星的满意度梯度与结构密度"
+            :accent-start="screenPalette.gold"
+            :accent-end="screenPalette.cyan"
+            :items="ratingItems"
+            mode="bar"
+          />
+        </div>
+
+        <div class="screen-column center-column">
+          <ChinaMapDeck class="screen-widget center-map" :geo-data="screenData.geo_dist" :summary="summary" />
+          <SignalFeed class="screen-widget center-feed" :feed="screenData.feed" :accent-start="screenPalette.coral" :accent-end="screenPalette.sky" />
+        </div>
+
+        <div class="screen-column side-column side-column-right">
           <TrendMatrix
-            class="screen-widget"
+            class="screen-widget widget-span-2 trend-wide"
             title="解析活跃度矩阵"
             eyebrow="Parsing Pulse"
             subtitle="最近 24 小时智能解析流量与脉冲起伏"
@@ -33,35 +52,18 @@
             :accent-end="screenPalette.sky"
             :items="screenData.hourly_trend"
           />
-        </div>
-
-        <div class="screen-column center-column">
-          <ChinaMapDeck :geo-data="screenData.geo_dist" :summary="summary" />
-        </div>
-
-        <div class="screen-column side-column side-column-right">
           <DistributionPanel
-            class="screen-widget"
+            class="screen-widget opinion-panel"
             title="公众反馈类型"
             eyebrow="Opinion Distribution"
             subtitle="落地评价、解析纠错与办事留言的当前占比"
             :accent-start="screenPalette.coral"
             :accent-end="screenPalette.amber"
             :items="opinionItems"
+            mode="rose"
           />
-          <DistributionPanel
-            class="screen-widget"
-            title="评分能级分布"
-            eyebrow="Rating Spectrum"
-            subtitle="从一星到五星的满意度梯度与结构密度"
-            :accent-start="screenPalette.gold"
-            :accent-end="screenPalette.cyan"
-            :items="ratingItems"
-            mode="bar"
-          />
-          <SignalFeed class="screen-widget" :feed="screenData.feed" :accent-start="screenPalette.coral" :accent-end="screenPalette.sky" />
           <StatusDigest
-            class="screen-widget"
+            class="screen-widget digest-panel"
             :metrics="digestMetrics"
             :approval-rate="approvalRate"
             :notes="digestNotes"
@@ -439,6 +441,7 @@ onUnmounted(() => {
 .screen-shell {
   position: relative;
   z-index: 1;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -465,40 +468,62 @@ onUnmounted(() => {
 }
 
 .showcase-screen.immersive {
-  height: 100vh;
+  height: 100dvh;
 }
 
 .showcase-screen.immersive .screen-shell {
   width: 100%;
-  height: 100vh;
+  height: 100dvh;
   max-width: none;
-  padding: 76px 8px 8px;
-  gap: 10px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  padding: 70px 8px 6px;
+  gap: 8px;
+  overflow: hidden;
 }
 
 .showcase-screen.immersive .screen-grid {
-  flex: 1;
+  height: 100%;
   min-height: 0;
-  grid-template-columns: minmax(470px, 25vw) minmax(0, 1fr) minmax(540px, 28vw);
-  gap: 10px;
+  grid-template-columns: minmax(430px, 23vw) minmax(0, 1fr) minmax(600px, 31vw);
+  gap: 8px;
   align-items: stretch;
+  overflow: hidden;
 }
 
 .showcase-screen.immersive .screen-column {
   height: 100%;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .showcase-screen.immersive .side-column {
   height: 100%;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  grid-auto-rows: minmax(0, 1fr);
   align-content: stretch;
   align-items: stretch;
-  gap: 10px;
+  gap: 8px;
 }
 
 .showcase-screen.immersive .side-column-left {
-  grid-template-columns: minmax(0, 0.98fr) minmax(0, 1.02fr);
+  grid-template-areas:
+    'towers towers'
+    'role rating';
+  grid-template-rows: minmax(0, 0.58fr) minmax(0, 0.42fr);
+}
+
+.showcase-screen.immersive .side-column-right {
+  grid-template-areas:
+    'trend trend'
+    'opinion digest';
+  grid-template-rows: minmax(0, 0.58fr) minmax(0, 0.42fr);
+}
+
+.showcase-screen.immersive .center-column {
+  display: grid;
+  grid-template-rows: minmax(0, 0.82fr) minmax(0, 0.18fr);
+  gap: 8px;
+  min-height: 0;
 }
 
 .showcase-screen.immersive .screen-widget {
@@ -510,47 +535,196 @@ onUnmounted(() => {
   grid-column: 1 / -1;
 }
 
+.showcase-screen.immersive .side-column-left .widget-span-2 {
+  grid-area: towers;
+}
+
 .showcase-screen.immersive :deep(.distribution-layout) {
   grid-template-columns: 128px minmax(0, 1fr);
-  gap: 10px;
+  gap: 8px;
 }
 
 .showcase-screen.immersive :deep(.distribution-chart) {
-  height: 126px;
+  height: 100%;
+  min-height: 118px;
 }
 
 .showcase-screen.immersive :deep(.distribution-list) {
-  gap: 8px;
+  gap: 6px;
+  align-content: start;
 }
 
 .showcase-screen.immersive :deep(.distribution-row) {
-  padding: 8px 10px;
+  padding: 7px 9px;
 }
 
 .showcase-screen.immersive :deep(.trend-chart) {
-  height: 176px;
-  margin-top: 8px;
+  min-height: 0;
+  margin-top: 4px;
 }
 
 .showcase-screen.immersive :deep(.trend-headline strong) {
-  font-size: 28px;
+  font-size: 26px;
+}
+
+.showcase-screen.immersive :deep(.trend-headline span) {
+  font-size: 11px;
 }
 
 .showcase-screen.immersive :deep(.feed-list) {
-  max-height: 250px;
-  gap: 8px;
+  max-height: none;
+  gap: 5px;
 }
 
 .showcase-screen.immersive :deep(.feed-item) {
-  padding: 10px 12px;
+  padding: 6px 8px;
+}
+
+.showcase-screen.immersive .center-feed :deep(.feed-list) {
+  height: 100%;
+  max-height: none;
+  align-content: stretch;
 }
 
 .showcase-screen.immersive :deep(.tower-group) {
   gap: 4px;
 }
 
+.showcase-screen.immersive :deep(.screen-topbar) {
+  grid-template-columns: minmax(0, 0.9fr) minmax(520px, auto) minmax(0, 0.9fr);
+  gap: 12px;
+  padding-bottom: 12px;
+}
+
+.showcase-screen.immersive :deep(.topbar-eyebrow) {
+  font-size: 10px;
+}
+
+.showcase-screen.immersive :deep(.topbar-title) {
+  margin: 6px 0 4px;
+  font-size: clamp(24px, 2.1vw, 34px);
+}
+
+.showcase-screen.immersive :deep(.topbar-sub) {
+  font-size: 11px;
+}
+
+.showcase-screen.immersive :deep(.status-chip) {
+  height: 34px;
+  padding: 0 10px;
+  font-size: 11px;
+}
+
+.showcase-screen.immersive :deep(.time-value) {
+  font-size: 17px;
+}
+
 .showcase-screen.immersive :deep(.summary-ribbon) {
-  padding: 4px 0 2px;
+  align-self: stretch;
+  padding: 0;
+}
+
+.showcase-screen.immersive :deep(.ribbon-chip) {
+  height: 30px;
+  padding: 0 10px;
+}
+
+.showcase-screen.immersive :deep(.map-layout) {
+  height: 100%;
+  min-height: 0;
+  gap: 6px;
+}
+
+.showcase-screen.immersive :deep(.map-stage) {
+  height: 100%;
+  min-height: 300px;
+}
+
+.showcase-screen.immersive :deep(.map-side) {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.06fr) 184px;
+  gap: 6px;
+}
+
+.showcase-screen.immersive :deep(.side-group),
+.showcase-screen.immersive :deep(.summary-chip) {
+  padding: 8px 10px 10px;
+}
+
+.showcase-screen.immersive :deep(.side-summary) {
+  gap: 6px;
+}
+
+.showcase-screen.immersive :deep(.summary-chip strong) {
+  font-size: 18px;
+}
+
+.showcase-screen.immersive :deep(.region-list) {
+  gap: 5px;
+}
+
+.showcase-screen.immersive .trend-wide {
+  grid-area: trend;
+  grid-column: 1 / -1;
+  min-height: 280px;
+}
+
+.showcase-screen.immersive .role-panel {
+  grid-area: role;
+}
+
+.showcase-screen.immersive .rating-panel {
+  grid-area: rating;
+}
+
+.showcase-screen.immersive .opinion-panel {
+  grid-area: opinion;
+}
+
+.showcase-screen.immersive .digest-panel {
+  grid-area: digest;
+}
+
+.showcase-screen.immersive :deep(.digest-hero) {
+  padding: 12px 12px 14px;
+}
+
+.showcase-screen.immersive :deep(.hero-value) {
+  font-size: 26px;
+}
+
+.showcase-screen.immersive :deep(.hero-track) {
+  margin-top: 12px;
+}
+
+.showcase-screen.immersive :deep(.digest-grid) {
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.showcase-screen.immersive :deep(.digest-card) {
+  padding: 10px 10px 12px;
+}
+
+.showcase-screen.immersive :deep(.card-value) {
+  margin-top: 8px;
+  font-size: 20px;
+}
+
+.showcase-screen.immersive :deep(.card-note) {
+  margin-top: 6px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.showcase-screen.immersive :deep(.digest-notes) {
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.showcase-screen.immersive :deep(.note-row) {
+  padding: 8px 10px;
+  font-size: 11px;
+  line-height: 1.55;
 }
 
 @media (min-width: 1680px) {

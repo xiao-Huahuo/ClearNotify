@@ -26,6 +26,7 @@ defineProps({
 .summary-ribbon {
   position: relative;
   overflow: hidden;
+  flex-shrink: 0;
   padding: 12px 0 4px;
 }
 

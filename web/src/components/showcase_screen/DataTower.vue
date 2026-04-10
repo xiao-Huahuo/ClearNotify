@@ -81,8 +81,10 @@ defineProps({
   top: 18px;
   width: 138px;
   height: 138px;
-  background: rgba(4, 10, 20, 0.92);
-  box-shadow: 0 0 0 18px rgba(3, 15, 31, 0.9);
+  background: rgba(2, 6, 12, 0.96);
+  box-shadow:
+    0 0 0 18px rgba(2, 12, 24, 0.94),
+    inset 0 0 18px rgba(255, 255, 255, 0.04);
 }
 
 .tower-ring.main::before {
@@ -180,7 +182,9 @@ defineProps({
   height: 48px;
   transform: translateX(-50%);
   background: conic-gradient(var(--tower-a), var(--tower-b), var(--tower-a));
-  box-shadow: 0 0 18px color-mix(in srgb, var(--tower-a) 55%, transparent);
+  box-shadow:
+    0 0 18px color-mix(in srgb, var(--tower-a) 55%, transparent),
+    0 0 28px color-mix(in srgb, var(--tower-b) 24%, transparent);
 }
 
 .tower-core::after {
@@ -199,20 +203,33 @@ defineProps({
   display: flex;
   flex-direction: column;
   align-items: center;
-  color: var(--tower-a);
-  text-shadow: 0 10px 18px color-mix(in srgb, var(--tower-a) 55%, transparent);
+  min-width: 112px;
+  padding: 10px 10px 8px;
+  color: #f8fbff;
+  background: linear-gradient(180deg, rgba(3, 8, 14, 0.64), rgba(3, 8, 14, 0.16));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  text-shadow:
+    0 0 18px color-mix(in srgb, var(--tower-a) 42%, transparent),
+    0 6px 16px rgba(0, 0, 0, 0.7);
+  box-shadow:
+    inset 0 0 16px rgba(255, 255, 255, 0.04),
+    0 0 24px rgba(0, 0, 0, 0.28);
 }
 
 .tower-text strong {
   font-family: 'Bahnschrift', 'DIN Alternate', sans-serif;
-  font-size: 44px;
+  font-size: 48px;
   line-height: 1;
+  letter-spacing: 0.02em;
+  -webkit-text-stroke: 1px rgba(4, 10, 18, 0.82);
 }
 
 .tower-text span {
   margin-top: 6px;
-  font-size: 11px;
+  font-size: 10px;
   letter-spacing: 0.18em;
+  color: color-mix(in srgb, var(--tower-a) 74%, white);
 }
 
 .tower-meta {

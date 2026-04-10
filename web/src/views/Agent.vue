@@ -721,6 +721,7 @@ onBeforeUnmount(() => {
   display: block;
   min-height: calc(100vh - 96px);
   height: calc(100vh - 96px);
+  border-radius: 32px;
   overflow: hidden;
   transition: background 0.6s ease;
 }
@@ -736,6 +737,7 @@ onBeforeUnmount(() => {
 .grid-haze {
   position: absolute;
   inset: 0;
+  border-radius: inherit;
   pointer-events: none;
 }
 

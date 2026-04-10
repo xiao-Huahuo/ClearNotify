@@ -832,8 +832,8 @@ onMounted(async () => {
 }
 
 .avatar-shell {
-  width: 88px;
-  height: 88px;
+  width: 128px;
+  height: 128px;
   border-radius: 24px;
   background:
     linear-gradient(135deg, color-mix(in srgb, var(--color-primary) 18%, transparent), color-mix(in srgb, var(--color-accent-cool) 18%, transparent)),
@@ -847,6 +847,11 @@ onMounted(async () => {
   overflow: hidden;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.avatar-shell svg {
+  width: 56px;
+  height: 56px;
 }
 
 .avatar-shell:hover {
@@ -1607,6 +1612,11 @@ onMounted(async () => {
 
   .hero-main {
     flex-direction: column;
+  }
+
+  .avatar-shell {
+    width: 108px;
+    height: 108px;
   }
 
   .stats-row,

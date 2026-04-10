@@ -160,7 +160,6 @@
 <script setup>
 import { computed, nextTick, ref, watch } from 'vue';
 import MarkdownIt from 'markdown-it';
-import 'github-markdown-css/github-markdown-light.css';
 import ThinkingLoader from '../../../super-comonents/loader.vue';
 
 const props = defineProps({
@@ -620,9 +619,12 @@ watch(
 .markdown-content {
   margin: 0;
   padding: 0;
-  background: transparent;
+  background: transparent !important;
+  background-color: transparent !important;
+  color: inherit !important;
+  font-family: inherit;
   font-size: 14px;
-  line-height: 1.62;
+  line-height: 1.68;
   white-space: normal;
   word-break: break-word;
   overflow-wrap: anywhere;
@@ -630,6 +632,23 @@ watch(
 
 .markdown-content :deep(*) {
   color: inherit;
+  box-sizing: border-box;
+}
+
+.markdown-content :deep(a) {
+  color: #2b69d1;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.markdown-content :deep(strong) {
+  font-weight: 700;
+}
+
+.markdown-content :deep(img) {
+  display: block;
+  max-width: 100%;
+  border-radius: 14px;
 }
 
 .markdown-content :deep(h1),
@@ -672,6 +691,9 @@ watch(
 }
 
 .markdown-content :deep(code) {
+  padding: 0.14em 0.38em;
+  border-radius: 8px;
+  background: rgba(17, 39, 76, 0.08);
   font-size: 0.92em;
 }
 
@@ -682,11 +704,40 @@ watch(
 }
 
 .markdown-content :deep(table) {
+  width: 100%;
+  margin: 0.8em 0;
+  border-collapse: collapse;
+  border-spacing: 0;
   font-size: 13px;
+}
+
+.markdown-content :deep(th),
+.markdown-content :deep(td) {
+  padding: 10px 12px;
+  border: 1px solid rgba(17, 39, 76, 0.1);
+  text-align: left;
+  vertical-align: top;
+}
+
+.markdown-content :deep(th) {
+  font-weight: 700;
+  background: rgba(17, 39, 76, 0.05);
+}
+
+.markdown-content :deep(tr:nth-child(2n)) {
+  background: rgba(17, 39, 76, 0.03);
 }
 
 .markdown-content :deep(hr) {
   margin: 1em 0;
+  border: none;
+  border-top: 1px solid rgba(17, 39, 76, 0.1);
+}
+
+.markdown-content :deep(mark) {
+  padding: 0.08em 0.28em;
+  border-radius: 6px;
+  background: rgba(255, 194, 142, 0.34);
 }
 
 .composer-panel {
@@ -1063,75 +1114,228 @@ watch(
   }
 }
 
-:global([data-theme='dark']) .conversation-panel {
+</style>
+
+<style>
+[data-theme='dark'] .conversation-panel {
   background:
-    linear-gradient(180deg, rgba(11, 18, 35, 0.84), rgba(11, 18, 35, 0.74)),
-    linear-gradient(150deg, rgba(70, 126, 255, 0.16), rgba(255, 255, 255, 0));
-  border-color: rgba(255, 255, 255, 0.08);
+    linear-gradient(180deg, rgba(6, 9, 14, 0.97), rgba(8, 11, 16, 0.94)),
+    linear-gradient(150deg, rgba(52, 88, 156, 0.1), rgba(24, 107, 97, 0.04) 58%, rgba(255, 255, 255, 0));
+  border-color: rgba(118, 156, 255, 0.12);
   box-shadow:
-    0 28px 66px rgba(0, 0, 0, 0.36),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    0 28px 66px rgba(0, 0, 0, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
-:global([data-theme='dark']) .landing-stage h1,
-:global([data-theme='dark']) .message-card.assistant,
-:global([data-theme='dark']) .pending-chip,
-:global([data-theme='dark']) .composer-input,
-:global([data-theme='dark']) .secondary-btn,
-:global([data-theme='dark']) .thinking-item,
-:global([data-theme='dark']) .message-loading-state {
+[data-theme='dark'] .conversation-panel .message-scroll {
+  background: transparent;
+}
+
+[data-theme='dark'] .conversation-panel .landing-stage h1,
+[data-theme='dark'] .conversation-panel .message-card.assistant,
+[data-theme='dark'] .conversation-panel .pending-chip,
+[data-theme='dark'] .conversation-panel .composer-input,
+[data-theme='dark'] .conversation-panel .secondary-btn,
+[data-theme='dark'] .conversation-panel .thinking-item,
+[data-theme='dark'] .conversation-panel .message-loading-state {
   color: #edf4ff;
 }
 
-:global([data-theme='dark']) .landing-mark,
-:global([data-theme='dark']) .landing-subtitle,
-:global([data-theme='dark']) .thinking-item-meta small,
-:global([data-theme='dark']) .composer-input::placeholder,
-:global([data-theme='dark']) .pending-chip button {
+[data-theme='dark'] .conversation-panel .landing-mark,
+[data-theme='dark'] .conversation-panel .landing-subtitle,
+[data-theme='dark'] .conversation-panel .thinking-item-meta small,
+[data-theme='dark'] .conversation-panel .composer-input::placeholder,
+[data-theme='dark'] .conversation-panel .pending-chip button {
   color: rgba(237, 244, 255, 0.64);
 }
 
-:global([data-theme='dark']) .landing-pill,
-:global([data-theme='dark']) .message-card.assistant,
-:global([data-theme='dark']) .pending-chip,
-:global([data-theme='dark']) .composer-shell,
-:global([data-theme='dark']) .secondary-btn,
-:global([data-theme='dark']) .thinking-item.placeholder,
-:global([data-theme='dark']) .message-loading-state {
-  background: rgba(255, 255, 255, 0.06);
+[data-theme='dark'] .conversation-panel .landing-subtitle {
+  color: rgba(237, 244, 255, 0.7);
 }
 
-:global([data-theme='dark']) .landing-pill.active {
+[data-theme='dark'] .conversation-panel .landing-pill,
+[data-theme='dark'] .conversation-panel .pending-chip,
+[data-theme='dark'] .conversation-panel .composer-shell,
+[data-theme='dark'] .conversation-panel .secondary-btn,
+[data-theme='dark'] .conversation-panel .thinking-item.placeholder,
+[data-theme='dark'] .conversation-panel .message-loading-state {
   background:
-    linear-gradient(135deg, rgba(64, 117, 255, 0.24), rgba(41, 187, 173, 0.18)),
-    rgba(255, 255, 255, 0.08);
+    linear-gradient(180deg, rgba(15, 25, 43, 0.92), rgba(12, 20, 34, 0.84)),
+    linear-gradient(150deg, rgba(63, 118, 255, 0.08), rgba(40, 188, 172, 0.05));
+  border-color: rgba(118, 156, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
-:global([data-theme='dark']) .thinking-item.thought {
-  background: rgba(255, 143, 122, 0.12);
-  border-color: rgba(255, 143, 122, 0.24);
+[data-theme='dark'] .conversation-panel .message-card.assistant {
+  background:
+    linear-gradient(180deg, rgba(17, 19, 24, 0.98), rgba(11, 13, 18, 0.96)),
+    linear-gradient(145deg, rgba(67, 97, 150, 0.05), rgba(20, 87, 80, 0.025));
+  border-color: rgba(255, 255, 255, 0.05);
+  box-shadow:
+    0 18px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025);
 }
 
-:global([data-theme='dark']) .thinking-item.tool {
-  background: rgba(88, 203, 255, 0.12);
-  border-color: rgba(88, 203, 255, 0.22);
+[data-theme='dark'] .conversation-panel .message-card.user {
+  background:
+    linear-gradient(180deg, rgba(24, 28, 36, 0.98), rgba(18, 22, 29, 0.96)),
+    linear-gradient(145deg, rgba(64, 117, 255, 0.09), rgba(41, 187, 173, 0.05));
+  border: 1px solid rgba(118, 156, 255, 0.12);
+  box-shadow: 0 20px 34px rgba(0, 0, 0, 0.24);
 }
 
-:global([data-theme='dark']) .thinking-loader {
+[data-theme='dark'] .conversation-panel .landing-pill.active {
+  background:
+    linear-gradient(135deg, rgba(64, 117, 255, 0.28), rgba(41, 187, 173, 0.2)),
+    rgba(255, 255, 255, 0.04);
+}
+
+[data-theme='dark'] .conversation-panel .thinking-item.thought {
   background: rgba(255, 143, 122, 0.1);
-  border-color: rgba(255, 143, 122, 0.16);
+  border-color: rgba(255, 143, 122, 0.18);
 }
 
-:global([data-theme='dark']) .markdown-content :deep(pre) {
-  background: rgba(5, 13, 26, 0.82);
+[data-theme='dark'] .conversation-panel .thinking-item.tool {
+  background: rgba(88, 203, 255, 0.1);
+  border-color: rgba(88, 203, 255, 0.18);
 }
 
-:global([data-theme='dark']) .markdown-content :deep(blockquote) {
-  border-left-color: rgba(255, 255, 255, 0.14);
-  color: rgba(237, 244, 255, 0.82);
+[data-theme='dark'] .conversation-panel .thinking-loader {
+  background: rgba(255, 143, 122, 0.08);
+  border-color: rgba(255, 143, 122, 0.14);
 }
 
-:global([data-theme='dark']) .assistant-orb-core {
+[data-theme='dark'] .conversation-panel .message-card.assistant .markdown-body.markdown-content {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  color: #edf4ff !important;
+  color-scheme: dark !important;
+}
+
+[data-theme='dark'] .conversation-panel .message-card.assistant .markdown-body.markdown-content,
+[data-theme='dark'] .conversation-panel .message-card.assistant .markdown-body.markdown-content p,
+[data-theme='dark'] .conversation-panel .message-card.assistant .markdown-body.markdown-content li,
+[data-theme='dark'] .conversation-panel .message-card.assistant .markdown-body.markdown-content strong,
+[data-theme='dark'] .conversation-panel .message-card.assistant .markdown-body.markdown-content em,
+[data-theme='dark'] .conversation-panel .message-card.assistant .markdown-body.markdown-content span,
+[data-theme='dark'] .conversation-panel .message-card.assistant .markdown-body.markdown-content h1,
+[data-theme='dark'] .conversation-panel .message-card.assistant .markdown-body.markdown-content h2,
+[data-theme='dark'] .conversation-panel .message-card.assistant .markdown-body.markdown-content h3,
+[data-theme='dark'] .conversation-panel .message-card.assistant .markdown-body.markdown-content h4,
+[data-theme='dark'] .conversation-panel .message-card.assistant .markdown-body.markdown-content h5,
+[data-theme='dark'] .conversation-panel .message-card.assistant .markdown-body.markdown-content h6 {
+  color: inherit !important;
+}
+
+[data-theme='dark'] .conversation-panel .message-card.assistant .markdown-body.markdown-content a {
+  color: #8cd9ff !important;
+}
+
+[data-theme='dark'] .conversation-panel .message-card.assistant .markdown-body.markdown-content code {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-theme='dark'] .conversation-panel .message-card.assistant .markdown-body.markdown-content pre {
+  background: rgba(4, 10, 20, 0.9) !important;
+  border: 1px solid rgba(118, 156, 255, 0.08) !important;
+}
+
+[data-theme='dark'] .conversation-panel .message-card.assistant .markdown-body.markdown-content pre code {
+  background: transparent !important;
+}
+
+[data-theme='dark'] .conversation-panel .message-card.assistant .markdown-body.markdown-content blockquote {
+  border-left-color: rgba(255, 255, 255, 0.14) !important;
+  color: rgba(237, 244, 255, 0.82) !important;
+}
+
+[data-theme='dark'] .conversation-panel .message-card.assistant .markdown-body.markdown-content table,
+[data-theme='dark'] .conversation-panel .message-card.assistant .markdown-body.markdown-content thead,
+[data-theme='dark'] .conversation-panel .message-card.assistant .markdown-body.markdown-content tbody,
+[data-theme='dark'] .conversation-panel .message-card.assistant .markdown-body.markdown-content tr,
+[data-theme='dark'] .conversation-panel .message-card.assistant .markdown-body.markdown-content th,
+[data-theme='dark'] .conversation-panel .message-card.assistant .markdown-body.markdown-content td {
+  background: transparent !important;
+  background-color: transparent !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme='dark'] .conversation-panel .message-card.assistant .markdown-body.markdown-content th {
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+[data-theme='dark'] .conversation-panel .message-card.assistant .markdown-body.markdown-content tr:nth-child(2n) {
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+
+[data-theme='dark'] .conversation-panel .message-card.assistant .markdown-body.markdown-content hr {
+  border-top-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme='dark'] .conversation-panel .message-card.assistant .markdown-body.markdown-content mark {
+  background: rgba(255, 194, 142, 0.22) !important;
+}
+
+[data-theme='dark'] .conversation-panel .file-chip {
+  background: rgba(118, 156, 255, 0.08);
+}
+
+[data-theme='dark'] .conversation-panel .message-card.user .file-chip {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme='dark'] .conversation-panel .secondary-btn {
+  border: 1px solid rgba(118, 156, 255, 0.12);
+}
+
+[data-theme='dark'] .conversation-panel .composer-shell {
+  background:
+    linear-gradient(180deg, rgba(11, 14, 20, 0.88), rgba(9, 11, 16, 0.74)),
+    linear-gradient(145deg, rgba(52, 88, 156, 0.08), rgba(24, 107, 97, 0.04));
+  border-color: rgba(118, 156, 255, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 22px 44px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(18px);
+}
+
+[data-theme='dark'] .conversation-panel .composer-shell:focus-within {
+  border-color: rgba(128, 250, 176, 0.24);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 0 0 1px rgba(88, 203, 255, 0.08),
+    0 24px 48px rgba(0, 0, 0, 0.38);
+}
+
+[data-theme='dark'] .conversation-panel .composer-input,
+[data-theme='dark'] .conversation-panel textarea.composer-input {
+  background: transparent !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #edf4ff !important;
+  caret-color: #80fab0;
+}
+
+[data-theme='dark'] .conversation-panel .composer-input:focus {
+  background: transparent !important;
+}
+
+[data-theme='dark'] .conversation-panel .composer-input::placeholder {
+  color: rgba(237, 244, 255, 0.5) !important;
+}
+
+[data-theme='dark'] .conversation-panel .composer-input:-webkit-autofill,
+[data-theme='dark'] .conversation-panel .composer-input:-webkit-autofill:hover,
+[data-theme='dark'] .conversation-panel .composer-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #edf4ff !important;
+  box-shadow: 0 0 0 1000px transparent inset !important;
+  transition: background-color 99999s ease-out 0s;
+}
+
+[data-theme='dark'] .conversation-panel .assistant-orb-core {
   box-shadow:
     inset -6px -8px 12px rgba(0, 0, 0, 0.22),
     inset 4px 4px 10px rgba(255, 255, 255, 0.08),
@@ -1139,7 +1343,7 @@ watch(
     0 0 24px rgba(88, 203, 255, 0.18);
 }
 
-:global([data-theme='dark']) .composer-shell::before {
+[data-theme='dark'] .conversation-panel .composer-shell::before {
   background:
     conic-gradient(
       from var(--composer-glow-angle),
@@ -1154,9 +1358,10 @@ watch(
     0 0 36px rgba(73, 204, 188, 0.12);
 }
 
-:global([data-theme='dark']) .composer-shell::after {
+[data-theme='dark'] .conversation-panel .composer-shell::after {
   background:
     radial-gradient(circle at 18% 50%, rgba(95, 147, 255, 0.18), transparent 36%),
     radial-gradient(circle at 82% 50%, rgba(60, 214, 195, 0.16), transparent 32%);
+  opacity: 0.22;
 }
 </style>

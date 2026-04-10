@@ -374,7 +374,10 @@ onBeforeUnmount(clearTypingTimer);
   }
 }
 
-:global([data-theme='dark']) .intro-hero {
+</style>
+
+<style>
+[data-theme='dark'] .intro-hero {
   background:
     radial-gradient(circle at 14% 18%, rgba(85, 126, 255, 0.34), transparent 28%),
     radial-gradient(circle at 84% 22%, rgba(74, 192, 179, 0.22), transparent 26%),
@@ -382,21 +385,21 @@ onBeforeUnmount(clearTypingTimer);
     linear-gradient(180deg, rgba(5, 10, 22, 0.98), rgba(10, 17, 33, 0.94));
 }
 
-:global([data-theme='dark']) .hero-mark,
-:global([data-theme='dark']) .hero-subtitle,
-:global([data-theme='dark']) .mode-chip {
+[data-theme='dark'] .intro-hero .hero-mark,
+[data-theme='dark'] .intro-hero .hero-subtitle,
+[data-theme='dark'] .intro-hero .mode-chip {
   color: rgba(236, 244, 255, 0.68);
 }
 
-:global([data-theme='dark']) .hero-copy h1 {
+[data-theme='dark'] .intro-hero .hero-copy h1 {
   color: #edf4ff;
 }
 
-:global([data-theme='dark']) .mode-chip {
+[data-theme='dark'] .intro-hero .mode-chip {
   background: rgba(255, 255, 255, 0.06);
 }
 
-:global([data-theme='dark']) .mode-chip.active {
+[data-theme='dark'] .intro-hero .mode-chip.active {
   color: #edf4ff;
   background:
     linear-gradient(135deg, rgba(64, 117, 255, 0.24), rgba(41, 187, 173, 0.18)),

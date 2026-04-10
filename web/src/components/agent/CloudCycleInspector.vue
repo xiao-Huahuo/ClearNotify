@@ -348,40 +348,46 @@ const normalizedEvidence = computed(() =>
   color: rgba(23, 49, 89, 0.58);
 }
 
-:global([data-theme='dark']) .inspector-panel {
+</style>
+
+<style>
+[data-theme='dark'] .inspector-panel {
   background:
-    linear-gradient(180deg, rgba(11, 18, 35, 0.84), rgba(11, 18, 35, 0.7)),
-    linear-gradient(150deg, rgba(70, 126, 255, 0.16), rgba(255, 255, 255, 0));
-  border-color: rgba(255, 255, 255, 0.08);
+    linear-gradient(180deg, rgba(9, 16, 30, 0.94), rgba(8, 14, 26, 0.88)),
+    linear-gradient(150deg, rgba(70, 126, 255, 0.14), rgba(34, 150, 139, 0.06) 58%, rgba(255, 255, 255, 0));
+  border-color: rgba(118, 156, 255, 0.12);
   box-shadow:
-    0 28px 66px rgba(0, 0, 0, 0.36),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    0 28px 66px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
-:global([data-theme='dark']) .panel-eyebrow,
-:global([data-theme='dark']) .timeline-meta small,
-:global([data-theme='dark']) .evidence-head span,
-:global([data-theme='dark']) .placeholder-text {
+[data-theme='dark'] .inspector-panel .panel-eyebrow,
+[data-theme='dark'] .inspector-panel .timeline-meta small,
+[data-theme='dark'] .inspector-panel .evidence-head span,
+[data-theme='dark'] .inspector-panel .placeholder-text {
   color: rgba(237, 244, 255, 0.58);
 }
 
-:global([data-theme='dark']) .inspector-header h2,
-:global([data-theme='dark']) .summary-card strong,
-:global([data-theme='dark']) .section-title,
-:global([data-theme='dark']) .summary-text,
-:global([data-theme='dark']) .timeline-card,
-:global([data-theme='dark']) .evidence-card,
-:global([data-theme='dark']) .close-btn {
+[data-theme='dark'] .inspector-panel .inspector-header h2,
+[data-theme='dark'] .inspector-panel .summary-card strong,
+[data-theme='dark'] .inspector-panel .section-title,
+[data-theme='dark'] .inspector-panel .summary-text,
+[data-theme='dark'] .inspector-panel .timeline-card,
+[data-theme='dark'] .inspector-panel .evidence-card,
+[data-theme='dark'] .inspector-panel .close-btn {
   color: #edf4ff;
 }
 
-:global([data-theme='dark']) .summary-card,
-:global([data-theme='dark']) .summary-text,
-:global([data-theme='dark']) .timeline-card,
-:global([data-theme='dark']) .evidence-card,
-:global([data-theme='dark']) .placeholder-text,
-:global([data-theme='dark']) .close-btn {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.06);
+[data-theme='dark'] .inspector-panel .summary-card,
+[data-theme='dark'] .inspector-panel .summary-text,
+[data-theme='dark'] .inspector-panel .timeline-card,
+[data-theme='dark'] .inspector-panel .evidence-card,
+[data-theme='dark'] .inspector-panel .placeholder-text,
+[data-theme='dark'] .inspector-panel .close-btn {
+  background:
+    linear-gradient(180deg, rgba(15, 25, 43, 0.92), rgba(12, 20, 34, 0.84)),
+    linear-gradient(150deg, rgba(63, 118, 255, 0.08), rgba(40, 188, 172, 0.05));
+  border-color: rgba(118, 156, 255, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 </style>

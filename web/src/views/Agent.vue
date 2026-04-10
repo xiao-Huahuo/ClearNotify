@@ -1015,34 +1015,66 @@ onBeforeUnmount(() => {
   }
 }
 
-:global([data-theme='dark']) .cloudcycle-page {
+</style>
+
+<style>
+[data-theme='dark'] .cloudcycle-page {
   background: linear-gradient(180deg, rgba(4, 10, 22, 0.28), rgba(4, 10, 22, 0.12));
 }
 
-:global([data-theme='dark']) .grid-haze {
+[data-theme='dark'] .cloudcycle-page .ambient-one {
+  background: radial-gradient(circle at 8% 18%, rgba(77, 120, 219, 0.2), transparent 30%);
+}
+
+[data-theme='dark'] .cloudcycle-page .ambient-two {
+  background: radial-gradient(circle at 90% 16%, rgba(48, 172, 157, 0.16), transparent 26%);
+}
+
+[data-theme='dark'] .cloudcycle-page .ambient-three {
+  background: radial-gradient(circle at 56% 88%, rgba(215, 143, 92, 0.12), transparent 24%);
+}
+
+[data-theme='dark'] .cloudcycle-page .grid-haze {
   background-image:
-    linear-gradient(rgba(153, 181, 244, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(153, 181, 244, 0.05) 1px, transparent 1px);
+    linear-gradient(rgba(107, 139, 199, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(107, 139, 199, 0.08) 1px, transparent 1px);
 }
 
-:global([data-theme='dark']) .mode-switcher,
-:global([data-theme='dark']) .toolbar-status,
-:global([data-theme='dark']) .edge-handle {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 22px 48px rgba(0, 0, 0, 0.24);
-}
-
-:global([data-theme='dark']) .mode-btn,
-:global([data-theme='dark']) .toolbar-status,
-:global([data-theme='dark']) .edge-handle {
-  color: rgba(237, 244, 255, 0.72);
-}
-
-:global([data-theme='dark']) .mode-btn.active {
+[data-theme='dark'] .cloudcycle-page .mode-switcher,
+[data-theme='dark'] .cloudcycle-page .toolbar-status,
+[data-theme='dark'] .cloudcycle-page .edge-handle {
   background:
-    linear-gradient(135deg, rgba(64, 117, 255, 0.24), rgba(41, 187, 173, 0.18)),
-    rgba(255, 255, 255, 0.08);
+    linear-gradient(180deg, rgba(12, 21, 37, 0.92), rgba(10, 18, 32, 0.84)),
+    linear-gradient(150deg, rgba(60, 108, 204, 0.08), rgba(34, 150, 139, 0.05));
+  border: 1px solid rgba(109, 145, 206, 0.14);
+  box-shadow:
+    0 22px 48px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+[data-theme='dark'] .cloudcycle-page .mode-btn,
+[data-theme='dark'] .cloudcycle-page .toolbar-status,
+[data-theme='dark'] .cloudcycle-page .edge-handle {
+  color: rgba(237, 244, 255, 0.78);
+}
+
+[data-theme='dark'] .cloudcycle-page .mode-btn.active {
+  background:
+    linear-gradient(135deg, rgba(64, 117, 255, 0.3), rgba(41, 187, 173, 0.2)),
+    rgba(255, 255, 255, 0.06);
   color: #edf4ff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+[data-theme='dark'] .cloudcycle-page .toolbar-status.ready {
+  color: #8ef0cb;
+}
+
+[data-theme='dark'] .cloudcycle-page .toolbar-status.connecting {
+  color: #ffd58b;
+}
+
+[data-theme='dark'] .cloudcycle-page .toolbar-status.error {
+  color: #ff9e9e;
 }
 </style>

@@ -377,40 +377,51 @@ const formatTime = (value) => {
   line-height: 1.6;
 }
 
-:global([data-theme='dark']) .cloudcycle-sidebar {
+</style>
+
+<style>
+[data-theme='dark'] .cloudcycle-sidebar {
   background:
-    linear-gradient(180deg, rgba(11, 18, 35, 0.82), rgba(11, 18, 35, 0.66)),
-    linear-gradient(150deg, rgba(70, 126, 255, 0.18), rgba(255, 255, 255, 0));
-  border-color: rgba(255, 255, 255, 0.08);
+    linear-gradient(180deg, rgba(9, 16, 30, 0.94), rgba(8, 14, 26, 0.86)),
+    linear-gradient(150deg, rgba(70, 126, 255, 0.14), rgba(34, 150, 139, 0.06) 58%, rgba(255, 255, 255, 0));
+  border-color: rgba(118, 156, 255, 0.12);
   box-shadow:
-    0 30px 70px rgba(0, 0, 0, 0.34),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    0 30px 70px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
-:global([data-theme='dark']) .brand-title,
-:global([data-theme='dark']) .conversation-title {
+[data-theme='dark'] .cloudcycle-sidebar .brand-title,
+[data-theme='dark'] .cloudcycle-sidebar .conversation-title {
   color: #eef4ff;
 }
 
-:global([data-theme='dark']) .brand-subtitle,
-:global([data-theme='dark']) .conversation-time,
-:global([data-theme='dark']) .empty-state,
-:global([data-theme='dark']) .delete-btn,
-:global([data-theme='dark']) .icon-btn {
+[data-theme='dark'] .cloudcycle-sidebar .brand-subtitle,
+[data-theme='dark'] .cloudcycle-sidebar .conversation-time,
+[data-theme='dark'] .cloudcycle-sidebar .empty-state,
+[data-theme='dark'] .cloudcycle-sidebar .delete-btn,
+[data-theme='dark'] .cloudcycle-sidebar .icon-btn {
   color: rgba(232, 241, 255, 0.72);
 }
 
-:global([data-theme='dark']) .status-pill,
-:global([data-theme='dark']) .icon-btn,
-:global([data-theme='dark']) .conversation-card,
-:global([data-theme='dark']) .empty-state,
-:global([data-theme='dark']) .delete-btn {
-  background: rgba(255, 255, 255, 0.06);
+[data-theme='dark'] .cloudcycle-sidebar .status-pill,
+[data-theme='dark'] .cloudcycle-sidebar .icon-btn,
+[data-theme='dark'] .cloudcycle-sidebar .conversation-card,
+[data-theme='dark'] .cloudcycle-sidebar .empty-state,
+[data-theme='dark'] .cloudcycle-sidebar .delete-btn {
+  background:
+    linear-gradient(180deg, rgba(15, 25, 43, 0.92), rgba(12, 20, 34, 0.84)),
+    linear-gradient(150deg, rgba(63, 118, 255, 0.08), rgba(40, 188, 172, 0.05));
+  border: 1px solid rgba(118, 156, 255, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
-:global([data-theme='dark']) .conversation-card.active {
+[data-theme='dark'] .cloudcycle-sidebar .conversation-card.active {
   background:
-    linear-gradient(135deg, rgba(63, 118, 255, 0.22), rgba(44, 196, 179, 0.18)),
-    rgba(255, 255, 255, 0.08);
+    linear-gradient(135deg, rgba(63, 118, 255, 0.28), rgba(44, 196, 179, 0.2)),
+    rgba(255, 255, 255, 0.04);
+  border-color: rgba(118, 156, 255, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 18px 34px rgba(0, 0, 0, 0.24);
 }
 </style>

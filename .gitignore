@@ -46,6 +46,8 @@ logs/*.log.*
 
 # Runtime data
 database.db
+database.db-shm
+database.db-wal
 *.sqlite
 *.sqlite3
 chroma_store/

@@ -36,6 +36,7 @@ export const API_ROUTES = {
   ADMIN_RAG_STATUS: '/admin/rag/status',
   ADMIN_RAG_SEARCH: '/admin/rag/search',
   SHOWCASE_PUBLIC_STATS: '/showcase/landing-stats',
+  SHOWCASE_SCREEN_DATA: '/showcase/screen-data',
   AGENT_RUN: '/agent/run',
   AGENT_CONVERSATIONS: '/agent/conversations',
   AGENT_MESSAGES: (id) => `/agent/conversations/${id}/messages`,

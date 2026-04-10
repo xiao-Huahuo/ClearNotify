@@ -23,3 +23,5 @@ langchain-core
 chromadb
 sentence-transformers
 aiosqlite
+langgraph-checkpoint-sqlite
+pytest-asyncio

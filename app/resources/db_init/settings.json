@@ -4,60 +4,70 @@
       "user_email": "zhangwei@example.com",
       "default_audience": "worker",
       "theme_mode": "light",
+      "color_scheme": "classic",
       "system_notifications": true
     },
     {
       "user_email": "lina@example.com",
       "default_audience": "none",
       "theme_mode": "light",
+      "color_scheme": "classic",
       "system_notifications": true
     },
     {
       "user_email": "wangfang@example.com",
       "default_audience": "none",
       "theme_mode": "dark",
+      "color_scheme": "wine-coral",
       "system_notifications": false
     },
     {
       "user_email": "liuyang@example.com",
       "default_audience": "none",
       "theme_mode": "light",
+      "color_scheme": "classic",
       "system_notifications": true
     },
     {
       "user_email": "chenjing@example.com",
       "default_audience": "elderly",
       "theme_mode": "light",
+      "color_scheme": "classic",
       "system_notifications": true
     },
     {
       "user_email": "zhaolei@example.com",
       "default_audience": "none",
       "theme_mode": "dark",
+      "color_scheme": "wine-coral",
       "system_notifications": true
     },
     {
       "user_email": "sunli@example.com",
       "default_audience": "none",
       "theme_mode": "light",
+      "color_scheme": "classic",
       "system_notifications": true
     },
     {
       "user_email": "zhouqiang@example.com",
       "default_audience": "worker",
       "theme_mode": "dark",
+      "color_scheme": "wine-coral",
       "system_notifications": false
     },
     {
       "user_email": "wumin@example.com",
       "default_audience": "student",
       "theme_mode": "light",
+      "color_scheme": "classic",
       "system_notifications": true
     },
     {
       "user_email": "zhenghua@example.com",
       "default_audience": "elderly",
       "theme_mode": "light",
+      "color_scheme": "classic",
       "system_notifications": true
     }
   ]

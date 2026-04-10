@@ -328,6 +328,7 @@ def update_user_settings(
     user_id: str,
     default_audience: str = "",
     theme_mode: str = "",
+    color_scheme: str = "",
     system_notifications: bool | None = None,
     confirm: bool = False,
 ):
@@ -337,6 +338,8 @@ def update_user_settings(
         patch["default_audience"] = default_audience
     if theme_mode:
         patch["theme_mode"] = theme_mode
+    if color_scheme:
+        patch["color_scheme"] = color_scheme
     if system_notifications is not None:
         patch["system_notifications"] = bool(system_notifications)
 

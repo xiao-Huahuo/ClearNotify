@@ -70,9 +70,9 @@
               </div>
               <div class="setting-control">
                 <div class="toggle-group theme-mode-toggle">
-                  <button class="toggle-btn" :class="{ active: settingsStore.settings.theme_mode === 'light' }" @click="handleThemeChange('light')">浅色</button>
-                  <button class="toggle-btn" :class="{ active: settingsStore.settings.theme_mode === 'dark' }" @click="handleThemeChange('dark')">深色</button>
-                  <button class="toggle-btn" :class="{ active: settingsStore.settings.theme_mode === 'system' }" @click="handleThemeChange('system')">跟随系统</button>
+                  <button type="button" class="toggle-btn" :class="{ active: settingsStore.settings.theme_mode === 'light' }" @click.stop="handleThemeChange('light')">浅色</button>
+                  <button type="button" class="toggle-btn" :class="{ active: settingsStore.settings.theme_mode === 'dark' }" @click.stop="handleThemeChange('dark')">深色</button>
+                  <button type="button" class="toggle-btn" :class="{ active: settingsStore.settings.theme_mode === 'system' }" @click.stop="handleThemeChange('system')">跟随系统</button>
                 </div>
               </div>
             </div>
@@ -85,14 +85,13 @@
                 </div>
                 <div class="text-wrap">
                   <p class="name">全局配色方案</p>
-                  <p class="desc">切换经典红灰、莫兰迪或石墨灰色系</p>
+                  <p class="desc">切换经典红或首页同源的酒红珊瑚色系</p>
                 </div>
               </div>
               <div class="setting-control">
                 <div class="toggle-group">
-                  <button class="toggle-btn" :class="{ active: settingsStore.settings.color_scheme === 'classic' }" @click="handleColorSchemeChange('classic')">经典红灰</button>
-                  <button class="toggle-btn" :class="{ active: settingsStore.settings.color_scheme === 'morandi' }" @click="handleColorSchemeChange('morandi')">莫兰迪</button>
-                  <button class="toggle-btn" :class="{ active: settingsStore.settings.color_scheme === 'graphite' }" @click="handleColorSchemeChange('graphite')">石墨灰</button>
+                  <button type="button" class="toggle-btn" :disabled="isColorSchemeUpdating" :class="{ active: settingsStore.settings.color_scheme === 'classic' }" @click.stop="handleColorSchemeChange('classic')">经典红</button>
+                  <button type="button" class="toggle-btn" :disabled="isColorSchemeUpdating" :class="{ active: settingsStore.settings.color_scheme === 'wine-coral' }" @click.stop="handleColorSchemeChange('wine-coral')">酒红珊瑚</button>
                 </div>
               </div>
             </div>
@@ -216,6 +215,7 @@ const userStore = useUserStore();
 const settingsStore = useSettingsStore();
 
 const showAvatarEditor = ref(false);
+const isColorSchemeUpdating = ref(false);
 
 const displayAvatar = computed(() => {
     if (!userStore.user?.avatar_url) return null;
@@ -247,8 +247,14 @@ const handleThemeChange = async (theme) => {
     await handleSettingChange('theme_mode');
 };
 
-const handleColorSchemeChange = (scheme) => {
-    settingsStore.updateColorScheme(scheme);
+const handleColorSchemeChange = async (scheme) => {
+    if (isColorSchemeUpdating.value) return;
+    isColorSchemeUpdating.value = true;
+    try {
+        await settingsStore.setColorScheme(scheme, { persist: true });
+    } finally {
+        isColorSchemeUpdating.value = false;
+    }
 };
 
 const handleLogout = () => {
@@ -304,7 +310,7 @@ const openLoginModal = () => {
   border-radius: 0;
   box-shadow: none;
   border: 1px solid #e8e8e8;
-  border-left: 3px solid #c0392b;
+  border-left: 3px solid var(--color-primary);
   padding: 20px;
 }
 
@@ -466,6 +472,11 @@ const openLoginModal = () => {
   transition: all 0.2s;
 }
 
+.toggle-btn:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
 .toggle-btn.active {
   background-color: #fff;
   color: #000;
@@ -625,10 +636,9 @@ input:checked + .slider:before {
 }
 
 :global([data-theme="dark"]) .settings-container .theme-mode-toggle .toggle-btn.active {
-  background: #c0392b !important;
+  background: var(--color-primary) !important;
   color: #fff !important;
   box-shadow: none !important;
 }
 
 </style>
-

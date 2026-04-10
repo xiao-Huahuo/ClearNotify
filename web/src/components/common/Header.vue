@@ -45,12 +45,6 @@
         </svg>
       </button>
 
-      <select class="palette-select" :value="settingsStore.settings.color_scheme" @change="toggleColorScheme($event)">
-        <option value="classic">经典红灰</option>
-        <option value="morandi">莫兰迪</option>
-        <option value="graphite">石墨黑</option>
-      </select>
-
       <!-- 鏄庢殫鍒囨崲寮€鍏?-->
       <label class="theme-switch" title="切换明暗模式">
         <input class="theme-switch__checkbox" type="checkbox" :checked="isDark" @change="toggleTheme" />
@@ -72,6 +66,18 @@
           </div>
         </div>
       </label>
+
+      <button
+        class="scheme-switch"
+        :class="{ 'is-switching': isSchemeSwitching }"
+        type="button"
+        :disabled="isSchemeSwitching"
+        :aria-label="`切换品牌色系，当前：${currentSchemeLabel}，点击切换到：${nextSchemeLabel}`"
+        :title="`切换品牌色系，当前：${currentSchemeLabel}，点击切换到：${nextSchemeLabel}`"
+        @click.stop.prevent="handleColorSchemeToggle"
+      >
+        <span class="scheme-switch__inner"></span>
+      </button>
 
       <!-- 閫氱煡鍥炬爣 -->
       <button class="icon-btn" @click="toggleNotification" :title="settingsStore.settings.system_notifications ? '关闭系统通知' : '开启系统通知'">
@@ -129,8 +135,27 @@ const router = useRouter();
 const userStore = useUserStore();
 const settingsStore = useSettingsStore();
 
+const colorSchemes = [
+  { value: 'classic', label: '经典红' },
+  { value: 'wine-coral', label: '酒红珊瑚' },
+];
+
 const isDark = ref(false);
+const isSchemeSwitching = ref(false);
 let themeObserver = null;
+
+const currentSchemeIndex = computed(() => {
+  const currentValue = settingsStore.settings.color_scheme;
+  const matchedIndex = colorSchemes.findIndex(item => item.value === currentValue);
+  return matchedIndex >= 0 ? matchedIndex : 0;
+});
+
+const currentSchemeLabel = computed(() => colorSchemes[currentSchemeIndex.value].label);
+const nextSchemeValue = computed(() => settingsStore.getNextColorScheme(settingsStore.settings.color_scheme));
+const nextSchemeLabel = computed(() => {
+  const targetScheme = colorSchemes.find(item => item.value === nextSchemeValue.value);
+  return targetScheme?.label ?? colorSchemes[0].label;
+});
 
 const syncThemeFromDom = () => {
   isDark.value = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -144,7 +169,17 @@ const toggleTheme = async () => {
   syncThemeFromDom();
 };
 
-const toggleColorScheme = (event) => settingsStore.updateColorScheme(event.target.value);
+const handleColorSchemeToggle = async () => {
+  if (isSchemeSwitching.value) return;
+  isSchemeSwitching.value = true;
+  try {
+    await settingsStore.setColorScheme(nextSchemeValue.value, {
+      persist: Boolean(userStore.token),
+    });
+  } finally {
+    isSchemeSwitching.value = false;
+  }
+};
 
 const searchQuery = ref('');
 const showSearch = computed(() => route.name !== 'login' && route.name !== 'register');
@@ -189,6 +224,8 @@ onBeforeUnmount(() => themeObserver?.disconnect());
   justify-content: space-between;
   padding: 0 20px;
   flex-shrink: 0;
+  box-shadow: inset 0 -1px 0 var(--shell-glass-border);
+  transition: background 0.35s ease, box-shadow 0.35s ease;
 }
 
 .header-left-controls {
@@ -218,13 +255,13 @@ onBeforeUnmount(() => themeObserver?.disconnect());
 .search-bar {
   display: flex;
   align-items: center;
-  background-color: rgba(255,255,255,0.18);
-  border: 1px solid rgba(255,255,255,0.25);
+  background-color: var(--shell-glass-bg);
+  border: 1px solid var(--shell-glass-border);
   border-radius: var(--border-radius-pill);
   padding: 5px 10px;
-  transition: background 0.3s;
+  transition: background 0.3s, border-color 0.3s;
 }
-.search-bar:focus-within { background-color: rgba(255,255,255,0.28); }
+.search-bar:focus-within { background-color: var(--shell-glass-hover); }
 
 .search-bar input {
   border: none;
@@ -233,13 +270,13 @@ onBeforeUnmount(() => themeObserver?.disconnect());
   flex: 1;
   padding: 5px;
   font-size: 14px;
-  color: #fff;
+  color: var(--shell-text);
 }
-.search-bar input::placeholder { color: rgba(255,255,255,0.65); }
+.search-bar input::placeholder { color: var(--shell-text-muted); }
 
 .search-btn {
   background: none;
-  color: rgba(255,255,255,0.8);
+  color: var(--shell-text-muted);
   border: none;
   cursor: pointer;
   display: flex;
@@ -247,7 +284,7 @@ onBeforeUnmount(() => themeObserver?.disconnect());
   justify-content: center;
   transition: color 0.2s;
 }
-.search-btn:hover { color: #fff; }
+.search-btn:hover { color: var(--shell-text); }
 
 .tag-chips {
   display: flex;
@@ -277,30 +314,18 @@ onBeforeUnmount(() => themeObserver?.disconnect());
   gap: 15px;
 }
 
-.palette-select {
-  height: 30px;
-  border: 1px solid rgba(255,255,255,0.4);
-  border-radius: 8px;
-  background: rgba(255,255,255,0.15);
-  color: #fff;
-  padding: 0 8px;
-  outline: none;
-  font-size: 12px;
-}
-.palette-select option { color: #222; }
-
 .icon-btn {
   background: none;
   border: none;
   cursor: pointer;
-  color: rgba(255,255,255,0.85);
+  color: var(--shell-text-muted);
   transition: color 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.icon-btn:hover { color: #fff; }
-.logout-btn:hover { color: rgba(255,255,255,0.7); }
+.icon-btn:hover { color: var(--shell-text); }
+.logout-btn:hover { color: var(--shell-text-muted); }
 
 .user-profile {
   cursor: pointer;
@@ -314,24 +339,24 @@ onBeforeUnmount(() => themeObserver?.disconnect());
   height: 36px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid rgba(255,255,255,0.5);
+  border: 2px solid var(--shell-glass-border);
 }
 
 .header-avatar-placeholder {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background-color: rgba(255,255,255,0.2);
+  background-color: var(--shell-glass-bg);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(255,255,255,0.8);
+  color: var(--shell-text-muted);
 }
 
 .login-capsule {
-  background-color: rgba(255,255,255,0.2);
-  color: #fff;
-  border: 1px solid rgba(255,255,255,0.4);
+  background-color: var(--shell-glass-bg);
+  color: var(--shell-text);
+  border: 1px solid var(--shell-glass-border);
   padding: 8px 20px;
   border-radius: var(--border-radius-pill);
   font-size: 14px;
@@ -339,7 +364,64 @@ onBeforeUnmount(() => themeObserver?.disconnect());
   cursor: pointer;
   transition: background 0.2s;
 }
-.login-capsule:hover { background-color: rgba(255,255,255,0.35); }
+.login-capsule:hover { background-color: var(--shell-glass-hover); }
+
+.scheme-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--shell-glass-border);
+  background: var(--scheme-toggle-gradient);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+    0 0 16px var(--scheme-toggle-glow);
+  cursor: pointer;
+  padding: 0;
+  overflow: hidden;
+  appearance: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.scheme-switch::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 28%, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0) 44%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 62%);
+  pointer-events: none;
+}
+
+.scheme-switch__inner {
+  position: absolute;
+  inset: 10px;
+  border-radius: 50%;
+  background: rgba(7, 14, 24, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(3px);
+  pointer-events: none;
+}
+
+.scheme-switch:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+    0 0 20px var(--scheme-toggle-glow);
+}
+
+.scheme-switch.is-switching {
+  opacity: 0.7;
+}
+
+.scheme-switch:disabled {
+  cursor: wait;
+}
 
 /* 鈹€鈹€ 鏄庢殫鍒囨崲寮€鍏?鈹€鈹€ */
 .theme-switch {
@@ -429,4 +511,3 @@ onBeforeUnmount(() => themeObserver?.disconnect());
 }
 .theme-switch__checkbox:checked + .theme-switch__container .theme-switch__stars-container { top: 0.312em; }
 </style>
-

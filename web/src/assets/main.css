@@ -1,15 +1,30 @@
 :root {
-  /* 红灰主题主色 */
+  /* 默认品牌色：经典红 */
   --color-primary: #c0392b;
-  --color-primary-light: #e74c3c;
-  --color-primary-dark: #922b21;
-  --color-secondary: #7f8c8d;
+  --color-primary-light: #e45846;
+  --color-primary-dark: #8e231b;
+  --color-secondary: #e67e22;
   --color-text-dark: #2c3e50;
+  --color-accent-cool: #58cbff;
+  --color-accent-mint: #80fab0;
 
-  /* 布局颜色 */
-  --sidebar-bg: #2c3e50;
-  --sidebar-bg-gradient: linear-gradient(180deg, #c0392b 0%, #922b21 60%, #7f8c8d 100%);
-  --header-bg: linear-gradient(90deg, #c0392b 0%, #7f8c8d 100%);
+  /* 布局与品牌外壳 */
+  --sidebar-bg: #6a1e1d;
+  --sidebar-bg-gradient: linear-gradient(180deg, #cb3f2c 0%, #9c261e 52%, #5c1719 100%);
+  --header-bg: linear-gradient(90deg, #c8422f 0%, #d85734 52%, #ef8b46 100%);
+  --shell-text: #ffffff;
+  --shell-text-muted: rgba(255, 255, 255, 0.82);
+  --shell-glass-bg: rgba(255, 255, 255, 0.16);
+  --shell-glass-border: rgba(255, 255, 255, 0.24);
+  --shell-glass-hover: rgba(255, 255, 255, 0.28);
+  --shell-shadow: 0 16px 40px rgba(121, 32, 25, 0.22);
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.14);
+  --sidebar-active-bg: rgba(255, 255, 255, 0.2);
+  --sidebar-active-border: rgba(255, 255, 255, 0.3);
+  --scheme-toggle-gradient: linear-gradient(135deg, #c8422f 0%, #ef8b46 100%);
+  --scheme-toggle-glow: rgba(239, 139, 70, 0.38);
+
+  /* 页面表面 */
   --content-bg: #f4f5f7;
   --card-bg: #ffffff;
   --border-color: #e0e0e0;
@@ -20,9 +35,7 @@
   /* 按钮和激活项颜色 */
   --btn-primary-bg: #c0392b;
   --btn-primary-text: #ffffff;
-  --btn-hover-bg: #e74c3c;
-  --sidebar-active-bg: rgba(192, 57, 43, 0.25);
-  --sidebar-active-border: #e74c3c;
+  --btn-hover-bg: #e45846;
 
   /* 统一圆角 */
   --border-radius-main: 8px;
@@ -40,44 +53,88 @@
 
 [data-color-scheme="classic"] {
   --color-primary: #c0392b;
-  --color-primary-light: #e74c3c;
-  --color-primary-dark: #922b21;
-  --header-bg: linear-gradient(90deg, #c0392b 0%, #7f8c8d 100%);
-  --sidebar-bg-gradient: linear-gradient(180deg, #c0392b 0%, #922b21 60%, #7f8c8d 100%);
+  --color-primary-light: #e45846;
+  --color-primary-dark: #8e231b;
+  --color-secondary: #e67e22;
+  --header-bg: linear-gradient(90deg, #c8422f 0%, #d85734 52%, #ef8b46 100%);
+  --sidebar-bg-gradient: linear-gradient(180deg, #cb3f2c 0%, #9c261e 52%, #5c1719 100%);
+  --scheme-toggle-gradient: linear-gradient(135deg, #c8422f 0%, #ef8b46 100%);
+  --scheme-toggle-glow: rgba(239, 139, 70, 0.38);
 }
 
-[data-color-scheme="morandi"] {
-  --color-primary: #a46a63;
-  --color-primary-light: #bd8a81;
-  --color-primary-dark: #7f504a;
-  --header-bg: linear-gradient(90deg, #a46a63 0%, #9ea6a0 100%);
-  --sidebar-bg-gradient: linear-gradient(180deg, #9a5e58 0%, #7f504a 60%, #8e9590 100%);
-  --policy-title-color: #9a5e58;
-  --policy-title-shadow: 0 3px 14px rgba(154, 94, 88, 0.2);
-}
-
-[data-color-scheme="graphite"] {
-  --color-primary: #5e6a73;
-  --color-primary-light: #7b8891;
-  --color-primary-dark: #49535b;
-  --header-bg: linear-gradient(90deg, #4d5961 0%, #727d86 100%);
-  --sidebar-bg-gradient: linear-gradient(180deg, #4d5961 0%, #49535b 60%, #727d86 100%);
-  --policy-title-color: #4d5961;
-  --policy-title-shadow: 0 3px 14px rgba(77, 89, 97, 0.2);
+[data-color-scheme="wine-coral"] {
+  --color-primary: #ff8f7a;
+  --color-primary-light: #ffb76f;
+  --color-primary-dark: #7a3046;
+  --color-secondary: #58cbff;
+  --content-bg: #fff6f4;
+  --card-bg: #fffdfd;
+  --border-color: #eed7d7;
+  --text-primary: #2b1821;
+  --text-secondary: #705f69;
+  --text-muted: #ab9aa3;
+  --header-bg: linear-gradient(90deg, #6f293d 0%, #b44d66 34%, #ff8f7a 68%, #5fd1ff 100%);
+  --sidebar-bg-gradient: linear-gradient(180deg, #6c2637 0%, #9a3d58 26%, #48537d 70%, #243852 100%);
+  --sidebar-bg: #6c2637;
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.16);
+  --sidebar-active-bg: linear-gradient(135deg, rgba(255, 183, 111, 0.28), rgba(95, 209, 255, 0.2));
+  --sidebar-active-border: rgba(95, 209, 255, 0.34);
+  --scheme-toggle-gradient: linear-gradient(135deg, #ff8f7a 0%, #ffdb64 42%, #58cbff 100%);
+  --scheme-toggle-glow: rgba(95, 209, 255, 0.42);
+  --policy-title-color: #7a3046;
+  --policy-title-shadow: 0 3px 14px rgba(255, 143, 122, 0.22);
+  --policy-subtitle-color: #9f7d86;
 }
 
 [data-theme="dark"] {
-  --content-bg: #1a1a1a;
-  --card-bg: #242424;
-  --border-color: #333333;
-  --text-primary: #f0f0f0;
-  --text-secondary: #aaaaaa;
-  --text-muted: #666666;
-  --sidebar-bg: #111111;
-  --color-text-dark: #e0e0e0;
+  --content-bg: #11141a;
+  --card-bg: #1b1f27;
+  --border-color: #2b3340;
+  --text-primary: #f3f7ff;
+  --text-secondary: #aeb8c8;
+  --text-muted: #677284;
+  --sidebar-bg: #121826;
+  --color-text-dark: #f3f7ff;
+  --shell-glass-bg: rgba(255, 255, 255, 0.08);
+  --shell-glass-border: rgba(255, 255, 255, 0.12);
+  --shell-glass-hover: rgba(255, 255, 255, 0.14);
+  --shell-shadow: 0 18px 48px rgba(6, 10, 18, 0.38);
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.08);
+  --sidebar-active-bg: rgba(255, 255, 255, 0.12);
+  --sidebar-active-border: rgba(255, 255, 255, 0.22);
   --policy-title-color: #f2d7d5;
   --policy-subtitle-color: #a0a0a0;
   --policy-title-shadow: 0 3px 14px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme="dark"][data-color-scheme="classic"] {
+  --header-bg: linear-gradient(90deg, #311013 0%, #651b1f 54%, #230b0d 100%);
+  --sidebar-bg-gradient: linear-gradient(180deg, #3c1115 0%, #621720 50%, #18090d 100%);
+  --sidebar-bg: #2b0d12;
+  --sidebar-active-bg: rgba(228, 88, 70, 0.18);
+  --sidebar-active-border: rgba(228, 88, 70, 0.42);
+  --scheme-toggle-gradient: linear-gradient(135deg, #5d1519 0%, #e45846 52%, #ef8b46 100%);
+  --scheme-toggle-glow: rgba(228, 88, 70, 0.34);
+}
+
+[data-theme="dark"][data-color-scheme="wine-coral"] {
+  --content-bg: #0d121c;
+  --card-bg: #131a24;
+  --border-color: #243247;
+  --text-primary: #f5f7ff;
+  --text-secondary: rgba(235, 243, 255, 0.74);
+  --text-muted: rgba(195, 205, 222, 0.52);
+  --header-bg: linear-gradient(90deg, #140c12 0%, #512334 34%, #15233f 72%, #09131f 100%);
+  --sidebar-bg-gradient: linear-gradient(180deg, #140c12 0%, #512334 34%, #15233f 72%, #09131f 100%);
+  --sidebar-bg: #140c12;
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.1);
+  --sidebar-active-bg: linear-gradient(135deg, rgba(255, 143, 122, 0.22), rgba(95, 209, 255, 0.18));
+  --sidebar-active-border: rgba(95, 209, 255, 0.35);
+  --scheme-toggle-gradient: linear-gradient(135deg, #ff8f7a 0%, #ffdb64 38%, #58cbff 100%);
+  --scheme-toggle-glow: rgba(95, 209, 255, 0.46);
+  --policy-title-color: #ffd7cf;
+  --policy-title-shadow: 0 4px 18px rgba(255, 143, 122, 0.18);
+  --policy-subtitle-color: rgba(235, 243, 255, 0.6);
 }
 
 .policy-page-header {
@@ -144,7 +201,7 @@
 [data-theme="dark"] .tc-label,
 [data-theme="dark"] .chart-sub-label { color: #aaa !important; }
 [data-theme="dark"] .stat-num,
-[data-theme="dark"] .tc-value { color: #e74c3c !important; }
+[data-theme="dark"] .tc-value { color: var(--color-primary-light) !important; }
 
 [data-theme="dark"] .more-item { color: #ddd !important; }
 [data-theme="dark"] .more-item:hover { background: #333 !important; }
@@ -163,7 +220,7 @@
 [data-theme="dark"] .scrollable-content { background: var(--content-bg); }
 
 [data-theme="dark"] .action-tag { background: #333 !important; color: #ccc !important; }
-[data-theme="dark"] .action-tag.active { background: #c0392b !important; color: #fff !important; }
+[data-theme="dark"] .action-tag.active { background: var(--color-primary) !important; color: #fff !important; }
 
 [data-theme="dark"] .badge-user { background: #333 !important; color: #aaa !important; }
 
@@ -179,7 +236,7 @@ body {
   padding: 0;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   background-color: var(--content-bg);
-  color: var(--color-text-dark);
+  color: var(--text-primary);
 }
 
 /* 全局滚动条样式优化 */
@@ -355,13 +412,13 @@ body {
 }
 
 [data-theme="dark"] .dashboard-container .action-tag.active {
-  background: #c0392b !important;
+  background: var(--color-primary) !important;
   color: #fff !important;
 }
 
 [data-theme="dark"] .dashboard-container .card-personal-avg {
-  background: #5a2b31 !important;
-  border-left-color: #8f3d48 !important;
+  background: color-mix(in srgb, var(--color-primary) 24%, #161c27) !important;
+  border-left-color: var(--color-primary-dark) !important;
   color: #fff !important;
 }
 
@@ -393,7 +450,7 @@ body {
 }
 
 [data-theme="dark"] .agent-page .bubble.user {
-  background: #7a3037 !important;
+  background: color-mix(in srgb, var(--color-primary) 36%, #1b1f27) !important;
 }
 
 [data-theme="dark"] .agent-page .bubble.trace {
@@ -426,7 +483,7 @@ body {
 }
 
 [data-theme="dark"] .history-container .table-row:hover .text-ellipsis {
-  color: #e74c3c !important;
+  color: var(--color-primary-light) !important;
 }
 
 [data-theme="dark"] .history-container .text-ellipsis {
@@ -459,7 +516,7 @@ body {
 }
 
 [data-theme="dark"] .todo-page .modal h3 {
-  color: #e74c3c !important;
+  color: var(--color-primary-light) !important;
 }
 
 [data-theme="dark"] .todo-page .modal .modal-input,

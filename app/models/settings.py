@@ -13,6 +13,9 @@ class SettingsBase(SQLModel):
     
     # 明暗主题 (例如: light, dark, system)
     theme_mode: str = Field(default="light", description="整体明暗主题")
+
+    # 全局品牌色系 (例如: classic, wine-coral)
+    color_scheme: str = Field(default="classic", description="全局品牌色系")
     
     # 系统通知提醒 (布尔值)
     system_notifications: bool = Field(default=True, description="是否接收系统通知")

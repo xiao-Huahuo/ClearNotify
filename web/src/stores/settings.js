@@ -2,6 +2,16 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { apiClient, API_ROUTES } from '@/router/api_routes';
 
+const SUPPORTED_COLOR_SCHEMES = ['classic', 'wine-coral'];
+
+const normalizeColorScheme = (scheme) => (
+  SUPPORTED_COLOR_SCHEMES.includes(scheme) ? scheme : 'classic'
+);
+
+const getNextColorSchemeValue = (scheme) => (
+  normalizeColorScheme(scheme) === 'wine-coral' ? 'classic' : 'wine-coral'
+);
+
 export const useSettingsStore = defineStore('settings', () => {
   const settings = ref({
     default_audience: 'none',
@@ -20,6 +30,7 @@ export const useSettingsStore = defineStore('settings', () => {
       settings.value = {
         ...settings.value,
         ...response.data,
+        color_scheme: normalizeColorScheme(response.data?.color_scheme ?? settings.value.color_scheme),
       };
       applyTheme(settings.value.theme_mode);
       applyColorScheme(settings.value.color_scheme);
@@ -37,6 +48,7 @@ export const useSettingsStore = defineStore('settings', () => {
       settings.value = {
         ...settings.value,
         ...response.data,
+        color_scheme: normalizeColorScheme(response.data?.color_scheme ?? settings.value.color_scheme),
       };
       if (newSettings.theme_mode !== undefined) {
         applyTheme(settings.value.theme_mode);
@@ -70,21 +82,54 @@ export const useSettingsStore = defineStore('settings', () => {
   };
 
   const applyColorScheme = (scheme) => {
+    const normalizedScheme = normalizeColorScheme(scheme);
     const root = document.documentElement;
-    root.setAttribute('data-color-scheme', scheme || 'classic');
-    localStorage.setItem('color_scheme', scheme || 'classic');
+    root.setAttribute('data-color-scheme', normalizedScheme);
+    localStorage.setItem('color_scheme', normalizedScheme);
   };
 
   const updateColorScheme = (scheme) => {
-    settings.value.color_scheme = scheme;
-    applyColorScheme(scheme);
+    const normalizedScheme = normalizeColorScheme(scheme);
+    settings.value.color_scheme = normalizedScheme;
+    applyColorScheme(normalizedScheme);
+    return normalizedScheme;
+  };
+
+  const setColorScheme = async (scheme, options = {}) => {
+    const { persist = false } = options;
+    const previousScheme = settings.value.color_scheme;
+    const normalizedScheme = updateColorScheme(scheme);
+    if (!persist) {
+      return true;
+    }
+    if (normalizedScheme === previousScheme) {
+      return true;
+    }
+    const updated = await updateSettings({ color_scheme: normalizedScheme });
+    if (!updated) {
+      updateColorScheme(previousScheme);
+      return false;
+    }
+    return true;
+  };
+
+  const persistColorScheme = async (scheme) => (
+    setColorScheme(scheme, { persist: true })
+  );
+
+  const getNextColorScheme = (scheme = settings.value.color_scheme) => (
+    getNextColorSchemeValue(scheme)
+  );
+
+  const toggleColorScheme = async () => {
+    return setColorScheme(getNextColorScheme(), { persist: true });
   };
 
   const initAppearance = () => {
     const storedTheme = localStorage.getItem('theme_mode');
     const storedScheme = localStorage.getItem('color_scheme');
     if (storedTheme) settings.value.theme_mode = storedTheme;
-    if (storedScheme) settings.value.color_scheme = storedScheme;
+    if (storedScheme) settings.value.color_scheme = normalizeColorScheme(storedScheme);
     applyTheme(settings.value.theme_mode);
     applyColorScheme(settings.value.color_scheme);
   };
@@ -97,6 +142,10 @@ export const useSettingsStore = defineStore('settings', () => {
     applyTheme,
     applyColorScheme,
     updateColorScheme,
+    setColorScheme,
+    persistColorScheme,
+    getNextColorScheme,
+    toggleColorScheme,
     initAppearance,
   };
 });

@@ -103,6 +103,7 @@ def _run_migrations():
         "ALTER TABLE agentmemory ADD COLUMN updated_time DATETIME",
         "ALTER TABLE policydocument ADD COLUMN view_count INTEGER NOT NULL DEFAULT 0",
         "ALTER TABLE policydocument ADD COLUMN like_count INTEGER NOT NULL DEFAULT 0",
+        "ALTER TABLE settings ADD COLUMN color_scheme VARCHAR NOT NULL DEFAULT 'classic'",
     ]
 
     with engine.connect() as conn:
@@ -461,6 +462,7 @@ def _import_settings(session: Session, seed_dir: Path):
             user_id=user_uid,
             default_audience=setting_data.get("default_audience", "none"),
             theme_mode=setting_data.get("theme_mode", "light"),
+            color_scheme=setting_data.get("color_scheme", "classic"),
             system_notifications=setting_data.get("system_notifications", True),
         )
         session.add(setting)

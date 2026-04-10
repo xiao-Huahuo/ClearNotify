@@ -130,7 +130,7 @@ const emitLogin = () => window.dispatchEvent(new CustomEvent('open-login-modal')
 /* ── Shared sidebar base ── */
 .sidebar {
   background: var(--sidebar-bg-gradient);
-  color: #fff;
+  color: var(--shell-text);
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -141,7 +141,8 @@ const emitLogin = () => window.dispatchEvent(new CustomEvent('open-login-modal')
     width 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
     border-radius 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
     padding 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
-    box-shadow 0.45s ease;
+    box-shadow 0.45s ease,
+    background 0.35s ease;
 }
 
 /* ── Preview mode ── */
@@ -159,7 +160,7 @@ const emitLogin = () => window.dispatchEvent(new CustomEvent('open-login-modal')
   justify-content: flex-start;
   border-radius: 999px;
   padding: 10px 0;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--shell-shadow);
 }
 
 /* Nav label fade */
@@ -186,7 +187,7 @@ const emitLogin = () => window.dispatchEvent(new CustomEvent('open-login-modal')
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #fff;
+  color: var(--shell-text);
   letter-spacing: 1px;
   flex-shrink: 0;
 }
@@ -218,12 +219,13 @@ const emitLogin = () => window.dispatchEvent(new CustomEvent('open-login-modal')
   gap: 10px;
   padding: 10px 12px;
   border-radius: 10px;
-  color: rgba(255,255,255,0.8);
+  color: var(--shell-text-muted);
   text-decoration: none;
   font-size: 14px;
   transition: all 0.45s cubic-bezier(0.34,1.56,0.64,1);
   white-space: nowrap;
   overflow: hidden;
+  box-shadow: inset 0 0 0 1px transparent;
 }
 .sidebar-icon-mode .nav-item {
   padding: 6px;
@@ -240,13 +242,17 @@ const emitLogin = () => window.dispatchEvent(new CustomEvent('open-login-modal')
   display: block;
   margin: 0 auto;
 }
-.nav-item:hover { background: rgba(255,255,255,0.15); color: #fff; }
-.nav-item.active { background: rgba(255,255,255,0.25); color: #fff; }
+.nav-item:hover { background: var(--sidebar-hover-bg); color: var(--shell-text); }
+.nav-item.active {
+  background: var(--sidebar-active-bg);
+  box-shadow: inset 0 0 0 1px var(--sidebar-active-border);
+  color: var(--shell-text);
+}
 
 /* ── Sidebar footer (preview + drawer) ── */
 .sidebar-footer {
   padding: 12px;
-  border-top: 1px solid rgba(255,255,255,0.1);
+  border-top: 1px solid var(--shell-glass-border);
   flex-shrink: 0;
   position: relative;
 }
@@ -254,13 +260,13 @@ const emitLogin = () => window.dispatchEvent(new CustomEvent('open-login-modal')
   text-align: center;
   padding: 8px;
   border-radius: 8px;
-  background: rgba(255,255,255,0.15);
+  background: var(--shell-glass-bg);
   cursor: pointer;
   font-size: 14px;
   margin-bottom: 8px;
   transition: background 0.2s;
 }
-.login-btn:hover { background: rgba(255,255,255,0.25); }
+.login-btn:hover { background: var(--shell-glass-hover); }
 .user-info {
   display: flex;
   align-items: center;
@@ -273,14 +279,14 @@ const emitLogin = () => window.dispatchEvent(new CustomEvent('open-login-modal')
   height: 28px;
   border-radius: 50%;
   object-fit: cover;
-  border: 1px solid rgba(255,255,255,0.4);
+  border: 1px solid var(--shell-glass-border);
   flex-shrink: 0;
 }
 .avatar-placeholder {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.2);
+  background: var(--shell-glass-bg);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -288,7 +294,7 @@ const emitLogin = () => window.dispatchEvent(new CustomEvent('open-login-modal')
 }
 .username {
   font-size: 13px;
-  color: rgba(255,255,255,0.9);
+  color: var(--shell-text);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -304,14 +310,14 @@ const emitLogin = () => window.dispatchEvent(new CustomEvent('open-login-modal')
   width: 34px;
   height: 34px;
   border-radius: 8px;
-  color: rgba(255,255,255,0.75);
+  color: var(--shell-text-muted);
   background: none;
   border: none;
   cursor: pointer;
   text-decoration: none;
   transition: all 0.2s;
 }
-.footer-icon-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+.footer-icon-btn:hover { background: var(--shell-glass-hover); color: var(--shell-text); }
 
 .more-menu {
   position: absolute;
@@ -367,7 +373,7 @@ const emitLogin = () => window.dispatchEvent(new CustomEvent('open-login-modal')
   padding: 8px 24px;
   border: none;
   border-radius: 8px;
-  background: var(--primary-color, #c0392b);
+  background: var(--color-primary, #c0392b);
   color: #fff;
   cursor: pointer;
   font-size: 14px;

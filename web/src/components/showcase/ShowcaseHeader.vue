@@ -1,5 +1,5 @@
 ﻿<template>
-  <header class="sc-header" :class="{ scrolled, 'transparent-top': transparentTop, 'top-light': topText === 'light' }">
+  <header class="sc-header" :class="{ scrolled: isScrolled, 'transparent-top': props.transparentTop, 'top-light': props.topText === 'light' }">
     <div class="sc-header-inner">
       <div class="sc-logo" @click="$router.push('/showcase')">
         <img src="@/assets/photos/main-icon.png" alt="" class="sc-logo-img" @error="noImg = true" v-if="!noImg" />
@@ -36,7 +36,7 @@ import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/auth.js'
 
-defineProps({
+const props = defineProps({
   transparentTop: {
     type: Boolean,
     default: true,
@@ -45,12 +45,17 @@ defineProps({
     type: String,
     default: 'dark',
   },
+  forceScrolled: {
+    type: Boolean,
+    default: false,
+  },
 })
 
 const userStore = useUserStore()
 const router = useRouter()
 const scrolled = ref(false)
 const noImg = ref(false)
+const isScrolled = computed(() => scrolled.value || props.forceScrolled)
 
 const onScroll = () => { scrolled.value = window.scrollY > 40 }
 
@@ -183,5 +188,28 @@ const handleLogout = () => { if (confirm('确定要退出登录吗？')) { userS
 }
 .sc-header.transparent-top.top-light:not(.scrolled) .header-avatar-placeholder {
   background: rgba(255,255,255,0.2);
+}
+@media (max-width: 960px) {
+  .sc-header {
+    padding: 0 18px;
+  }
+
+  .sc-nav {
+    display: none;
+  }
+
+  .sc-header-inner {
+    gap: 16px;
+  }
+}
+
+@media (max-width: 640px) {
+  .sc-btn-primary {
+    display: none;
+  }
+
+  .sc-logo span {
+    font-size: 16px;
+  }
 }
 </style>

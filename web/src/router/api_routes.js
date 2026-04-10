@@ -35,6 +35,7 @@ export const API_ROUTES = {
   ADMIN_LOGS: '/admin/logs',
   ADMIN_RAG_STATUS: '/admin/rag/status',
   ADMIN_RAG_SEARCH: '/admin/rag/search',
+  SHOWCASE_PUBLIC_STATS: '/showcase/landing-stats',
   AGENT_RUN: '/agent/run',
   AGENT_CONVERSATIONS: '/agent/conversations',
   AGENT_MESSAGES: (id) => `/agent/conversations/${id}/messages`,

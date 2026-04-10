@@ -28,6 +28,21 @@
         <div class="comparison-core">
           <span class="core-mark">VS</span>
           <p>从“看完就忘”的普通页面，升级成“看过就记住”的企业级展示系统。</p>
+          <div class="core-notes">
+            <div class="core-note">
+              <span>旧方案</span>
+              <strong>信息分散，品牌感弱</strong>
+            </div>
+            <div class="core-note">
+              <span>新方案</span>
+              <strong>整屏叙事，视觉统一</strong>
+            </div>
+          </div>
+          <div class="core-placeholder">
+            <span class="placeholder-label">待补主视觉</span>
+            <strong>横向品牌 KV / 城市与人群结合画面</strong>
+            <p>这块建议后面换成一张宽幅企业感图片，作为左右对比之间的视觉缓冲层。</p>
+          </div>
         </div>
 
         <div class="comparison-column disadvantage-column">
@@ -245,6 +260,71 @@ const ready = useSectionReady()
 .comparison-core p {
   margin: 0;
   line-height: 1.84;
+}
+
+.core-notes {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+}
+
+.core-note {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.core-note span,
+.core-note strong {
+  display: block;
+}
+
+.core-note span {
+  color: rgba(255, 255, 255, 0.46);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+}
+
+.core-note strong {
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #fff;
+}
+
+.core-placeholder {
+  width: 100%;
+  padding: 18px;
+  border-radius: 24px;
+  border: 1px dashed rgba(255, 255, 255, 0.18);
+  background:
+    linear-gradient(135deg, rgba(255, 158, 120, 0.12), transparent 38%, rgba(88, 202, 255, 0.12)),
+    rgba(255, 255, 255, 0.04);
+}
+
+.placeholder-label {
+  display: inline-flex;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+}
+
+.core-placeholder strong {
+  display: block;
+  margin-top: 12px;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.core-placeholder p {
+  margin: 10px 0 0;
+  color: rgba(255, 255, 255, 0.62);
+  line-height: 1.72;
+  font-size: 13px;
 }
 
 @media (max-width: 1180px) {

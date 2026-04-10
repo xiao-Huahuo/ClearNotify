@@ -27,8 +27,26 @@
           <span class="card-tag">{{ item.tag }}</span>
           <h3>{{ item.title }}</h3>
           <p>{{ item.description }}</p>
+          <div class="card-preview">
+            <span class="preview-label">{{ item.previewLabel }}</span>
+            <strong>{{ item.previewTitle }}</strong>
+            <ul class="preview-list">
+              <li v-for="line in item.previewLines" :key="line">{{ line }}</li>
+            </ul>
+          </div>
           <button class="card-link" @click="router.push(item.route)">进入体验</button>
         </article>
+      </div>
+
+      <div class="highlight-footer">
+        <div class="footer-note">
+          <span>资源占位</span>
+          <strong>每个亮点后面都可以补一张横向宣传图或局部截图。</strong>
+        </div>
+        <div class="footer-note">
+          <span>版式目的</span>
+          <strong>避免大屏下卡片显空，同时增强“企业官网”而不是“功能入口”的观感。</strong>
+        </div>
       </div>
     </div>
   </section>
@@ -67,7 +85,8 @@ const typedTitle = useTypewriter('亮点速览 / Showcase Highlights', 60, 180)
 
 .chain-marquee,
 .heading-block,
-.cards-grid {
+.cards-grid,
+.highlight-footer {
   opacity: 0;
   transform: translateY(24px);
   transition: opacity 0.8s var(--showcase-ease), transform 0.8s var(--showcase-ease);
@@ -75,7 +94,8 @@ const typedTitle = useTypewriter('亮点速览 / Showcase Highlights', 60, 180)
 
 .highlights-section.ready .chain-marquee,
 .highlights-section.ready .heading-block,
-.highlights-section.ready .cards-grid {
+.highlights-section.ready .cards-grid,
+.highlights-section.ready .highlight-footer {
   opacity: 1;
   transform: translateY(0);
 }
@@ -86,6 +106,10 @@ const typedTitle = useTypewriter('亮点速览 / Showcase Highlights', 60, 180)
 
 .cards-grid {
   transition-delay: 0.16s;
+}
+
+.highlight-footer {
+  transition-delay: 0.22s;
 }
 
 .chain-marquee {
@@ -222,6 +246,41 @@ const typedTitle = useTypewriter('亮点速览 / Showcase Highlights', 60, 180)
   line-height: 1.82;
 }
 
+.card-preview {
+  position: relative;
+  z-index: 1;
+  margin-top: auto;
+  margin-bottom: 18px;
+  padding: 16px 16px 18px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.preview-label {
+  display: inline-flex;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+}
+
+.card-preview strong {
+  display: block;
+  margin-top: 10px;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.preview-list {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.7;
+  font-size: 12px;
+}
+
 .card-link {
   height: 46px;
   border-radius: 999px;
@@ -236,6 +295,36 @@ const typedTitle = useTypewriter('亮点速览 / Showcase Highlights', 60, 180)
 .card-link:hover {
   transform: translateY(-2px);
   background: rgba(255, 255, 255, 0.14);
+}
+
+.highlight-footer {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.footer-note {
+  padding: 16px 18px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.footer-note span,
+.footer-note strong {
+  display: block;
+}
+
+.footer-note span {
+  color: rgba(255, 255, 255, 0.46);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+}
+
+.footer-note strong {
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.7;
 }
 
 @keyframes marquee {
@@ -261,6 +350,10 @@ const typedTitle = useTypewriter('亮点速览 / Showcase Highlights', 60, 180)
 
 @media (max-width: 640px) {
   .cards-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .highlight-footer {
     grid-template-columns: 1fr;
   }
 

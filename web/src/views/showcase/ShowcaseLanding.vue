@@ -180,7 +180,7 @@ onUnmounted(() => {
 
 <style scoped>
 .landing-container {
-  --showcase-ease: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --showcase-ease: cubic-bezier(0.22, 1, 0.36, 1);
   position: relative;
   width: 100vw;
   height: 100vh;
@@ -291,22 +291,22 @@ onUnmounted(() => {
 
 .landing-slide-down-enter-from {
   opacity: 0;
-  transform: translateY(100%) scale(1.02);
+  transform: translateY(100%);
 }
 
 .landing-slide-down-leave-to {
   opacity: 0;
-  transform: translateY(-18%) scale(0.98);
+  transform: translateY(-18%);
 }
 
 .landing-slide-up-enter-from {
   opacity: 0;
-  transform: translateY(-100%) scale(1.02);
+  transform: translateY(-100%);
 }
 
 .landing-slide-up-leave-to {
   opacity: 0;
-  transform: translateY(18%) scale(0.98);
+  transform: translateY(18%);
 }
 
 @media (max-width: 768px) {

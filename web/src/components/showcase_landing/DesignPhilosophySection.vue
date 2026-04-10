@@ -18,6 +18,14 @@
       <div class="philosophy-notes">
         <p v-for="note in philosophyNotes" :key="note">{{ note }}</p>
       </div>
+
+      <div class="philosophy-grid">
+        <article v-for="item in philosophyPillars" :key="item.title" class="philosophy-card" :class="{ placeholder: item.placeholder }">
+          <span class="card-kicker">{{ item.kicker }}</span>
+          <h3>{{ item.title }}</h3>
+          <p>{{ item.desc }}</p>
+        </article>
+      </div>
     </div>
   </section>
 </template>
@@ -33,6 +41,26 @@ const ready = useSectionReady()
 const philosophyCharacters = philosophyText.split('')
 const punctuation = ['，', '。']
 const palette = ['#ff9f7f', '#ffd166', '#7ee5ff', '#8bf1c6', '#c9a8ff', '#ff8bd2']
+const philosophyPillars = [
+  {
+    kicker: 'Information Order',
+    title: '让复杂信息先被看懂，再被记住',
+    desc: '不是把内容堆满，而是用标题、节奏和层级把用户一步步带进业务核心。',
+    placeholder: false,
+  },
+  {
+    kicker: 'Brand Emotion',
+    title: '让政务产品也拥有情绪和气场',
+    desc: '通过艺术字、发光、渐层和镜面质感，建立不同于后台系统的第一眼记忆。',
+    placeholder: false,
+  },
+  {
+    kicker: 'Visual Placeholder',
+    title: '这里可补一张理念主视觉',
+    desc: '建议后续换成抽象人群、城市轮廓或装置感海报，让这页在超宽屏下更饱满。',
+    placeholder: true,
+  },
+]
 </script>
 
 <style scoped>
@@ -141,14 +169,70 @@ const palette = ['#ff9f7f', '#ffd166', '#7ee5ff', '#8bf1c6', '#c9a8ff', '#ff8bd2
   font-size: 16px;
 }
 
+.philosophy-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.philosophy-card {
+  padding: 22px 20px 24px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(17, 17, 17, 0.08);
+  text-align: left;
+  box-shadow: 0 18px 44px rgba(31, 35, 64, 0.08);
+}
+
+[data-theme='dark'] .philosophy-card {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.24);
+}
+
+.philosophy-card.placeholder {
+  border-style: dashed;
+  background:
+    linear-gradient(135deg, rgba(255, 157, 127, 0.1), transparent 40%, rgba(126, 229, 255, 0.1)),
+    rgba(255, 255, 255, 0.62);
+}
+
+[data-theme='dark'] .philosophy-card.placeholder {
+  background:
+    linear-gradient(135deg, rgba(255, 157, 127, 0.12), transparent 40%, rgba(126, 229, 255, 0.12)),
+    rgba(255, 255, 255, 0.04);
+}
+
+.card-kicker {
+  display: inline-flex;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(17, 17, 17, 0.06);
+  color: var(--text-secondary, #666);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+}
+
+[data-theme='dark'] .card-kicker {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.philosophy-card h3 {
+  margin: 14px 0 10px;
+  font-size: 22px;
+  line-height: 1.35;
+}
+
+.philosophy-card p {
+  margin: 0;
+  color: var(--text-secondary, #666);
+  line-height: 1.78;
+}
+
 @keyframes char-pop {
   0% {
     opacity: 0;
-    transform: translateY(40px) scale(0.88);
-  }
-  65% {
-    opacity: 1;
-    transform: translateY(-10px) scale(1.02);
+    transform: translateY(40px) scale(0.94);
   }
   100% {
     opacity: 1;
@@ -167,6 +251,10 @@ const palette = ['#ff9f7f', '#ffd166', '#7ee5ff', '#8bf1c6', '#c9a8ff', '#ff8bd2
 
   .philosophy-notes p {
     font-size: 15px;
+  }
+
+  .philosophy-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>

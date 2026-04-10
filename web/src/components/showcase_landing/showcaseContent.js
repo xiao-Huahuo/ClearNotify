@@ -214,6 +214,9 @@ export const highlightCards = [
     route: '/agent',
     gradient: 'linear-gradient(135deg, rgba(255,125,120,0.95), rgba(255,182,92,0.92))',
     tag: 'AI Agent',
+    previewLabel: '能力切片',
+    previewTitle: '对话、结构化结论、证据回指同时出现',
+    previewLines: ['适合承接复杂政策问答', '可继续补对话截图横图', '建议后续加入角色形象视觉'],
   },
   {
     title: '超酷炫公共数据大屏',
@@ -221,6 +224,9 @@ export const highlightCards = [
     route: '/showcase/screen',
     gradient: 'linear-gradient(135deg, rgba(64,168,255,0.95), rgba(90,227,255,0.92))',
     tag: 'Visual Screen',
+    previewLabel: '展示方式',
+    previewTitle: '适合汇报、演示、厅堂展示和运营复盘',
+    previewLines: ['建议补一张宽屏大屏照片', '强化蓝色科技感纹理', '突出实时数据与氛围灯效'],
   },
   {
     title: '可视化政策扫描图谱',
@@ -228,6 +234,9 @@ export const highlightCards = [
     route: '/',
     gradient: 'linear-gradient(135deg, rgba(131,239,166,0.95), rgba(70,212,214,0.92))',
     tag: 'Scan Map',
+    previewLabel: '阅读路径',
+    previewTitle: '从原文扫描到结构化结果只保留一条清晰路径',
+    previewLines: ['适合补政策图谱或流程示意', '可换成结构图宣传图', '强化“看懂”而不只是“看到”'],
   },
   {
     title: '刷剧式无底资讯体验',
@@ -235,6 +244,9 @@ export const highlightCards = [
     route: '/policy-swipe',
     gradient: 'linear-gradient(135deg, rgba(255,118,204,0.95), rgba(132,116,255,0.92))',
     tag: 'Swipe Feed',
+    previewLabel: '停留机制',
+    previewTitle: '用连续流内容把访问时长真正拉起来',
+    previewLines: ['建议补手机端或竖屏效果图', '可加入资讯封面占位图', '强化高频浏览与节奏感'],
   },
 ]
 

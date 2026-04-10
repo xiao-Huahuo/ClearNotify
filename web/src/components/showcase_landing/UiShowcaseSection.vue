@@ -64,11 +64,24 @@
           <h3>{{ currentSlide.title }}</h3>
           <p class="aside-description">{{ currentSlide.description }}</p>
 
+          <div class="aside-meta">
+            <div v-for="fact in asideFacts" :key="fact.label" class="meta-card">
+              <span class="meta-label">{{ fact.label }}</span>
+              <strong class="meta-value">{{ fact.value }}</strong>
+            </div>
+          </div>
+
           <div class="aside-bullets">
             <div v-for="bullet in currentSlide.bullets" :key="bullet" class="bullet-item">
               <i :style="{ background: currentSlide.accent }"></i>
               <span>{{ bullet }}</span>
             </div>
+          </div>
+
+          <div class="placeholder-panel">
+            <span class="placeholder-tag">可继续补图</span>
+            <strong>{{ currentSlide.eyebrow }}主题特写图 / 局部品牌细节图</strong>
+            <p>这里预留给你后面补一张更统一的 UI 宣传图，用来压住右侧的信息密度，让画面更满、更高级。</p>
           </div>
         </aside>
       </div>
@@ -87,6 +100,11 @@ defineProps(showcaseSectionProps)
 const ready = useSectionReady()
 const activeIndex = ref(0)
 const currentSlide = computed(() => uiSlides[activeIndex.value])
+const asideFacts = computed(() => [
+  { label: '切换节奏', value: '4.2s Auto' },
+  { label: '编排比例', value: '2 / 3 + 1 / 3' },
+  { label: '当前主题', value: currentSlide.value.eyebrow },
+])
 
 let timer = null
 
@@ -402,6 +420,40 @@ onUnmounted(() => {
   margin-top: 28px;
 }
 
+.aside-meta {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.meta-card {
+  padding: 12px 12px 14px;
+  border-radius: 18px;
+  background: rgba(17, 17, 17, 0.04);
+}
+
+[data-theme='dark'] .meta-card {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.meta-label,
+.meta-value {
+  display: block;
+}
+
+.meta-label {
+  color: var(--text-secondary, #666);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+}
+
+.meta-value {
+  margin-top: 8px;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
 .bullet-item {
   display: flex;
   align-items: center;
@@ -420,6 +472,50 @@ onUnmounted(() => {
   height: 10px;
   border-radius: 50%;
   box-shadow: 0 0 12px currentColor;
+}
+
+.placeholder-panel {
+  margin-top: 18px;
+  padding: 18px 18px 20px;
+  border-radius: 22px;
+  border: 1px dashed rgba(17, 17, 17, 0.16);
+  background:
+    linear-gradient(135deg, rgba(255, 122, 24, 0.08), transparent 40%, rgba(91, 207, 255, 0.08)),
+    rgba(255, 255, 255, 0.55);
+}
+
+[data-theme='dark'] .placeholder-panel {
+  border-color: rgba(255, 255, 255, 0.14);
+  background:
+    linear-gradient(135deg, rgba(255, 122, 24, 0.12), transparent 40%, rgba(91, 207, 255, 0.12)),
+    rgba(255, 255, 255, 0.03);
+}
+
+.placeholder-tag {
+  display: inline-flex;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(17, 17, 17, 0.08);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+}
+
+[data-theme='dark'] .placeholder-tag {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.placeholder-panel strong {
+  display: block;
+  margin-top: 12px;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+.placeholder-panel p {
+  margin: 10px 0 0;
+  color: var(--text-secondary, #666);
+  line-height: 1.72;
+  font-size: 13px;
 }
 
 @media (max-width: 1080px) {
@@ -453,6 +549,10 @@ onUnmounted(() => {
   .slide-overlay {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .aside-meta {
+    grid-template-columns: 1fr;
   }
 }
 

@@ -386,6 +386,7 @@ app.mount("/", StaticFiles(directory="dist", html=True), name="static")
 ```
 必要时可以手动安装所需镜像:
 ![Docker-Images](doc/assets/Docker-Images.png)
+若不使用镜像,也可在Settings-Resources-Proxies手动配置代理以加速Docker下载.
 拉取指令:
 ```shell
 docker pull redis:latest

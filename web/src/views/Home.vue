@@ -130,12 +130,25 @@
 
           <div v-if="loading" class="loading-banner">
             <div class="loading-banner-head">
-              <span class="loading-title">正在智能解读中...</span>
-              <span class="loading-elapsed">{{ parseElapsedSec }}s</span>
+              <div class="loading-copy">
+                <span class="loading-kicker">智能解析任务</span>
+                <span class="loading-title">正在智能解读中...</span>
+              </div>
+              <div class="loading-metrics">
+                <span class="loading-percent">{{ Math.round(parseProgress) }}%</span>
+                <span class="loading-elapsed">{{ parseElapsedSec }}s</span>
+              </div>
             </div>
-            <div class="loading-stage">{{ parseStageLabel }}</div>
+            <div class="loading-stage-row">
+              <span class="loading-stage-dot"></span>
+              <div class="loading-stage">{{ parseStageLabel }}</div>
+            </div>
             <div class="loading-progress-track">
               <div class="loading-progress-fill" :style="{ width: `${parseProgress}%` }"></div>
+            </div>
+            <div class="loading-progress-meta">
+              <span>任务持续推进中</span>
+              <span>{{ parseProgress >= 96 ? '即将完成' : '请勿关闭当前页面' }}</span>
             </div>
           </div>
           </div>
@@ -1226,12 +1239,14 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
 
 /* ── 通用面板卡片 ─────────────────────────────────────────────────────────── */
 .panel-card {
-  background: #fff;
+  background: var(--card-bg);
   border-radius: 16px;
-  border: 1px solid #eee;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 10%, var(--border-color));
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-width: 0;
+  box-shadow: 0 18px 32px color-mix(in srgb, var(--color-primary) 10%, transparent);
 }
 
 .panel-header {
@@ -1239,7 +1254,12 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
   align-items: center;
   gap: 8px;
   padding: 12px 16px 10px;
-  background: linear-gradient(90deg, #7f8c8d 0%, #95a5a6 100%);
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-primary-dark) 72%, #516070) 0%,
+      color-mix(in srgb, var(--color-primary) 64%, var(--color-secondary) 36%) 100%
+    );
   flex-shrink: 0;
   border-radius: 12px 12px 0 0;
 }
@@ -1319,7 +1339,7 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
   top: 0;
   width: 260px;
   height: 100%;
-  transform: translateX(-240px);
+  transform: translateX(calc(-100% + 20px));
   transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
   z-index: 31;
 }
@@ -1330,11 +1350,17 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
 
 .drawer-tab {
   position: absolute;
-  left: 220px;
+  left: calc(100% - 40px);
   top: 50%;
   transform: translateY(-50%);
   width: 40px;
-  background: #c0392b;
+  background:
+    linear-gradient(
+      180deg,
+      var(--color-primary-dark) 0%,
+      var(--color-primary) 58%,
+      var(--color-secondary) 100%
+    );
   color: #fff;
   border-radius: 0 8px 8px 0;
   cursor: pointer;
@@ -1348,10 +1374,13 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 1px;
-  box-shadow: 2px 0 8px rgba(0,0,0,0.12);
-  transition: background 0.2s;
+  box-shadow: 2px 0 10px color-mix(in srgb, var(--color-primary) 24%, transparent);
+  transition: filter 0.2s ease, transform 0.2s ease;
 }
-.drawer-tab:hover { background: #e74c3c; }
+.drawer-tab:hover {
+  filter: brightness(1.05);
+  transform: translateY(-50%) translateX(1px);
+}
 
 .drawer-tab-text {
   writing-mode: vertical-rl;
@@ -1363,10 +1392,10 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
   position: absolute;
   left: 0;
   top: 0;
-  width: 220px;
+  width: calc(100% - 40px);
   height: 100%;
   z-index: 15;
-  box-shadow: 4px 0 16px rgba(0,0,0,0.1);
+  box-shadow: 6px 0 22px color-mix(in srgb, var(--color-primary) 12%, transparent);
 }
 
 .history-section {
@@ -1388,19 +1417,25 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
 .history-title {
   font-size: 12px;
   font-weight: 700;
-  color: #222;
+  color: var(--text-primary);
 }
 
 .history-refresh {
   border: none;
-  background: #c0392b;
+  background: var(--color-primary);
   font-size: 11px;
   padding: 3px 10px;
   cursor: pointer;
   color: #fff;
   border-radius: 999px;
-  box-shadow: 0 2px 0 #922b21;
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--color-primary) 18%, transparent);
   font-weight: bold;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.history-refresh:hover:not(:disabled) {
+  filter: brightness(1.04);
+  transform: translateY(-1px);
 }
 
 .history-refresh:disabled {
@@ -1423,16 +1458,22 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
   justify-content: space-between;
   gap: 6px;
   padding: 6px 8px;
-  background: #fafafa;
-  border: 1px solid #eee;
+  background: color-mix(in srgb, var(--color-primary) 5%, var(--card-bg));
+  border: 1px solid color-mix(in srgb, var(--color-primary) 10%, var(--border-color));
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.history-item:hover {
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--card-bg));
+  border-color: color-mix(in srgb, var(--color-primary) 24%, var(--border-color));
+  box-shadow: 0 10px 18px color-mix(in srgb, var(--color-primary) 10%, transparent);
 }
 
 .history-item.active {
-  background: #fff5f5;
-  border-color: #f5c6c6;
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--card-bg));
+  border-color: color-mix(in srgb, var(--color-primary) 34%, var(--border-color));
 }
 
 .history-main {
@@ -1446,7 +1487,7 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
 .history-item-title {
   font-size: 12px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1454,7 +1495,7 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
 
 .history-item-date {
   font-size: 10px;
-  color: #999;
+  color: var(--text-muted);
 }
 
 .history-fav {
@@ -1473,7 +1514,7 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
 }
 
 .history-detail {
-  border-top: 1px dashed #eee;
+  border-top: 1px dashed color-mix(in srgb, var(--color-primary) 16%, var(--border-color));
   padding-top: 8px;
   display: flex;
   flex-direction: column;
@@ -1483,12 +1524,12 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
 .history-detail-title {
   font-size: 12px;
   font-weight: 700;
-  color: #222;
+  color: var(--text-primary);
 }
 
 .history-detail-text {
   font-size: 11px;
-  color: #666;
+  color: var(--text-secondary);
   line-height: 1.5;
   max-height: 72px;
   overflow: hidden;
@@ -1496,18 +1537,31 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
 
 .history-restore-btn {
   align-self: flex-start;
-  background: #c0392b;
+  background:
+    linear-gradient(
+      135deg,
+      var(--color-primary-dark) 0%,
+      var(--color-primary) 62%,
+      var(--color-secondary) 100%
+    );
   color: #fff;
   border: none;
   padding: 4px 10px;
   font-size: 11px;
   cursor: pointer;
-  border-radius: 4px;
+  border-radius: 999px;
+  box-shadow: 0 10px 18px color-mix(in srgb, var(--color-primary) 18%, transparent);
+  transition: filter 0.2s ease, transform 0.2s ease;
+}
+
+.history-restore-btn:hover {
+  filter: brightness(1.04);
+  transform: translateY(-1px);
 }
 
 .history-empty {
   font-size: 11px;
-  color: #999;
+  color: var(--text-muted);
   padding: 6px 0;
 }
 
@@ -1901,59 +1955,149 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
 }
 
 .loading-banner {
-  background: #fff0f0;
-  color: #c0392b;
-  padding: 10px;
-  border-left: 3px solid #c0392b;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--color-accent-cool) 12%, transparent), transparent 38%),
+    linear-gradient(155deg, color-mix(in srgb, var(--color-primary) 7%, var(--card-bg)), var(--card-bg));
+  color: var(--text-primary);
+  padding: 16px 18px 14px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 14%, var(--border-color));
+  border-radius: 18px;
   margin: 0 auto 16px;
-  width: 50%;
-  min-width: 600px;
-  max-width: 800px;
+  width: min(800px, calc(100vw - 32px));
   box-sizing: border-box;
-  font-weight: bold;
+  box-shadow: 0 18px 34px color-mix(in srgb, var(--color-primary) 12%, transparent);
+  display: flex;
   font-size: 14px;
   animation: fadeIn 0.5s;
-  gap: 6px;
+  gap: 10px;
   flex-direction: column;
   align-items: stretch;
+  position: relative;
+  overflow: hidden;
+}
+
+.loading-banner::after {
+  content: '';
+  position: absolute;
+  inset: auto -30% 0 auto;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-primary) 8%, transparent);
+  filter: blur(12px);
+  pointer-events: none;
 }
 
 .loading-banner-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 14px;
+}
+
+.loading-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.loading-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
 }
 
 .loading-title {
-  font-weight: bold;
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+.loading-metrics {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.loading-percent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 58px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 800;
+  box-shadow: 0 10px 18px color-mix(in srgb, var(--color-primary) 18%, transparent);
 }
 
 .loading-elapsed {
   font-size: 12px;
-  color: #7f8c8d;
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+
+.loading-stage-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.loading-stage-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-primary) 12%, transparent);
+  animation: pulseDot 1.4s ease-in-out infinite;
 }
 
 .loading-stage {
   font-size: 12px;
-  color: #7a2f28;
+  color: var(--text-secondary);
+  font-weight: 600;
 }
 
 .loading-progress-track {
   width: 100%;
-  height: 10px;
+  height: 12px;
   border-radius: 999px;
-  background: #f5d9d6;
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--border-color));
   overflow: hidden;
+  position: relative;
 }
 
 .loading-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #c0392b 0%, #e67e22 100%);
+  background: linear-gradient(90deg, var(--color-primary-dark) 0%, var(--color-primary) 54%, var(--color-secondary) 100%);
   border-radius: 999px;
   transition: width 0.35s ease;
+  position: relative;
+}
+
+.loading-progress-fill::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.18) 35%, rgba(255,255,255,0.42) 50%, transparent 65%);
+  transform: translateX(-100%);
+  animation: progressShine 1.5s linear infinite;
+}
+
+.loading-progress-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-weight: 600;
 }
 
 @keyframes fadeIn {
@@ -1961,10 +2105,19 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
   to   { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes progressShine {
+  to { transform: translateX(100%); }
+}
+
+@keyframes pulseDot {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.18); opacity: 1; }
+}
+
 /* 示例区域 */
 .examples-section {
   margin-top: 4px;
-  width: min(64vw, 1200px);
+  width: min(100%, 64vw, 1200px);
   max-width: 1200px;
   margin-left: auto;
   margin-right: auto;
@@ -1975,15 +2128,20 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
   justify-content: space-between;
   gap: 12px;
 }
-.section-title { font-size: 14px; color: #000; margin-bottom: 14px; font-weight: bold; }
+.section-title {
+  font-size: 14px;
+  color: var(--text-primary);
+  margin-bottom: 14px;
+  font-weight: bold;
+}
 .examples-nav {
   display: flex;
   gap: 8px;
 }
 .examples-nav-btn {
-  border: 1px solid #e2b7b2;
-  background: #fff;
-  color: #c0392b;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 18%, var(--border-color));
+  background: var(--card-bg);
+  color: var(--color-primary-dark);
   width: 30px;
   height: 30px;
   border-radius: 999px;
@@ -1993,9 +2151,14 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 8px 16px color-mix(in srgb, var(--color-primary) 8%, transparent);
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
 .examples-nav-btn:hover {
-  background: #fff3f3;
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--card-bg));
+  border-color: color-mix(in srgb, var(--color-primary) 34%, var(--border-color));
+  color: var(--color-primary);
+  transform: translateY(-1px);
 }
 .examples-carousel {
   overflow: hidden;
@@ -2019,9 +2182,9 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
   gap: 20px;
 }
 .example-card {
-  background: #fff;
+  background: var(--card-bg);
   border-radius: 14px;
-  border: 1px solid #e8e8e8;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 10%, var(--border-color));
   display: flex;
   flex-direction: column;
   cursor: pointer;
@@ -2051,7 +2214,7 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
 }
 
 .example-card:hover {
-  box-shadow: none;
+  box-shadow: 0 18px 30px color-mix(in srgb, var(--color-primary) 12%, transparent);
   transform: translateY(-4px);
 }
 .example-card:hover .breakout-image {
@@ -2103,19 +2266,19 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
 .card-title {
   font-size: 16px;
   margin: 0 0 8px;
-  color: #222;
+  color: var(--text-primary);
   font-weight: 600;
   line-height: 1.4;
   min-height: 36px;
 }
 .card-tags { display: flex; gap: 6px; flex-wrap: wrap; }
 .tag {
-  background: #fff0f0;
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--card-bg));
   padding: 3px 10px;
   border-radius: 12px;
   font-size: 11px;
-  color: #c0392b;
-  border: 1px solid #f5c6c6;
+  color: var(--color-primary-dark);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 18%, var(--border-color));
 }
 .examples-dots {
   display: flex;
@@ -2128,13 +2291,13 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
   height: 8px;
   border-radius: 999px;
   border: none;
-  background: #e4c2be;
+  background: color-mix(in srgb, var(--color-primary) 22%, var(--border-color));
   cursor: pointer;
   transition: all 0.25s ease;
 }
 .examples-dot.active {
   width: 22px;
-  background: #c0392b;
+  background: linear-gradient(90deg, var(--color-primary-dark), var(--color-primary));
 }
 
 :global([data-theme="dark"]) .example-card {
@@ -2156,25 +2319,202 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
 }
 
 :global([data-theme="dark"]) .loading-banner {
-  background: rgba(192,57,43,0.18);
-  color: #ffd4d0;
-  border-left-color: #e67e73;
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--color-accent-cool) 12%, transparent), transparent 40%),
+    linear-gradient(155deg, color-mix(in srgb, var(--color-primary) 12%, var(--card-bg)), var(--card-bg));
+  border-color: color-mix(in srgb, var(--color-primary) 18%, var(--border-color));
 }
 
-:global([data-theme="dark"]) .loading-elapsed {
-  color: #d2d9e3;
-}
-
+:global([data-theme="dark"]) .loading-kicker,
+:global([data-theme="dark"]) .loading-elapsed,
 :global([data-theme="dark"]) .loading-stage {
-  color: #ffc0b8;
+  color: var(--text-secondary);
+}
+
+:global([data-theme="dark"]) .loading-progress-meta {
+  color: var(--text-muted);
 }
 
 :global([data-theme="dark"]) .loading-progress-track {
-  background: rgba(255,255,255,0.14);
+  background: color-mix(in srgb, var(--color-primary) 14%, var(--border-color));
 }
 
 :global([data-theme="dark"]) .loading-progress-fill {
-  background: linear-gradient(90deg, #ff8a7d 0%, #ffb36b 100%);
+  background: linear-gradient(90deg, var(--color-primary-dark) 0%, var(--color-primary) 52%, var(--color-secondary) 100%);
+}
+
+@media (max-width: 1360px) {
+  .three-col-layout {
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .examples-section {
+    width: min(100%, 72vw, 1040px);
+  }
+
+  .examples-grid {
+    gap: 18px;
+  }
+}
+
+@media (max-width: 1180px) {
+  .three-col-layout,
+  .three-col-layout.right-collapsed {
+    grid-template-columns: 32px 1fr 32px;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .history-drawer-shell {
+    width: min(248px, calc(100vw - 72px));
+  }
+
+  .right-drawer-shell {
+    width: min(292px, calc(100vw - 72px));
+  }
+
+  .history-section {
+    padding: 10px 10px 12px;
+  }
+
+  .doc-titles-scroll {
+    max-height: 132px;
+  }
+
+  .cloud-section,
+  .doc-content-section {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .examples-section {
+    width: 100%;
+  }
+
+  .examples-page {
+    padding-top: 46px;
+  }
+
+  .examples-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .three-col-layout,
+  .three-col-layout.right-collapsed {
+    grid-template-columns: 24px 1fr 24px;
+    gap: 8px;
+    padding: 8px;
+  }
+
+  .history-drawer-shell {
+    width: min(236px, calc(100vw - 48px));
+  }
+
+  .right-drawer-shell {
+    width: min(272px, calc(100vw - 48px));
+  }
+
+  .panel-header {
+    padding: 10px 12px 9px;
+  }
+
+  .panel-title {
+    font-size: 13px;
+  }
+
+  .panel-badge,
+  .switch-btn {
+    font-size: 10px;
+  }
+
+  .history-item,
+  .doc-title-item {
+    padding: 6px 10px;
+  }
+
+  .history-item-title,
+  .doc-title-text {
+    font-size: 11px;
+  }
+
+  .history-detail-title,
+  .doc-content-title {
+    font-size: 12px;
+  }
+
+  .doc-content-body {
+    font-size: 11.5px;
+    line-height: 1.7;
+  }
+
+  .examples-section {
+    margin-top: 8px;
+  }
+
+  .examples-head {
+    gap: 10px;
+  }
+
+  .section-title {
+    margin-bottom: 10px;
+  }
+
+  .examples-page {
+    padding-top: 36px;
+  }
+
+  .examples-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .card-image-wrapper {
+    height: 126px;
+  }
+
+  .breakout-image {
+    width: 74%;
+    max-width: 210px;
+  }
+
+  .card-content {
+    padding: 36px 14px 14px;
+  }
+
+  .card-title {
+    font-size: 15px;
+    min-height: 0;
+  }
+
+  .examples-nav-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+  }
+
+  .tag {
+    font-size: 10px;
+  }
+
+  .loading-banner {
+    width: calc(100vw - 28px);
+    padding: 14px 14px 12px;
+    border-radius: 16px;
+  }
+
+  .loading-banner-head,
+  .loading-progress-meta {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .loading-metrics {
+    justify-content: space-between;
+  }
 }
 
 /* 热点资讯图片横条 */
@@ -2355,6 +2695,8 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
   position: relative;
   height: 100%;
   overflow: visible;
+  z-index: 40;
+  isolation: isolate;
 }
 
 .right-drawer-shell {
@@ -2365,16 +2707,18 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
   height: 100%;
   transform: translateX(0);
   transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
+  z-index: 41;
 }
 
 .right-stack:not(.open) .right-drawer-shell {
-  transform: translateX(260px);
+  transform: translateX(calc(100% - 40px));
 }
 
 .right-drawer-tab {
   left: -40px;
   border-radius: 8px 0 0 8px;
-  box-shadow: -2px 0 8px rgba(0,0,0,0.12);
+  box-shadow: -2px 0 10px color-mix(in srgb, var(--color-primary) 24%, transparent);
+  z-index: 42;
 }
 
 /* 文件标题列表 */
@@ -2383,7 +2727,7 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
   max-height: 140px;
   overflow-y: auto;
   padding: 6px 0;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-primary) 10%, var(--border-color));
 }
 
 .doc-title-item {
@@ -2394,22 +2738,31 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
   cursor: pointer;
   border-radius: 8px;
   margin: 2px 6px;
-  transition: background 0.2s;
+  background: color-mix(in srgb, var(--color-primary) 4%, var(--card-bg));
+  border: 1px solid transparent;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
-.doc-title-item:hover { background: #fef9f9; }
-.doc-title-item.active { background: #fff0f0; }
+.doc-title-item:hover {
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--card-bg));
+  border-color: color-mix(in srgb, var(--color-primary) 20%, var(--border-color));
+}
+.doc-title-item.active {
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--card-bg));
+  border-color: color-mix(in srgb, var(--color-primary) 32%, var(--border-color));
+  transform: translateX(-1px);
+}
 
 .doc-index {
   font-size: 11px;
   font-weight: 700;
-  color: #c0392b;
+  color: var(--color-primary-dark);
   flex-shrink: 0;
   margin-top: 1px;
 }
 
 .doc-title-text {
   font-size: 12px;
-  color: #333;
+  color: var(--text-primary);
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -2421,11 +2774,11 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
 .cloud-section {
   flex-shrink: 0;
   padding: 10px 14px 6px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-primary) 10%, var(--border-color));
 }
 .cloud-label {
   font-size: 11px;
-  color: #999;
+  color: var(--text-secondary);
   margin-bottom: 6px;
   font-weight: 600;
   letter-spacing: 0.5px;
@@ -2433,6 +2786,9 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
 .word-cloud-chart {
   width: 100%;
   height: 160px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 5%, var(--card-bg)), var(--card-bg));
+  border: 1px solid color-mix(in srgb, var(--color-primary) 10%, var(--border-color));
 }
 
 /* 文件内容展示 */
@@ -2452,7 +2808,13 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
 }
 
 .red-header-bar {
-  background: #c0392b;
+  background:
+    linear-gradient(
+      90deg,
+      var(--color-primary-dark) 0%,
+      var(--color-primary) 54%,
+      var(--color-secondary) 100%
+    );
   color: #fff;
   text-align: center;
   padding: 6px 10px;
@@ -2471,20 +2833,20 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
   margin: 0;
   font-size: 13px;
   font-weight: 700;
-  color: #111;
+  color: var(--text-primary);
   line-height: 1.5;
   text-align: center;
 }
 
 .doc-date {
   font-size: 11px;
-  color: #999;
+  color: var(--text-muted);
   text-align: center;
 }
 
 .doc-content-body {
   font-size: 12px;
-  color: #444;
+  color: var(--text-secondary);
   line-height: 1.8;
   text-indent: 2em;
   display: flex;
@@ -2493,14 +2855,17 @@ const getComplexityClass = (level) => {  if (level === '高') return 'level-high
 }
 
 .doc-read-more {
-  color: #c0392b;
+  color: var(--color-primary-dark);
   font-size: 12px;
   text-decoration: none;
   font-weight: 600;
   text-indent: 0;
   align-self: flex-end;
 }
-.doc-read-more:hover { text-decoration: underline; }
+.doc-read-more:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
 
 /* ── 骨架屏 ──────────────────────────────────────────────────────────────── */
 .loading-placeholder { padding: 8px 14px; }

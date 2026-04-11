@@ -720,37 +720,56 @@ const getComplexityClass = (item) => {
 <style scoped>
 /* ── 全景政策广场 ── */
 .policy-square {
-  background: var(--color-bg-card, #fff);
-  border: 1px solid var(--color-border, #e8e8e8);
-  border-radius: 4px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 22px;
   padding: 20px;
   margin-bottom: 20px;
+  box-shadow: 0 20px 38px color-mix(in srgb, var(--color-primary) 10%, transparent);
 }
 .ps-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
 .ps-title-row { display: flex; align-items: center; gap: 8px; }
-.policy-square .section-label { color: #111; }
-.ps-dot { width: 8px; height: 8px; border-radius: 50%; background: #c0392b; }
-.ps-sub { font-size: 12px; color: #999; }
+.policy-square .section-label { color: var(--text-primary); }
+.ps-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-primary); }
+.ps-sub { font-size: 12px; color: var(--text-secondary); }
 .ps-controls { display: flex; align-items: center; gap: 8px; }
 .ps-mode-btn {
   display: flex; align-items: center; gap: 4px;
-  background: none; border: 1px solid var(--color-border, #e8e8e8);
-  padding: 4px 10px; border-radius: 4px; font-size: 12px; cursor: pointer; color: #666;
+  background: color-mix(in srgb, var(--color-primary) 6%, var(--card-bg));
+  border: 1px solid color-mix(in srgb, var(--color-primary) 10%, var(--border-color));
+  padding: 6px 12px; border-radius: 999px; font-size: 12px; cursor: pointer; color: var(--text-secondary);
   transition: all 0.2s;
 }
-.ps-mode-btn.active, .ps-mode-btn:hover { background: #c0392b; color: #fff; border-color: #c0392b; }
-.ps-hall-link { font-size: 12px; color: #c0392b; text-decoration: none; white-space: nowrap; }
-.ps-empty { text-align: center; color: #999; font-size: 13px; padding: 30px; }
+.ps-mode-btn.active, .ps-mode-btn:hover { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+.ps-hall-link {
+  font-size: 12px;
+  color: var(--color-primary);
+  text-decoration: none;
+  white-space: nowrap;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-primary) 6%, var(--card-bg));
+  border: 1px solid color-mix(in srgb, var(--color-primary) 10%, var(--border-color));
+}
+.ps-empty { text-align: center; color: var(--text-secondary); font-size: 13px; padding: 30px; }
 .ps-skeleton { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 
 .ps-list { display: flex; flex-direction: column; gap: 10px; }
 .ps-list.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
 
 .ps-card {
-  display: flex; border: 1px solid var(--color-border, #e8e8e8);
-  border-radius: 4px; overflow: hidden; transition: box-shadow 0.2s;
+  display: flex;
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  overflow: hidden;
+  transition: box-shadow 0.2s, transform 0.2s ease, border-color 0.2s;
+  background: color-mix(in srgb, var(--color-primary) 3%, var(--card-bg));
 }
-.ps-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.07); }
+.ps-card:hover {
+  box-shadow: 0 18px 30px color-mix(in srgb, var(--color-primary) 10%, transparent);
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--color-primary) 16%, var(--border-color));
+}
 .ps-list.grid .ps-card { flex-direction: column; }
 
 .ps-card-accent { width: 4px; flex-shrink: 0; }
@@ -758,26 +777,32 @@ const getComplexityClass = (item) => {
 
 .ps-card-body { flex: 1; padding: 12px 14px; }
 .ps-card-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
-.ps-category { font-size: 11px; background: #f0f0f0; padding: 2px 8px; border-radius: 10px; }
-.ps-uploader { font-size: 12px; font-weight: 600; }
-.ps-date { font-size: 11px; color: #999; margin-left: auto; }
-.ps-card-title { font-size: 14px; font-weight: 700; margin: 0 0 6px; line-height: 1.4; }
-.ps-card-content { font-size: 13px; color: #666; margin: 0 0 8px; line-height: 1.5; }
+.ps-category { font-size: 11px; background: color-mix(in srgb, var(--border-color) 42%, var(--card-bg)); padding: 2px 8px; border-radius: 999px; color: var(--text-secondary); }
+.ps-uploader { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+.ps-date { font-size: 11px; color: var(--text-muted); margin-left: auto; }
+.ps-card-title { font-size: 14px; font-weight: 700; margin: 0 0 6px; line-height: 1.45; color: var(--text-primary); }
+.ps-card-content { font-size: 13px; color: var(--text-secondary); margin: 0 0 8px; line-height: 1.6; }
 .ps-card-tags { display: flex; flex-wrap: wrap; gap: 4px; }
-.ps-tag { font-size: 11px; background: #fce4e4; color: #c0392b; padding: 2px 7px; border-radius: 10px; }
+.ps-tag { font-size: 11px; background: color-mix(in srgb, var(--color-primary) 10%, var(--card-bg)); color: var(--color-primary-dark); padding: 2px 7px; border-radius: 999px; }
 
 .ps-card-footer {
   display: flex; align-items: center; gap: 10px;
-  padding: 8px 14px; border-top: 1px solid var(--color-border, #f0f0f0);
-  font-size: 12px; color: #999;
+  padding: 8px 14px; border-top: 1px solid color-mix(in srgb, var(--border-color) 82%, transparent);
+  font-size: 12px; color: var(--text-secondary);
 }
 .ps-stat { display: flex; align-items: center; gap: 4px; }
 .ps-like-btn {
   display: flex; align-items: center; gap: 4px;
-  background: none; border: none; cursor: pointer; color: #999; font-size: 12px;
+  background: color-mix(in srgb, var(--color-primary) 6%, var(--card-bg));
+  border: 1px solid color-mix(in srgb, var(--color-primary) 10%, var(--border-color));
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 12px;
+  border-radius: 999px;
+  padding: 4px 10px;
   transition: color 0.2s;
 }
-.ps-like-btn:hover { color: #c0392b; }
+.ps-like-btn:hover { color: var(--color-primary); border-color: var(--color-primary); }
 
 .discover-page {
   height: 100%;
@@ -1139,7 +1164,7 @@ const getComplexityClass = (item) => {
 /* ── 下部区域 ─────────────────────────────────────────────────────────────── */
 .bottom-section {
   display: grid;
-  grid-template-columns: 1fr 240px;
+  grid-template-columns: minmax(0, 1fr) 280px;
   gap: 16px;
   flex: 1;
   min-height: 0;
@@ -1147,10 +1172,10 @@ const getComplexityClass = (item) => {
 
 /* 新闻列表 */
 .news-section {
-  background: transparent;
-  border-radius: 16px;
-  border: none;
-  box-shadow: none;
+  background: var(--card-bg);
+  border-radius: 22px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 20px 38px color-mix(in srgb, var(--color-primary) 10%, transparent);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -1158,25 +1183,24 @@ const getComplexityClass = (item) => {
 .news-header {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  position: relative;
-  padding: 10px 16px 8px;
-  background: transparent;
-  border-radius: 0;
+  justify-content: space-between;
+  padding: 16px 18px 12px;
+  background: color-mix(in srgb, var(--color-primary) 4%, var(--card-bg));
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 82%, transparent);
   flex-shrink: 0;
 }
 .news-header .section-label {
-  color: #fff;
+  color: var(--text-primary);
   margin: 0;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  position: static;
+  transform: none;
 }
 .view-toggle {
   display: flex;
   gap: 4px;
-  background: rgba(255,255,255,0.15);
-  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-primary) 7%, var(--card-bg));
+  border: 1px solid color-mix(in srgb, var(--color-primary) 10%, var(--border-color));
+  border-radius: 999px;
   padding: 3px;
 }
 .view-toggle button {
@@ -1186,13 +1210,13 @@ const getComplexityClass = (item) => {
   background: none;
   border: none;
   padding: 4px 10px;
-  border-radius: 6px;
+  border-radius: 999px;
   font-size: 12px;
-  color: #666;
+  color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s;
 }
-.view-toggle button.active { background: #fff; color: #000; font-weight: 600; }
+.view-toggle button.active { background: var(--color-primary); color: #fff; font-weight: 600; }
 
 /* 列表视图 */
 .news-list-view { flex: 1; overflow-y: auto; }
@@ -1200,13 +1224,19 @@ const getComplexityClass = (item) => {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  padding: 12px 16px;
-  background: #fff;
-  border-bottom: 1px solid #f5f5f5;
+  padding: 14px 16px;
+  margin: 0 12px 10px;
+  background: color-mix(in srgb, var(--color-primary) 3%, var(--card-bg));
+  border: 1px solid color-mix(in srgb, var(--color-primary) 10%, var(--border-color));
+  border-radius: 16px;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background 0.15s, transform 0.2s ease, box-shadow 0.2s ease;
 }
-.news-list-item:hover { background: #fafafa; }
+.news-list-item:hover {
+  background: color-mix(in srgb, var(--color-primary) 5%, var(--card-bg));
+  transform: translateY(-1px);
+  box-shadow: 0 16px 28px color-mix(in srgb, var(--color-primary) 8%, transparent);
+}
 .nl-thumb {
   width: 92px;
   height: 60px;
@@ -1226,17 +1256,17 @@ const getComplexityClass = (item) => {
   font-size: 10px;
   font-weight: 700;
   padding: 2px 7px;
-  border-radius: 10px;
+  border-radius: 999px;
   margin-top: 2px;
 }
-.type-news { background: #e6f7ff; color: #0077cc; }
-.type-policy { background: #fff0f0; color: #c0392b; }
+.type-news { background: color-mix(in srgb, var(--color-accent-cool) 12%, var(--card-bg)); color: color-mix(in srgb, var(--color-accent-cool) 82%, #16324d); }
+.type-policy { background: color-mix(in srgb, var(--color-primary) 10%, var(--card-bg)); color: var(--color-primary-dark); }
 .nl-content { flex: 1; min-width: 0; }
 .nl-title {
   margin: 0 0 3px;
   font-size: 13px;
   font-weight: 600;
-  color: #111;
+  color: var(--text-primary);
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 1;
@@ -1246,7 +1276,7 @@ const getComplexityClass = (item) => {
 .nl-desc {
   margin: 0;
   font-size: 11px;
-  color: #888;
+  color: var(--text-secondary);
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 1;
@@ -1254,7 +1284,7 @@ const getComplexityClass = (item) => {
   overflow: hidden;
 }
 .nl-right { flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
-.nl-date { font-size: 11px; color: #bbb; }
+.nl-date { font-size: 11px; color: var(--text-muted); }
 
 /* 卡片视图 */
 .news-card-view {
@@ -1267,16 +1297,20 @@ const getComplexityClass = (item) => {
   align-content: start;
 }
 .news-card {
-  border-radius: 10px;
-  border: none;
-  background: #fff;
+  border-radius: 18px;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
   overflow: hidden;
   cursor: pointer;
-  transition: box-shadow 0.2s;
+  transition: box-shadow 0.2s, transform 0.2s ease, border-color 0.2s ease;
   display: flex;
   flex-direction: column;
 }
-.news-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+.news-card:hover {
+  box-shadow: 0 18px 32px color-mix(in srgb, var(--color-primary) 10%, transparent);
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--color-primary) 16%, var(--border-color));
+}
 .nc-header {
   position: relative;
   height: 240px;
@@ -1306,21 +1340,21 @@ const getComplexityClass = (item) => {
   font-weight: 700;
 }
 .nc-body { padding: 10px; flex: 1; }
-.nc-title { margin: 0 0 4px; font-size: 12px; font-weight: 600; color: #111; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.nc-desc { margin: 0; font-size: 11px; color: #888; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.nc-footer { padding: 8px 10px; border-top: 1px solid #f5f5f5; display: flex; align-items: center; justify-content: space-between; }
-.nc-date { font-size: 10px; color: #bbb; }
+.nc-title { margin: 0 0 4px; font-size: 12px; font-weight: 600; color: var(--text-primary); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.nc-desc { margin: 0; font-size: 11px; color: var(--text-secondary); line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.nc-footer { padding: 8px 10px; border-top: 1px solid color-mix(in srgb, var(--border-color) 82%, transparent); display: flex; align-items: center; justify-content: space-between; }
+.nc-date { font-size: 10px; color: var(--text-muted); }
 
 /* AI 复杂度 */
 .complexity-badge {
   font-size: 10px;
   font-weight: 700;
   padding: 2px 7px;
-  border-radius: 10px;
+  border-radius: 999px;
 }
-.cx-high { background: #fff0f0; color: #c0392b; }
-.cx-mid  { background: #fff8e6; color: #e67e22; }
-.cx-low  { background: #f0fff4; color: #27ae60; }
+.cx-high { background: color-mix(in srgb, var(--color-primary) 10%, var(--card-bg)); color: var(--color-primary-dark); }
+.cx-mid  { background: color-mix(in srgb, var(--color-secondary) 14%, var(--card-bg)); color: var(--color-secondary); }
+.cx-low  { background: color-mix(in srgb, var(--color-accent-mint) 14%, var(--card-bg)); color: color-mix(in srgb, var(--color-accent-mint) 80%, #113223); }
 
 /* 骨架屏 */
 .news-skeleton { padding: 12px 16px; display: flex; flex-direction: column; gap: 12px; }
@@ -1333,24 +1367,25 @@ const getComplexityClass = (item) => {
 
 /* 热点文件面板 */
 .hot-docs-panel {
-  background: #fff;
-  border-radius: 16px;
-  border: 1px solid #eee;
+  background: var(--card-bg);
+  border-radius: 22px;
+  border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   align-self: start;
+  box-shadow: 0 20px 38px color-mix(in srgb, var(--color-primary) 10%, transparent);
 }
 .hdp-header {
   display: flex;
   align-items: center;
   gap: 8px;
   padding: 14px 14px 10px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 82%, transparent);
   flex-shrink: 0;
 }
-.hdp-dot { width: 8px; height: 8px; border-radius: 50%; background: #c0392b; flex-shrink: 0; }
-.hdp-title { font-size: 13px; font-weight: 700; color: #111; }
+.hdp-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-primary); flex-shrink: 0; }
+.hdp-title { font-size: 13px; font-weight: 700; color: var(--text-primary); }
 .hdp-list { flex: none; overflow: visible; padding: 6px 0; }
 .hdp-item {
   display: flex;
@@ -1359,15 +1394,15 @@ const getComplexityClass = (item) => {
   padding: 9px 12px;
   cursor: pointer;
   transition: background 0.15s;
-  border-radius: 8px;
+  border-radius: 14px;
   margin: 2px 6px;
 }
-.hdp-item:hover { background: #fef9f9; }
-.hdp-rank { font-size: 13px; font-weight: 700; color: #ccc; width: 16px; flex-shrink: 0; text-align: center; }
-.hdp-rank.rank-top { color: #c0392b; }
+.hdp-item:hover { background: color-mix(in srgb, var(--color-primary) 4%, var(--card-bg)); }
+.hdp-rank { font-size: 13px; font-weight: 700; color: var(--text-muted); width: 16px; flex-shrink: 0; text-align: center; }
+.hdp-rank.rank-top { color: var(--color-primary); }
 .hdp-content { flex: 1; min-width: 0; }
-.hdp-text { margin: 0 0 3px; font-size: 12px; color: #333; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.hdp-date { font-size: 10px; color: #bbb; }
+.hdp-text { margin: 0 0 3px; font-size: 12px; color: var(--text-primary); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.hdp-date { font-size: 10px; color: var(--text-muted); }
 
 /* 通用骨架 */
 .loading-placeholder { padding: 8px 12px; }
@@ -1398,6 +1433,7 @@ const getComplexityClass = (item) => {
   .masonry-wall { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   .news-card-view { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .card-skeleton { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hot-docs-panel { align-self: stretch; }
 }
 
 @media (max-width: 768px) {
@@ -1422,6 +1458,31 @@ const getComplexityClass = (item) => {
   .brick-item { grid-column: span 4 !important; grid-row: span 2 !important; }
   .news-card-view { grid-template-columns: 1fr; }
   .card-skeleton { grid-template-columns: 1fr; }
+  .news-header,
+  .ps-header,
+  .ps-title-row,
+  .ps-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .view-toggle {
+    width: 100%;
+  }
+  .news-list-item {
+    margin: 0 10px 10px;
+    flex-direction: column;
+  }
+  .nl-thumb {
+    width: 100%;
+    height: 148px;
+  }
+  .nl-right {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .ps-skeleton { grid-template-columns: 1fr; }
   .hero-arrow { width: 32px; height: 32px; }
   .hero-arrow.left { left: 8px; }
   .hero-arrow.right { right: 8px; }

@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi import Request
+from fastapi.responses import Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 import threading
@@ -99,6 +100,22 @@ app.include_router(agent.router, prefix="/agent", tags=["agent"])
 app.include_router(showcase.router, prefix="/showcase", tags=["showcase"])
 app.include_router(policy_document.router, prefix="/policy-documents", tags=["policy_document"])
 app.include_router(opinion.router, prefix="/opinions", tags=["opinion"])
+
+@app.get("/openapi.yaml", include_in_schema=False)
+async def openapi_yaml():
+    try:
+        import yaml
+    except ImportError:
+        logger.exception("PyYAML is required to export the OpenAPI schema as YAML.")
+        return Response(
+            content="PyYAML is not installed. Please reinstall backend dependencies.",
+            media_type="text/plain; charset=utf-8",
+            status_code=500
+        )
+
+    schema = app.openapi()
+    yaml_content = yaml.safe_dump(schema, allow_unicode=True, sort_keys=False)
+    return Response(content=yaml_content, media_type="application/yaml; charset=utf-8")
 
 @app.get("/")
 async def root():

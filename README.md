@@ -365,6 +365,22 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 初次启动时会进行数据库初始化+Embedding模型下载+向量库初始化(建议科学上网以稳定下载).
+
+#### API 文档
+后端启动后，可通过 FastAPI 自带的文档页面查看和调试接口：
+
+- 本地直连后端:
+  - Swagger UI: `http://127.0.0.1:8080/docs`
+  - ReDoc: `http://127.0.0.1:8080/redoc`
+  - OpenAPI JSON: `http://127.0.0.1:8080/openapi.json`
+  - OpenAPI YAML: `http://127.0.0.1:8080/openapi.yaml`
+
+- Docker / Nginx 代理访问:
+  - Swagger UI: `http://localhost/api/docs`
+  - ReDoc: `http://localhost/api/redoc`
+  - OpenAPI JSON: `http://localhost/api/openapi.json`
+  - OpenAPI YAML: `http://localhost/api/openapi.yaml`
+
 ### 构建
 1. 安装打包工具:
 ```
@@ -439,6 +455,7 @@ docker pull python:3.12-slim-bookworm
 2. **访问应用**:
     *   前端应用将通过 Nginx 运行在 `http://localhost:80`。
     *   后端 API 将在 Docker 内部运行于 `http://app:8080`，并通过前端 Nginx 代理访问。
+    *   API 文档可通过 `http://localhost/api/docs`、`http://localhost/api/redoc`、`http://localhost/api/openapi.json` 与 `http://localhost/api/openapi.yaml` 访问。
     *   也可以打开Docker Desktop找到CloudPolicy容器,即可运行,点击web的链接即可打开网页.
 3. **停止服务**:
     在项目根目录执行：

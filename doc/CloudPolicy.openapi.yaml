@@ -1,0 +1,3381 @@
+openapi: 3.1.0
+info:
+  title: FastAPI
+  version: 0.1.0
+paths:
+  /user/:
+    post:
+      tags:
+      - user
+      summary: Create User
+      description: '创建新用户
+
+        :param user:
+
+        :param session:
+
+        :return:'
+      operationId: create_user_user__post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRegisterResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /user/verify-email:
+    post:
+      tags:
+      - user
+      summary: Verify Email
+      operationId: verify_email_user_verify_email_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailVerificationRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /user/verify-email-link:
+    get:
+      tags:
+      - user
+      summary: Verify Email Link
+      operationId: verify_email_link_user_verify_email_link_get
+      parameters:
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Token
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            text/html:
+              schema:
+                type: string
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /user/resend-verification:
+    post:
+      tags:
+      - user
+      summary: Resend Verification Email
+      operationId: resend_verification_email_user_resend_verification_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailVerificationResendRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /user/me:
+    get:
+      tags:
+      - user
+      summary: Get User
+      description: '获取当前登录用户的个人信息
+
+        :param current_user:
+
+        :return:'
+      operationId: get_user_user_me_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRead'
+      security:
+      - OAuth2PasswordBearer: []
+    patch:
+      tags:
+      - user
+      summary: Update User
+      description: '更新当前登录用户的个人信息
+
+        :param user_in: 更新的用户信息
+
+        :param session:
+
+        :param current_user:
+
+        :return:'
+      operationId: update_user_user_me_patch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserUpdate'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /user/request-upgrade:
+    post:
+      tags:
+      - user
+      summary: Request Permission Upgrade
+      description: 普通用户申请升级为认证主体，认证主体申请升级为管理员（向所有管理员发送通知）
+      operationId: request_permission_upgrade_user_request_upgrade_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+      security:
+      - OAuth2PasswordBearer: []
+  /user/request-downgrade:
+    post:
+      tags:
+      - user
+      summary: Request Permission Downgrade
+      description: 认证主体或管理员申请降级为普通用户
+      operationId: request_permission_downgrade_user_request_downgrade_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+      security:
+      - OAuth2PasswordBearer: []
+  /login/:
+    post:
+      tags:
+      - login
+      summary: Login Access Token
+      operationId: login_access_token_login__post
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Body_login_access_token_login__post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Token'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /chat/:
+    post:
+      tags:
+      - chat_message
+      summary: Create Chat Message
+      operationId: create_chat_message_chat__post
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: parse_task_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Parse Task Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatMessageCreate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatMessageRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    get:
+      tags:
+      - chat_message
+      summary: Read Chat Messages
+      operationId: read_chat_messages_chat__get
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Id
+      - name: original_text
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Original Text
+      - name: target_audience
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Target Audience
+      - name: handling_matter
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Handling Matter
+      - name: time_deadline
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Time Deadline
+      - name: location_entrance
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Location Entrance
+      - name: required_materials
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Required Materials
+      - name: handling_process
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Handling Process
+      - name: precautions
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Precautions
+      - name: risk_warnings
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Risk Warnings
+      - name: original_text_mapping
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Original Text Mapping
+      - name: skip
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 0
+          title: Skip
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 100
+          title: Limit
+      - name: sort_by
+        in: query
+        required: false
+        schema:
+          type: string
+          default: created_time
+          title: Sort By
+      - name: sort_order
+        in: query
+        required: false
+        schema:
+          type: string
+          default: desc
+          title: Sort Order
+      - name: handling_only
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+          title: Handling Only
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChatMessageRead'
+                title: Response Read Chat Messages Chat  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /chat/progress/start:
+    post:
+      tags:
+      - chat_message
+      summary: Start Chat Progress Task
+      operationId: start_chat_progress_task_chat_progress_start_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+      security:
+      - OAuth2PasswordBearer: []
+  /chat/progress/stream:
+    get:
+      tags:
+      - chat_message
+      summary: Stream Chat Progress
+      operationId: stream_chat_progress_chat_progress_stream_get
+      parameters:
+      - name: task_id
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Task Id
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Token
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /chat/import:
+    post:
+      tags:
+      - chat_message
+      summary: Import Chat Message
+      operationId: import_chat_message_chat_import_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_import_chat_message_chat_import_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatMessageRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /chat/{message_id}:
+    get:
+      tags:
+      - chat_message
+      summary: Read Chat Message
+      operationId: read_chat_message_chat__message_id__get
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: message_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Message Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatMessageRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    patch:
+      tags:
+      - chat_message
+      summary: Update Chat Message Audience
+      operationId: update_chat_message_audience_chat__message_id__patch
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: message_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Message Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatMessageUpdate'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatMessageRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    delete:
+      tags:
+      - chat_message
+      summary: Delete Chat Message
+      operationId: delete_chat_message_chat__message_id__delete
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: message_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Message Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /chat/{message_id}/export:
+    get:
+      tags:
+      - chat_message
+      summary: Export Chat Message
+      operationId: export_chat_message_chat__message_id__export_get
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: message_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Message Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /chat/{message_id}/open-folder:
+    get:
+      tags:
+      - chat_message
+      summary: Open Chat Message Folder
+      operationId: open_chat_message_folder_chat__message_id__open_folder_get
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: message_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Message Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /chat/{message_id}/rag-context:
+    get:
+      tags:
+      - chat_message
+      summary: Get Chat Message Rag Context
+      operationId: get_chat_message_rag_context_chat__message_id__rag_context_get
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: message_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Message Id
+      - name: top_k
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 10
+          minimum: 1
+          default: 5
+          title: Top K
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /chat/batch-delete:
+    post:
+      tags:
+      - chat_message
+      summary: Delete Chat Messages
+      operationId: delete_chat_messages_chat_batch_delete_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Body_delete_chat_messages_chat_batch_delete_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /analysis/me:
+    get:
+      tags:
+      - analysis
+      summary: Get My Stats
+      description: '获取当前登录用户的所有通知解析统计数据。
+
+        该接口底层使用了自研的纯算法（分词）进行高频词统计。'
+      operationId: get_my_stats_analysis_me_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatsAnalysisRead'
+      security:
+      - OAuth2PasswordBearer: []
+  /settings/me:
+    get:
+      tags:
+      - settings
+      summary: Get My Settings
+      description: 获取当前用户的设置。如果不存在，则创建一个默认设置并返回。
+      operationId: get_my_settings_settings_me_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettingsRead'
+      security:
+      - OAuth2PasswordBearer: []
+    patch:
+      tags:
+      - settings
+      summary: Update My Settings
+      description: 更新当前用户的设置。
+      operationId: update_my_settings_settings_me_patch
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SettingsUpdate'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettingsRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /upload/avatar:
+    post:
+      tags:
+      - upload
+      summary: Upload Avatar
+      description: '用户头像上传接口。
+
+        接收图片文件，保存到本地，并返回可供访问的静态资源 URL。'
+      operationId: upload_avatar_upload_avatar_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_upload_avatar_upload_avatar_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /upload/document:
+    post:
+      tags:
+      - upload
+      summary: Upload Document
+      description: '通用文档上传与解析接口。
+
+        接收 PDF、Word、Excel、TXT 等文件，保存到本地并提取文本返回。'
+      operationId: upload_document_upload_document_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_upload_document_upload_document_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /upload/ocr:
+    post:
+      tags:
+      - upload
+      summary: Ocr Image
+      description: '截图/扫描型PDF的OCR识别接口。
+
+        上传图片或扫描PDF，调用 Kimi 视觉模型提取文字内容。'
+      operationId: ocr_image_upload_ocr_post
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Body_ocr_image_upload_ocr_post'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /news/hot:
+    get:
+      tags:
+      - news
+      summary: Hot News
+      operationId: hot_news_news_hot_get
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 10
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /news/central-docs:
+    get:
+      tags:
+      - news
+      summary: Central Docs
+      operationId: central_docs_news_central_docs_get
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 5
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /news/keywords:
+    get:
+      tags:
+      - news
+      summary: Hot Keywords
+      operationId: hot_keywords_news_keywords_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /news/search:
+    get:
+      tags:
+      - news
+      summary: News Search
+      operationId: news_search_news_search_get
+      parameters:
+      - name: q
+        in: query
+        required: false
+        schema:
+          type: string
+          description: 搜索关键词
+          default: ''
+          title: Q
+        description: 搜索关键词
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 20
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /news/with-images:
+    get:
+      tags:
+      - news
+      summary: News With Images
+      operationId: news_with_images_news_with_images_get
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 5
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /news/hot-tags:
+    get:
+      tags:
+      - news
+      summary: Hot Tags
+      operationId: hot_tags_news_hot_tags_get
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          default: 6
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /news/daily-summary:
+    get:
+      tags:
+      - news
+      summary: Daily Summary
+      operationId: daily_summary_news_daily_summary_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /todo/:
+    get:
+      tags:
+      - todo
+      summary: Get Todos
+      operationId: get_todos_todo__get
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: confirmed_only
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: true
+          title: Confirmed Only
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TodoItem'
+                title: Response Get Todos Todo  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+    post:
+      tags:
+      - todo
+      summary: Create Todo
+      operationId: create_todo_todo__post
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: title
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Title
+      - name: detail
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+      - name: deadline
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Deadline
+      - name: source_chat_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Source Chat Id
+      - name: is_confirmed
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: true
+          title: Is Confirmed
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoItem'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /todo/from-chat:
+    post:
+      tags:
+      - todo
+      summary: Create Todos From Chat
+      description: 'items: [{title, detail, deadline}, ...]，is_confirmed=False 表示待用户确认'
+      operationId: create_todos_from_chat_todo_from_chat_post
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: source_chat_id
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Source Chat Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                additionalProperties: true
+              title: Items
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TodoItem'
+                title: Response Create Todos From Chat Todo From Chat Post
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /todo/{todo_id}/confirm:
+    patch:
+      tags:
+      - todo
+      summary: Confirm Todo
+      operationId: confirm_todo_todo__todo_id__confirm_patch
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: todo_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Todo Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoItem'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /todo/{todo_id}/toggle:
+    patch:
+      tags:
+      - todo
+      summary: Toggle Todo
+      operationId: toggle_todo_todo__todo_id__toggle_patch
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: todo_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Todo Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TodoItem'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /todo/{todo_id}:
+    delete:
+      tags:
+      - todo
+      summary: Delete Todo
+      operationId: delete_todo_todo__todo_id__delete
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: todo_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Todo Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /favorite/:
+    get:
+      tags:
+      - favorite
+      summary: Get Favorites
+      operationId: get_favorites_favorite__get
+      security:
+      - OAuth2PasswordBearer: []
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Favorite'
+                title: Response Get Favorites Favorite  Get
+    post:
+      tags:
+      - favorite
+      summary: Add Favorite
+      operationId: add_favorite_favorite__post
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: chat_message_id
+        in: query
+        required: true
+        schema:
+          type: integer
+          title: Chat Message Id
+      - name: note
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Note
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Favorite'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /favorite/{fav_id}:
+    delete:
+      tags:
+      - favorite
+      summary: Remove Favorite
+      operationId: remove_favorite_favorite__fav_id__delete
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: fav_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Fav Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /admin/users:
+    get:
+      tags:
+      - admin
+      summary: List Users
+      operationId: list_users_admin_users_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  additionalProperties: true
+                  type: object
+                type: array
+                title: Response List Users Admin Users Get
+      security:
+      - OAuth2PasswordBearer: []
+  /admin/stats:
+    get:
+      tags:
+      - admin
+      summary: Admin Stats
+      operationId: admin_stats_admin_stats_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+      security:
+      - OAuth2PasswordBearer: []
+  /admin/users/{uid}/set-role:
+    patch:
+      tags:
+      - admin
+      summary: Set User Role
+      operationId: set_user_role_admin_users__uid__set_role_patch
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: uid
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Uid
+      - name: role
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/UserRole'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Set User Role Admin Users  Uid  Set Role Patch
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /admin/users/{uid}/toggle-admin:
+    patch:
+      tags:
+      - admin
+      summary: Toggle Admin
+      operationId: toggle_admin_admin_users__uid__toggle_admin_patch
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: uid
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Uid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+                title: Response Toggle Admin Admin Users  Uid  Toggle Admin Patch
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /admin/users/{uid}:
+    delete:
+      tags:
+      - admin
+      summary: Delete User
+      operationId: delete_user_admin_users__uid__delete
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: uid
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Uid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /admin/analysis/all:
+    get:
+      tags:
+      - admin
+      summary: Admin Analysis All
+      operationId: admin_analysis_all_admin_analysis_all_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+      security:
+      - OAuth2PasswordBearer: []
+  /admin/stats/stream:
+    get:
+      tags:
+      - admin
+      summary: Admin Stats Stream
+      operationId: admin_stats_stream_admin_stats_stream_get
+      parameters:
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Token
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /admin/logs:
+    get:
+      tags:
+      - admin
+      summary: Read Logs
+      operationId: read_logs_admin_logs_get
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 1000
+          minimum: 20
+          default: 200
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /admin/rag/status:
+    get:
+      tags:
+      - admin
+      summary: Rag Status
+      operationId: rag_status_admin_rag_status_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+      security:
+      - OAuth2PasswordBearer: []
+  /admin/rag/search:
+    get:
+      tags:
+      - admin
+      summary: Rag Search
+      operationId: rag_search_admin_rag_search_get
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: q
+        in: query
+        required: false
+        schema:
+          type: string
+          description: RAG 查询关键词
+          default: ''
+          title: Q
+        description: RAG 查询关键词
+      - name: top_k
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 10
+          minimum: 1
+          default: 5
+          title: Top K
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /admin/user-geo:
+    get:
+      tags:
+      - admin
+      summary: Admin User Geo
+      operationId: admin_user_geo_admin_user_geo_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+      security:
+      - OAuth2PasswordBearer: []
+  /admin/opinion-stats:
+    get:
+      tags:
+      - admin
+      summary: Admin Opinion Stats
+      operationId: admin_opinion_stats_admin_opinion_stats_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+      security:
+      - OAuth2PasswordBearer: []
+  /admin/user-role-dist:
+    get:
+      tags:
+      - admin
+      summary: Admin User Role Dist
+      operationId: admin_user_role_dist_admin_user_role_dist_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+      security:
+      - OAuth2PasswordBearer: []
+  /admin/users/{uid}/avatar:
+    get:
+      tags:
+      - admin
+      summary: Get User Avatar
+      operationId: get_user_avatar_admin_users__uid__avatar_get
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: uid
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Uid
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /agent/run:
+    post:
+      tags:
+      - agent
+      summary: Run Agent
+      operationId: run_agent_agent_run_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentRunRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentRunResponse'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /agent/conversations:
+    get:
+      tags:
+      - agent
+      summary: List Conversations
+      operationId: list_conversations_agent_conversations_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/AgentConversationRead'
+                type: array
+                title: Response List Conversations Agent Conversations Get
+      security:
+      - OAuth2PasswordBearer: []
+    post:
+      tags:
+      - agent
+      summary: Create Conversation
+      operationId: create_conversation_agent_conversations_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentConversationCreate'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentConversationRead'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /agent/conversations/{conversation_id}:
+    delete:
+      tags:
+      - agent
+      summary: Delete Conversation
+      operationId: delete_conversation_agent_conversations__conversation_id__delete
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: conversation_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Conversation Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /agent/conversations/{conversation_id}/messages:
+    get:
+      tags:
+      - agent
+      summary: List Messages
+      operationId: list_messages_agent_conversations__conversation_id__messages_get
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: conversation_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Conversation Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AgentMessageRead'
+                title: Response List Messages Agent Conversations  Conversation Id  Messages
+                  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /showcase/landing-stats:
+    get:
+      tags:
+      - showcase
+      summary: Get Showcase Landing Stats
+      operationId: get_showcase_landing_stats_showcase_landing_stats_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /showcase/screen-data:
+    get:
+      tags:
+      - showcase
+      summary: Get Showcase Screen Data
+      operationId: get_showcase_screen_data_showcase_screen_data_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /policy-documents/:
+    post:
+      tags:
+      - policy_document
+      summary: Create Document
+      operationId: create_document_policy_documents__post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyDocumentCreate'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyDocumentOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /policy-documents/approved:
+    get:
+      tags:
+      - policy_document
+      summary: List Approved Documents
+      operationId: list_approved_documents_policy_documents_approved_get
+      parameters:
+      - name: skip
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+          title: Skip
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Limit
+      - name: category
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Category
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyDocumentOut'
+                title: Response List Approved Documents Policy Documents Approved
+                  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /policy-documents/mine:
+    get:
+      tags:
+      - policy_document
+      summary: List My Documents
+      operationId: list_my_documents_policy_documents_mine_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/PolicyDocumentOut'
+                type: array
+                title: Response List My Documents Policy Documents Mine Get
+      security:
+      - OAuth2PasswordBearer: []
+  /policy-documents/{doc_id}/view:
+    post:
+      tags:
+      - policy_document
+      summary: Increment View
+      operationId: increment_view_policy_documents__doc_id__view_post
+      parameters:
+      - name: doc_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Doc Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /policy-documents/{doc_id}/like:
+    post:
+      tags:
+      - policy_document
+      summary: Like Document
+      operationId: like_document_policy_documents__doc_id__like_post
+      parameters:
+      - name: doc_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Doc Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /policy-documents/{doc_id}/review:
+    patch:
+      tags:
+      - policy_document
+      summary: Review Document
+      operationId: review_document_policy_documents__doc_id__review_patch
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: doc_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Doc Id
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PolicyDocumentReview'
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyDocumentOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /policy-documents/pending:
+    get:
+      tags:
+      - policy_document
+      summary: List Pending Documents
+      operationId: list_pending_documents_policy_documents_pending_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/PolicyDocumentOut'
+                type: array
+                title: Response List Pending Documents Policy Documents Pending Get
+      security:
+      - OAuth2PasswordBearer: []
+  /policy-documents/recommend:
+    get:
+      tags:
+      - policy_document
+      summary: Recommend Documents
+      operationId: recommend_documents_policy_documents_recommend_get
+      parameters:
+      - name: skip
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+          title: Skip
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 50
+          minimum: 1
+          default: 10
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyDocumentOut'
+                title: Response Recommend Documents Policy Documents Recommend Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /policy-documents/recommend/me:
+    get:
+      tags:
+      - policy_document
+      summary: Recommend Documents Me
+      operationId: recommend_documents_me_policy_documents_recommend_me_get
+      security:
+      - OAuth2PasswordBearer: []
+      parameters:
+      - name: skip
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+          title: Skip
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 50
+          minimum: 1
+          default: 10
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyDocumentOut'
+                title: Response Recommend Documents Me Policy Documents Recommend
+                  Me Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /policy-documents/my-stats:
+    get:
+      tags:
+      - policy_document
+      summary: My Document Stats
+      operationId: my_document_stats_policy_documents_my_stats_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+      security:
+      - OAuth2PasswordBearer: []
+  /opinions/:
+    post:
+      tags:
+      - opinion
+      summary: Create Opinion
+      operationId: create_opinion_opinions__post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpinionCreate'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpinionOut'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+      security:
+      - OAuth2PasswordBearer: []
+  /opinions/doc/{doc_id}:
+    get:
+      tags:
+      - opinion
+      summary: List Opinions By Doc
+      operationId: list_opinions_by_doc_opinions_doc__doc_id__get
+      parameters:
+      - name: doc_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Doc Id
+      - name: skip
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+          title: Skip
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OpinionOut'
+                title: Response List Opinions By Doc Opinions Doc  Doc Id  Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /opinions/feed:
+    get:
+      tags:
+      - opinion
+      summary: Opinion Feed
+      operationId: opinion_feed_opinions_feed_get
+      parameters:
+      - name: skip
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+          title: Skip
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          maximum: 100
+          minimum: 1
+          default: 20
+          title: Limit
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OpinionOut'
+                title: Response Opinion Feed Opinions Feed Get
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /opinions/mine:
+    get:
+      tags:
+      - opinion
+      summary: My Doc Opinions
+      operationId: my_doc_opinions_opinions_mine_get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/OpinionOut'
+                type: array
+                title: Response My Doc Opinions Opinions Mine Get
+      security:
+      - OAuth2PasswordBearer: []
+  /opinions/{opinion_id}/like:
+    post:
+      tags:
+      - opinion
+      summary: Like Opinion
+      operationId: like_opinion_opinions__opinion_id__like_post
+      parameters:
+      - name: opinion_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          title: Opinion Id
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /:
+    get:
+      summary: Root
+      operationId: root__get
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+components:
+  schemas:
+    AgentConversationCreate:
+      properties:
+        title:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Title
+          default: 新对话
+      type: object
+      title: AgentConversationCreate
+    AgentConversationRead:
+      properties:
+        id:
+          type: integer
+          title: Id
+        title:
+          type: string
+          title: Title
+        created_time:
+          type: string
+          title: Created Time
+        updated_time:
+          type: string
+          title: Updated Time
+      type: object
+      required:
+      - id
+      - title
+      - created_time
+      - updated_time
+      title: AgentConversationRead
+    AgentEvidence:
+      properties:
+        title:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Title
+        category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Category
+        score:
+          type: number
+          title: Score
+          default: 0.0
+        snippet:
+          type: string
+          title: Snippet
+          default: ''
+        tags:
+          items:
+            type: string
+          type: array
+          title: Tags
+          default: []
+      type: object
+      title: AgentEvidence
+    AgentMessageRead:
+      properties:
+        id:
+          type: integer
+          title: Id
+        role:
+          type: string
+          title: Role
+        content:
+          type: string
+          title: Content
+        created_time:
+          type: string
+          title: Created Time
+      type: object
+      required:
+      - id
+      - role
+      - content
+      - created_time
+      title: AgentMessageRead
+    AgentRunRequest:
+      properties:
+        original_text:
+          type: string
+          title: Original Text
+          description: 原始通知文本
+        file_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: File Url
+          description: 原文件 URL
+        goal:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Goal
+          description: 任务目标
+        scene:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Scene
+          description: 场景描述
+        mode:
+          type: string
+          title: Mode
+          description: '运行模式: agent | chat'
+          default: agent
+        use_rag:
+          type: boolean
+          title: Use Rag
+          description: 是否启用 RAG
+          default: true
+        top_k:
+          type: integer
+          maximum: 10.0
+          minimum: 1.0
+          title: Top K
+          description: RAG 检索条数
+          default: 5
+        save_to_history:
+          type: boolean
+          title: Save To History
+          description: 是否保存到历史
+          default: true
+      type: object
+      required:
+      - original_text
+      title: AgentRunRequest
+    AgentRunResponse:
+      properties:
+        agent_name:
+          type: string
+          title: Agent Name
+        parse_mode:
+          type: string
+          title: Parse Mode
+        confidence:
+          type: number
+          title: Confidence
+        summary:
+          type: string
+          title: Summary
+        structured:
+          additionalProperties: true
+          type: object
+          title: Structured
+        assistant_reply:
+          type: string
+          title: Assistant Reply
+          default: ''
+        mode:
+          type: string
+          title: Mode
+          default: agent
+        tool_calls:
+          items:
+            $ref: '#/components/schemas/AgentToolCall'
+          type: array
+          title: Tool Calls
+          default: []
+        checklist:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Checklist
+        timeline:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Timeline
+        process_steps:
+          items:
+            type: string
+          type: array
+          title: Process Steps
+        materials:
+          items:
+            type: string
+          type: array
+          title: Materials
+        notices:
+          items:
+            type: string
+          type: array
+          title: Notices
+        risks:
+          items:
+            type: string
+          type: array
+          title: Risks
+        rag_metrics:
+          additionalProperties: true
+          type: object
+          title: Rag Metrics
+        evidence:
+          items:
+            $ref: '#/components/schemas/AgentEvidence'
+          type: array
+          title: Evidence
+        chat_message_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Chat Message Id
+        user_audience:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: User Audience
+      type: object
+      required:
+      - agent_name
+      - parse_mode
+      - confidence
+      - summary
+      - structured
+      - checklist
+      - timeline
+      - process_steps
+      - materials
+      - notices
+      - risks
+      - rag_metrics
+      - evidence
+      title: AgentRunResponse
+    AgentToolCall:
+      properties:
+        tool:
+          type: string
+          title: Tool
+        input:
+          type: string
+          title: Input
+          default: ''
+        output:
+          type: string
+          title: Output
+          default: ''
+      type: object
+      required:
+      - tool
+      title: AgentToolCall
+    Body_delete_chat_messages_chat_batch_delete_post:
+      properties:
+        message_ids:
+          items:
+            type: integer
+          type: array
+          title: Message Ids
+      type: object
+      required:
+      - message_ids
+      title: Body_delete_chat_messages_chat_batch_delete_post
+    Body_import_chat_message_chat_import_post:
+      properties:
+        file:
+          type: string
+          format: binary
+          title: File
+      type: object
+      required:
+      - file
+      title: Body_import_chat_message_chat_import_post
+    Body_login_access_token_login__post:
+      properties:
+        grant_type:
+          anyOf:
+          - type: string
+            pattern: ^password$
+          - type: 'null'
+          title: Grant Type
+        username:
+          type: string
+          title: Username
+        password:
+          type: string
+          format: password
+          title: Password
+        scope:
+          type: string
+          title: Scope
+          default: ''
+        client_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Client Id
+        client_secret:
+          anyOf:
+          - type: string
+          - type: 'null'
+          format: password
+          title: Client Secret
+      type: object
+      required:
+      - username
+      - password
+      title: Body_login_access_token_login__post
+    Body_ocr_image_upload_ocr_post:
+      properties:
+        file:
+          type: string
+          format: binary
+          title: File
+      type: object
+      required:
+      - file
+      title: Body_ocr_image_upload_ocr_post
+    Body_upload_avatar_upload_avatar_post:
+      properties:
+        file:
+          type: string
+          format: binary
+          title: File
+      type: object
+      required:
+      - file
+      title: Body_upload_avatar_upload_avatar_post
+    Body_upload_document_upload_document_post:
+      properties:
+        file:
+          type: string
+          format: binary
+          title: File
+      type: object
+      required:
+      - file
+      title: Body_upload_document_upload_document_post
+    ChatMessageCreate:
+      properties:
+        original_text:
+          type: string
+          title: Original Text
+        file_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: File Url
+      type: object
+      required:
+      - original_text
+      title: ChatMessageCreate
+    ChatMessageRead:
+      properties:
+        id:
+          type: integer
+          title: Id
+        created_time:
+          type: string
+          format: date-time
+          title: Created Time
+        original_text:
+          type: string
+          title: Original Text
+        file_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: File Url
+        content:
+          type: string
+          title: Content
+          default: ''
+        nodes:
+          items:
+            $ref: '#/components/schemas/KGNode'
+          type: array
+          title: Nodes
+        links:
+          items:
+            $ref: '#/components/schemas/KGLink'
+          type: array
+          title: Links
+        dynamic_payload:
+          additionalProperties: true
+          type: object
+          title: Dynamic Payload
+        visual_config:
+          anyOf:
+          - $ref: '#/components/schemas/VisualConfig'
+          - type: 'null'
+        target_audience:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Target Audience
+        handling_matter:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Handling Matter
+        time_deadline:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Time Deadline
+        location_entrance:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Location Entrance
+        required_materials:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Required Materials
+        handling_process:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Handling Process
+        precautions:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Precautions
+        risk_warnings:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Risk Warnings
+        original_text_mapping:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Original Text Mapping
+        chat_analysis:
+          additionalProperties: true
+          type: object
+          title: Chat Analysis
+        user_id:
+          type: integer
+          title: User Id
+        source_chat_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Source Chat Id
+        session_json_path:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Session Json Path
+        estimated_time_saved_minutes:
+          type: integer
+          title: Estimated Time Saved Minutes
+          default: 0
+      type: object
+      required:
+      - id
+      - created_time
+      - original_text
+      - user_id
+      title: ChatMessageRead
+    ChatMessageUpdate:
+      properties:
+        target_audience:
+          type: string
+          title: Target Audience
+      type: object
+      required:
+      - target_audience
+      title: ChatMessageUpdate
+    DocStatus:
+      type: string
+      enum:
+      - pending
+      - approved
+      - rejected
+      title: DocStatus
+    EmailVerificationRequest:
+      properties:
+        email:
+          type: string
+          title: Email
+        code:
+          type: string
+          title: Code
+      type: object
+      required:
+      - email
+      - code
+      title: EmailVerificationRequest
+    EmailVerificationResendRequest:
+      properties:
+        email:
+          type: string
+          title: Email
+      type: object
+      required:
+      - email
+      title: EmailVerificationResendRequest
+    Favorite:
+      properties:
+        id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Id
+        user_id:
+          type: integer
+          title: User Id
+        chat_message_id:
+          type: integer
+          title: Chat Message Id
+        note:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Note
+          description: 用户备注
+        created_time:
+          type: string
+          format: date-time
+          title: Created Time
+      type: object
+      required:
+      - user_id
+      - chat_message_id
+      title: Favorite
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    KGLink:
+      properties:
+        source:
+          type: string
+          title: Source
+        target:
+          type: string
+          title: Target
+        relation:
+          type: string
+          title: Relation
+          default: 关联
+        logic_type:
+          type: string
+          title: Logic Type
+          default: positive
+        strength:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Strength
+          default: 0.5
+        evidence:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Evidence
+      type: object
+      required:
+      - source
+      - target
+      title: KGLink
+    KGNode:
+      properties:
+        id:
+          type: string
+          title: Id
+        label:
+          type: string
+          title: Label
+        type:
+          type: string
+          title: Type
+          default: 实体
+        importance:
+          type: number
+          maximum: 1.0
+          minimum: 0.0
+          title: Importance
+          default: 0.5
+        layer:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Layer
+        group:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Group
+        parent_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Parent Id
+        properties:
+          additionalProperties: true
+          type: object
+          title: Properties
+      type: object
+      required:
+      - id
+      - label
+      title: KGNode
+    OpinionCreate:
+      properties:
+        doc_id:
+          type: integer
+          title: Doc Id
+        opinion_type:
+          $ref: '#/components/schemas/OpinionType'
+          default: review
+        content:
+          type: string
+          title: Content
+        rating:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Rating
+      type: object
+      required:
+      - doc_id
+      - content
+      title: OpinionCreate
+    OpinionOut:
+      properties:
+        id:
+          type: integer
+          title: Id
+        doc_id:
+          type: integer
+          title: Doc Id
+        user_id:
+          type: integer
+          title: User Id
+        user_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: User Name
+        opinion_type:
+          $ref: '#/components/schemas/OpinionType'
+        content:
+          type: string
+          title: Content
+        rating:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Rating
+        like_count:
+          type: integer
+          title: Like Count
+        created_time:
+          type: string
+          format: date-time
+          title: Created Time
+      type: object
+      required:
+      - id
+      - doc_id
+      - user_id
+      - opinion_type
+      - content
+      - like_count
+      - created_time
+      title: OpinionOut
+    OpinionType:
+      type: string
+      enum:
+      - review
+      - correction
+      - message
+      title: OpinionType
+    PolicyDocumentCreate:
+      properties:
+        title:
+          type: string
+          title: Title
+        content:
+          type: string
+          title: Content
+        category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Category
+        tags:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tags
+      type: object
+      required:
+      - title
+      - content
+      title: PolicyDocumentCreate
+    PolicyDocumentOut:
+      properties:
+        title:
+          type: string
+          title: Title
+        content:
+          type: string
+          title: Content
+        category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Category
+        tags:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Tags
+        id:
+          type: integer
+          title: Id
+        uploader_id:
+          type: integer
+          title: Uploader Id
+        uploader_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uploader Name
+        status:
+          $ref: '#/components/schemas/DocStatus'
+        view_count:
+          type: integer
+          title: View Count
+        like_count:
+          type: integer
+          title: Like Count
+        created_time:
+          type: string
+          format: date-time
+          title: Created Time
+        reviewed_time:
+          anyOf:
+          - type: string
+            format: date-time
+          - type: 'null'
+          title: Reviewed Time
+        reject_reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reject Reason
+      type: object
+      required:
+      - title
+      - content
+      - id
+      - uploader_id
+      - status
+      - view_count
+      - like_count
+      - created_time
+      title: PolicyDocumentOut
+    PolicyDocumentReview:
+      properties:
+        status:
+          $ref: '#/components/schemas/DocStatus'
+        reject_reason:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Reject Reason
+      type: object
+      required:
+      - status
+      title: PolicyDocumentReview
+    SettingsRead:
+      properties:
+        default_audience:
+          type: string
+          title: Default Audience
+          description: 默认 AI 改写受众
+          default: none
+        theme_mode:
+          type: string
+          title: Theme Mode
+          description: 整体明暗主题
+          default: light
+        color_scheme:
+          type: string
+          title: Color Scheme
+          description: 全局品牌色系
+          default: classic
+        system_notifications:
+          type: boolean
+          title: System Notifications
+          description: 是否接收系统通知
+          default: true
+        user_id:
+          type: integer
+          title: User Id
+        id:
+          type: integer
+          title: Id
+      type: object
+      required:
+      - user_id
+      - id
+      title: SettingsRead
+    SettingsUpdate:
+      properties:
+        default_audience:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Default Audience
+        theme_mode:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Theme Mode
+        color_scheme:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Color Scheme
+        system_notifications:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: System Notifications
+      type: object
+      title: SettingsUpdate
+    StatsAnalysisRead:
+      properties:
+        id:
+          type: integer
+          title: Id
+        materials_freq:
+          additionalProperties:
+            type: integer
+          type: object
+          title: Materials Freq
+        risks_freq:
+          additionalProperties:
+            type: integer
+          type: object
+          title: Risks Freq
+        complexity_distribution:
+          additionalProperties:
+            type: integer
+          type: object
+          title: Complexity Distribution
+        notice_type_distribution:
+          additionalProperties:
+            type: integer
+          type: object
+          title: Notice Type Distribution
+        total_time_saved_minutes:
+          type: integer
+          title: Total Time Saved Minutes
+        avg_time_saved_minutes:
+          type: integer
+          title: Avg Time Saved Minutes
+        time_saved_distribution:
+          additionalProperties:
+            type: integer
+          type: object
+          title: Time Saved Distribution
+        total_parsed_count:
+          type: integer
+          title: Total Parsed Count
+        user_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: User Id
+        rag_metrics:
+          additionalProperties: true
+          type: object
+          title: Rag Metrics
+          default: {}
+        rag_series:
+          additionalProperties: true
+          type: object
+          title: Rag Series
+          default: {}
+        vector_scatter:
+          items:
+            additionalProperties: true
+            type: object
+          type: array
+          title: Vector Scatter
+          default: []
+      type: object
+      required:
+      - id
+      - materials_freq
+      - risks_freq
+      - complexity_distribution
+      - notice_type_distribution
+      - total_time_saved_minutes
+      - avg_time_saved_minutes
+      - time_saved_distribution
+      - total_parsed_count
+      - user_id
+      title: StatsAnalysisRead
+    TodoItem:
+      properties:
+        id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Id
+        user_id:
+          type: integer
+          title: User Id
+        source_chat_id:
+          anyOf:
+          - type: integer
+          - type: 'null'
+          title: Source Chat Id
+        title:
+          type: string
+          title: Title
+          description: 待办事项标题
+        detail:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Detail
+          description: 详细说明
+        deadline:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Deadline
+          description: 截止时间（字符串，来自AI提取）
+        is_done:
+          type: boolean
+          title: Is Done
+          default: false
+        is_confirmed:
+          type: boolean
+          title: Is Confirmed
+          description: 用户已确认保存（False=待确认草稿）
+          default: true
+        created_time:
+          type: string
+          format: date-time
+          title: Created Time
+        updated_time:
+          type: string
+          format: date-time
+          title: Updated Time
+      type: object
+      required:
+      - user_id
+      - title
+      title: TodoItem
+    Token:
+      properties:
+        access_token:
+          type: string
+          title: Access Token
+        token_type:
+          type: string
+          title: Token Type
+      type: object
+      required:
+      - access_token
+      - token_type
+      title: Token
+    UserCreate:
+      properties:
+        uname:
+          type: string
+          title: Uname
+        email:
+          type: string
+          title: Email
+        phone:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Phone
+        avatar_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Avatar Url
+        role:
+          $ref: '#/components/schemas/UserRole'
+          default: normal
+        profession:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Profession
+        pwd:
+          type: string
+          title: Pwd
+      type: object
+      required:
+      - uname
+      - email
+      - pwd
+      title: UserCreate
+    UserRead:
+      properties:
+        uname:
+          type: string
+          title: Uname
+        email:
+          type: string
+          title: Email
+        phone:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Phone
+        avatar_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Avatar Url
+        role:
+          $ref: '#/components/schemas/UserRole'
+          default: normal
+        profession:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Profession
+        uid:
+          type: integer
+          title: Uid
+        created_time:
+          type: string
+          format: date-time
+          title: Created Time
+        last_login:
+          type: string
+          format: date-time
+          title: Last Login
+        email_verified:
+          type: boolean
+          title: Email Verified
+          default: false
+      type: object
+      required:
+      - uname
+      - email
+      - uid
+      - created_time
+      - last_login
+      title: UserRead
+    UserRegisterResponse:
+      properties:
+        user:
+          $ref: '#/components/schemas/UserRead'
+        verification_required:
+          type: boolean
+          title: Verification Required
+          default: true
+        delivery_channel:
+          type: string
+          title: Delivery Channel
+          default: email
+        preview_code:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Preview Code
+      type: object
+      required:
+      - user
+      title: UserRegisterResponse
+    UserRole:
+      type: string
+      enum:
+      - normal
+      - certified
+      - admin
+      title: UserRole
+    UserUpdate:
+      properties:
+        uname:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Uname
+        email:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Email
+        phone:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Phone
+        pwd:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Pwd
+        avatar_url:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Avatar Url
+      type: object
+      title: UserUpdate
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
+    VisualConfig:
+      properties:
+        focus_node:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Focus Node
+        initial_zoom:
+          type: number
+          title: Initial Zoom
+          default: 1.0
+        text_mapping:
+          additionalProperties:
+            items:
+              type: integer
+            type: array
+          type: object
+          title: Text Mapping
+      type: object
+      title: VisualConfig
+  securitySchemes:
+    OAuth2PasswordBearer:
+      type: oauth2
+      flows:
+        password:
+          scopes: {}
+          tokenUrl: /

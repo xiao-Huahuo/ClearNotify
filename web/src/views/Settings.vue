@@ -28,6 +28,9 @@
             <button class="action-btn outline">编辑资料</button>
           </div>
         </div>
+        <div class="profile-side-actions">
+          <button class="profile-logout-link" @click="handleLogout">退出当前账号</button>
+        </div>
       </div>
 
       <!-- 设置模块网格 -->
@@ -169,17 +172,6 @@
             </div>
           </div>
         </div>
-
-        <!-- 退出登录 (整块红色 Widget) -->
-        <div class="logout-widget widget" @click="handleLogout" style="cursor: pointer;">
-           <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
-             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-             <polyline points="16 17 21 12 16 7"></polyline>
-             <line x1="21" y1="12" x2="9" y2="12"></line>
-           </svg>
-           <span>退出当前账号</span>
-        </div>
-
       </div>
     </div>
 
@@ -269,8 +261,8 @@ const openLoginModal = () => {
 
 <style scoped>
 .settings-container {
-  padding: 30px;
-  max-width: 1000px;
+  padding: 16px 20px 24px;
+  max-width: 1180px;
   margin: 0 auto;
   height: 100%;
   box-sizing: border-box;
@@ -278,7 +270,7 @@ const openLoginModal = () => {
 }
 
 .settings-header {
-  margin-bottom: 30px;
+  margin-bottom: 18px;
 }
 
 .page-title {
@@ -291,22 +283,28 @@ const openLoginModal = () => {
 .loading-state {
   text-align: center;
   padding: 40px;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .settings-content {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(300px, 0.9fr);
+  gap: 18px;
+  align-items: start;
 }
 
 /* 基础卡片样式 */
 .widget {
-  background: #ffffff;
-  border-radius: 0;
-  box-shadow: none;
-  border: 1px solid #e8e8e8;
-  border-left: 3px solid var(--color-primary);
+  background: var(--card-bg);
+  border-radius: 18px;
+  box-shadow: 0 18px 38px color-mix(in srgb, var(--color-primary) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 10%, var(--border-color));
   padding: 20px;
 }
 
@@ -316,22 +314,27 @@ const openLoginModal = () => {
   align-items: center;
   gap: 30px;
   padding: 30px;
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--color-accent-cool) 14%, transparent), transparent 45%),
+    linear-gradient(155deg, color-mix(in srgb, var(--color-primary) 9%, var(--card-bg)), var(--card-bg));
 }
 
 .profile-avatar {
   width: 100px;
   height: 100px;
-  background-color: #f5f5f5;
+  background-color: color-mix(in srgb, var(--color-primary) 10%, var(--card-bg));
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   overflow: hidden;
-  transition: opacity 0.2s;
+  transition: opacity 0.2s, transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 12px 26px color-mix(in srgb, var(--color-primary) 14%, transparent);
 }
 .profile-avatar:hover {
   opacity: 0.8;
+  transform: translateY(-2px);
 }
 
 .user-avatar {
@@ -347,21 +350,51 @@ const openLoginModal = () => {
   gap: 8px;
 }
 
+.profile-side-actions {
+  display: flex;
+  align-self: stretch;
+  align-items: flex-start;
+  justify-content: flex-end;
+  margin-left: auto;
+}
+
+.profile-logout-link {
+  appearance: none;
+  background: none;
+  border: none;
+  padding: 0;
+  color: color-mix(in srgb, #ff4d4f 82%, var(--color-primary-dark));
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.profile-logout-link:hover,
+.profile-logout-link:focus-visible {
+  color: #ff4d4f;
+  text-decoration: underline;
+  outline: none;
+}
+
 .username {
   margin: 0;
   font-size: 24px;
   font-weight: 800;
-  color: #000;
+  color: var(--text-primary);
 }
 
 .user-email {
   margin: 0;
-  color: #666;
+  color: var(--text-secondary);
   font-size: 15px;
 }
 
 .profile-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
   margin-top: 10px;
 }
@@ -371,9 +404,9 @@ const openLoginModal = () => {
   font-size: 18px;
   font-weight: bold;
   margin: 0 0 20px 0;
-  color: #000;
+  color: var(--text-primary);
   padding-bottom: 15px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 82%, transparent);
 }
 
 /* 列表样式 */
@@ -387,7 +420,8 @@ const openLoginModal = () => {
   justify-content: space-between;
   align-items: center;
   padding: 20px 0;
-  border-bottom: 1px solid #f9f9f9;
+  gap: 18px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 72%, transparent);
 }
 
 .setting-item:last-child {
@@ -399,17 +433,20 @@ const openLoginModal = () => {
   display: flex;
   align-items: flex-start;
   gap: 16px;
+  min-width: 0;
+  flex: 1;
 }
 
 .icon-wrap {
   width: 40px;
   height: 40px;
-  background-color: #f5f5f5;
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--color-primary) 18%, transparent), color-mix(in srgb, var(--color-secondary) 10%, transparent));
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #666;
+  color: var(--color-primary-dark);
   flex-shrink: 0;
 }
 
@@ -418,43 +455,52 @@ const openLoginModal = () => {
   flex-direction: column;
   gap: 4px;
   margin-top: 2px;
+  min-width: 0;
 }
 
 .name {
   margin: 0;
   font-size: 15px;
   font-weight: bold;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .desc {
   margin: 0;
   font-size: 13px;
-  color: #999;
+  color: var(--text-secondary);
 }
 
 /* 控件样式 */
+.setting-control {
+  display: flex;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
 .custom-select {
   padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-  background-color: #f9f9f9;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 14%, var(--border-color));
+  background-color: color-mix(in srgb, var(--color-primary) 6%, var(--card-bg));
   font-size: 14px;
-  color: #333;
+  color: var(--text-primary);
   outline: none;
   cursor: pointer;
   transition: all 0.2s;
+  min-width: 220px;
 }
 
 .custom-select:hover {
-  border-color: #aaa;
+  border-color: var(--color-primary);
 }
 
 .toggle-group {
   display: flex;
   flex-wrap: wrap;
-  background-color: #f5f5f5;
-  border-radius: 8px;
+  background-color: color-mix(in srgb, var(--color-primary) 7%, var(--card-bg));
+  border: 1px solid color-mix(in srgb, var(--color-primary) 12%, var(--border-color));
+  border-radius: 999px;
   padding: 4px;
   gap: 4px;
 }
@@ -463,9 +509,9 @@ const openLoginModal = () => {
   background: transparent;
   border: none;
   padding: 6px 16px;
-  border-radius: 6px;
+  border-radius: 999px;
   font-size: 13px;
-  color: #666;
+  color: var(--text-secondary);
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -476,30 +522,31 @@ const openLoginModal = () => {
 }
 
 .toggle-btn.active {
-  background-color: #fff;
-  color: #000;
+  background-color: var(--color-primary);
+  color: #fff;
   font-weight: bold;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--color-primary) 24%, transparent);
 }
 
 .action-btn {
   padding: 8px 20px;
-  border-radius: 20px;
+  border-radius: 999px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .action-btn.outline {
-  background: transparent;
-  border: 1px solid #ddd;
-  color: #333;
+  background: color-mix(in srgb, var(--color-primary) 7%, var(--card-bg));
+  border: 1px solid color-mix(in srgb, var(--color-primary) 12%, var(--border-color));
+  color: var(--text-primary);
 }
 
 .action-btn.outline:hover {
-  border-color: #000;
-  color: #000;
+  border-color: var(--color-primary);
+  color: var(--color-primary-dark);
+  transform: translateY(-1px);
 }
 
 .action-btn.small {
@@ -508,8 +555,8 @@ const openLoginModal = () => {
 }
 
 .action-btn.danger {
-  background: #fff;
-  border: 1px solid #ff4d4f;
+  background: color-mix(in srgb, #ff4d4f 8%, var(--card-bg));
+  border: 1px solid color-mix(in srgb, #ff4d4f 56%, var(--border-color));
   color: #ff4d4f;
 }
 
@@ -520,32 +567,11 @@ const openLoginModal = () => {
 
 /* 危险操作样式覆盖 */
 .danger-icon {
-  background-color: #fff1f0;
+  background-color: color-mix(in srgb, #ff4d4f 12%, var(--card-bg));
   color: #ff4d4f;
 }
 .danger-text {
   color: #ff4d4f;
-}
-
-/* 整块红色退出按钮 Widget */
-.logout-widget {
-  background-color: #ff4d4f;
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 20px;
-  font-size: 16px;
-  font-weight: bold;
-  transition: all 0.2s;
-  border: none;
-}
-
-.logout-widget:hover {
-  background-color: #ff7875;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(255, 77, 79, 0.3);
 }
 
 /* Switch 开关样式 */
@@ -564,7 +590,7 @@ const openLoginModal = () => {
   position: absolute;
   cursor: pointer;
   top: 0; left: 0; right: 0; bottom: 0;
-  background-color: #ccc;
+  background-color: color-mix(in srgb, var(--text-muted) 42%, var(--border-color));
   transition: .4s;
 }
 .slider:before {
@@ -578,7 +604,7 @@ const openLoginModal = () => {
   transition: .4s;
 }
 input:checked + .slider {
-  background-color: #000;
+  background-color: var(--color-primary);
 }
 input:checked + .slider:before {
   transform: translateX(20px);
@@ -598,45 +624,90 @@ input:checked + .slider:before {
   justify-content: center;
   padding: 60px;
   text-align: center;
+  gap: 10px;
 }
 .primary-btn {
   margin-top: 20px;
-  background: #000;
+  background: var(--color-primary);
   color: #fff;
   border: none;
   padding: 10px 24px;
-  border-radius: 24px;
+  border-radius: 999px;
   cursor: pointer;
+  font-weight: 700;
+  box-shadow: 0 12px 24px color-mix(in srgb, var(--color-primary) 18%, transparent);
 }
 
-:global([data-theme="dark"]) .settings-container .page-title,
-:global([data-theme="dark"]) .settings-container .section-title,
-:global([data-theme="dark"]) .settings-container .username,
-:global([data-theme="dark"]) .settings-container .name,
-:global([data-theme="dark"]) .settings-container .user-email {
-  color: #ffffff !important;
-}
-
-:global([data-theme="dark"]) .settings-container .desc {
-  color: #cccccc !important;
-}
-
-:global([data-theme="dark"]) .settings-container .danger-text {
-  color: #ff4d4f !important;
-}
-
-:global([data-theme="dark"]) .settings-container .theme-mode-toggle {
-  background: #111 !important;
-}
-
-:global([data-theme="dark"]) .settings-container .theme-mode-toggle .toggle-btn {
-  color: #f0f0f0 !important;
+:global([data-theme="dark"]) .settings-container .toggle-group {
+  background-color: color-mix(in srgb, var(--color-primary) 8%, var(--card-bg));
 }
 
 :global([data-theme="dark"]) .settings-container .theme-mode-toggle .toggle-btn.active {
-  background: var(--color-primary) !important;
-  color: #fff !important;
-  box-shadow: none !important;
+  box-shadow: 0 10px 18px color-mix(in srgb, var(--color-primary) 22%, transparent) !important;
 }
 
+@media (max-width: 1024px) {
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .settings-container {
+    padding: 14px 14px 24px;
+  }
+
+  .widget {
+    padding: 18px;
+    border-radius: 16px;
+  }
+
+  .profile-card {
+    padding: 22px 18px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 18px;
+  }
+
+  .profile-side-actions {
+    width: 100%;
+    justify-content: flex-end;
+    margin-left: 0;
+    margin-top: -4px;
+  }
+
+  .profile-avatar {
+    width: 88px;
+    height: 88px;
+  }
+
+  .profile-actions,
+  .setting-control {
+    width: 100%;
+  }
+
+  .setting-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .custom-select,
+  .toggle-group,
+  .theme-mode-toggle {
+    width: 100%;
+  }
+
+  .toggle-group {
+    border-radius: 16px;
+  }
+
+  .toggle-btn {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .login-prompt {
+    padding: 34px 20px;
+  }
+}
 </style>

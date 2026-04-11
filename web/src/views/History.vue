@@ -76,17 +76,17 @@
               <svg v-if="selectedIds.includes(msg.id)" viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
             </div>
           </div>
-          <div class="col-name text-ellipsis" :title="msg.original_text">
+          <div class="col-name text-ellipsis" :title="msg.original_text" data-label="任务名称">
             {{ formatName(msg.original_text) }}
           </div>
-          <div class="col-type">
+          <div class="col-type" data-label="类型">
             <span class="type-text">{{ msg.chat_analysis?.notice_type || '文档' }}</span>
           </div>
-          <div class="col-model">
+          <div class="col-model" data-label="难度">
             <span class="model-badge">{{ getDifficultyLabel(msg) }}</span>
           </div>
-          <div class="col-time">{{ formatDate(msg.created_time) }}</div>
-          <div class="col-actions" @click.stop>
+          <div class="col-time" data-label="创建时间">{{ formatDate(msg.created_time) }}</div>
+          <div class="col-actions" data-label="操作" @click.stop>
             <button class="icon-btn favorite-btn" :class="{ active: isFavorited(msg.id) }" title="收藏" @click="toggleFavorite(msg)">
               <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" :fill="isFavorited(msg.id) ? '#f1c40f' : 'none'">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
@@ -107,14 +107,14 @@
           class="table-row"
           @click="openAgentConversation(item.id)"
         >
-          <div class="col-name text-ellipsis" :title="item.title">
+          <div class="col-name text-ellipsis" :title="item.title" data-label="对话标题">
             {{ item.title }}
           </div>
-          <div class="col-type">
+          <div class="col-type" data-label="类型">
             <span class="type-text">智能体对话</span>
           </div>
-          <div class="col-time">{{ formatDate(item.updated_time) }}</div>
-          <div class="col-actions" @click.stop>
+          <div class="col-time" data-label="最近更新">{{ formatDate(item.updated_time) }}</div>
+          <div class="col-actions" data-label="操作" @click.stop>
             <button class="icon-btn" title="进入对话" @click="openAgentConversation(item.id)">进入</button>
           </div>
         </div>
@@ -438,11 +438,18 @@ onMounted(() => {
   height: 100%;
   background-color: var(--content-bg);
   position: relative;
+  gap: 16px;
 }
 
 .fixed-header-area {
-  padding: 30px 30px 0 30px;
-  background-color: var(--content-bg);
+  margin: 16px 20px 0;
+  padding: 18px 20px;
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--color-accent-cool) 10%, transparent), transparent 42%),
+    linear-gradient(160deg, color-mix(in srgb, var(--color-primary) 7%, var(--card-bg)), var(--card-bg));
+  border: 1px solid color-mix(in srgb, var(--color-primary) 10%, var(--border-color));
+  border-radius: 18px;
+  box-shadow: 0 18px 34px color-mix(in srgb, var(--color-primary) 10%, transparent);
   z-index: 10;
   flex-shrink: 0;
 }
@@ -451,6 +458,7 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
 }
 
 .page-title {
@@ -486,15 +494,17 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 10px;
-  margin-bottom: 30px;
+  gap: 12px;
+  margin-top: 14px;
+  margin-bottom: 14px;
 }
 
 .filter-section {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 15px;
-  padding-top: 6px;
+  min-width: 0;
 }
 
 .filter-label {
@@ -557,11 +567,11 @@ onMounted(() => {
 
 .table-header {
   display: flex;
-  padding: 15px 0;
-  border-bottom: 1px solid #eee;
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 82%, transparent);
   font-weight: bold;
-  color: #999;
-  font-size: 14px;
+  color: var(--text-secondary);
+  font-size: 13px;
   align-items: center;
 }
 
@@ -571,30 +581,35 @@ onMounted(() => {
   flex-direction: column;
   position: relative;
   overflow: hidden;
+  margin: 0 20px 20px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  box-shadow: 0 18px 34px color-mix(in srgb, var(--color-primary) 8%, transparent);
 }
 
 .scrollable-area {
   overflow-y: auto;
-  padding: 0 30px 100px 30px;
+  padding: 0 18px 100px;
 }
 
 .table-row {
   display: flex;
-  padding: 15px 0;
-  border-bottom: 1px solid #eee;
+  padding: 16px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-color) 82%, transparent);
   align-items: center;
   font-size: 15px;
-  transition: background-color 0.2s;
-  background-color: var(--content-bg);
+  transition: background-color 0.2s, box-shadow 0.2s ease, transform 0.2s ease;
+  background-color: transparent;
   cursor: pointer;
 }
 
 .table-row.row-selected {
-  background-color: #f8f9fa;
+  background-color: color-mix(in srgb, var(--color-primary) 7%, var(--card-bg));
 }
 
 .table-row:hover {
-  background-color: #fafafa;
+  background-color: color-mix(in srgb, var(--color-primary) 4%, var(--card-bg));
 }
 
 .col-checkbox {
@@ -609,7 +624,7 @@ onMounted(() => {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  border: 1px solid #ccc;
+  border: 1px solid color-mix(in srgb, var(--border-color) 72%, var(--text-muted));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -633,7 +648,7 @@ onMounted(() => {
 .col-model { flex: 1; }
 .col-time {
   flex: 1.5;
-  color: #666;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 .col-actions {
@@ -641,22 +656,23 @@ onMounted(() => {
   display: flex;
   gap: 10px;
   justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .text-ellipsis {
   white-space: nowrap;
   overflow: hidden;
-  color: #000;
+  color: var(--text-primary);
   font-weight: bold;
 }
 
 .type-text {
-  color: #555;
+  color: var(--text-secondary);
 }
 
 .model-badge {
-  background-color: #000;
-  color: #fff;
+  background-color: color-mix(in srgb, var(--color-primary) 12%, var(--card-bg));
+  color: var(--color-primary-dark);
   padding: 4px 12px;
   border-radius: var(--border-radius-pill);
   font-size: 12px;
@@ -664,18 +680,20 @@ onMounted(() => {
 }
 
 .icon-btn {
-  background: none;
-  border: none;
+  background: color-mix(in srgb, var(--color-primary) 6%, var(--card-bg));
+  border: 1px solid color-mix(in srgb, var(--color-primary) 10%, var(--border-color));
   cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
+  padding: 6px 10px;
+  border-radius: 999px;
   transition: transform 0.2s, color 0.2s;
-  color: #999;
+  color: var(--text-secondary);
+  font-size: 12px;
 }
 
 .icon-btn:hover {
-  transform: scale(1.05);
-  color: #000;
+  transform: translateY(-1px);
+  color: var(--text-primary);
+  border-color: var(--color-primary);
 }
 
 .favorite-btn.active {
@@ -704,24 +722,24 @@ onMounted(() => {
 }
 
 .action-content {
-  background-color: #fff;
-  border-radius: 30px;
+  background-color: var(--card-bg);
+  border-radius: 999px;
   padding: 10px 20px;
   display: flex;
   align-items: center;
   gap: 15px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  border: 1px solid #f0f0f0;
+  box-shadow: 0 20px 34px rgba(0, 0, 0, 0.16);
+  border: 1px solid var(--border-color);
 }
 
 .selected-count {
   font-size: 14px;
   font-weight: bold;
-  color: #000;
+  color: var(--text-primary);
 }
 
 .divider {
-  color: #ddd;
+  color: var(--text-muted);
   font-size: 16px;
 }
 
@@ -730,7 +748,7 @@ onMounted(() => {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: #999;
+  color: var(--text-secondary);
   font-size: 14px;
 }
 
@@ -741,5 +759,118 @@ onMounted(() => {
 
 .slide-in {
   animation: slideInDown 0.35s ease both;
+}
+
+@media (max-width: 960px) {
+  .top-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .multi-select-actions {
+    align-self: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .history-container {
+    gap: 14px;
+  }
+
+  .fixed-header-area {
+    margin: 14px 14px 0;
+    padding: 16px;
+  }
+
+  .header-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .header-actions {
+    width: 100%;
+  }
+
+  .import-btn {
+    width: 100%;
+  }
+
+  .filter-section,
+  .tags-group {
+    gap: 8px;
+  }
+
+  .table-header {
+    display: none;
+  }
+
+  .table-container {
+    margin: 0 14px 18px;
+  }
+
+  .scrollable-area {
+    padding: 10px 14px 92px;
+  }
+
+  .table-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 14px 0;
+  }
+
+  .col-checkbox {
+    width: auto;
+    justify-content: flex-start;
+    order: -1;
+  }
+
+  .col-name,
+  .col-type,
+  .col-model,
+  .col-time,
+  .col-actions {
+    width: 100%;
+    flex: none;
+    padding: 0;
+  }
+
+  .col-type,
+  .col-model,
+  .col-time {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+  }
+
+  .col-type::before,
+  .col-model::before,
+  .col-time::before,
+  .col-actions::before {
+    content: attr(data-label);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .col-actions {
+    justify-content: flex-start;
+    padding-top: 2px;
+  }
+
+  .col-actions::before {
+    width: 100%;
+  }
+
+  .text-ellipsis {
+    white-space: normal;
+  }
+
+  .action-content {
+    gap: 10px;
+    padding: 10px 14px;
+  }
 }
 </style>

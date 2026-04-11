@@ -443,7 +443,12 @@ body {
 }
 
 [data-theme="dark"] .home-container .panel-header {
-  background: linear-gradient(90deg, #2e2e2e 0%, #3a3a3a 100%) !important;
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-primary-dark) 72%, #516070) 0%,
+      color-mix(in srgb, var(--color-primary) 64%, var(--color-secondary) 36%) 100%
+    ) !important;
 }
 
 [data-theme="dark"] .home-container .hero-action-btn,
@@ -463,17 +468,17 @@ body {
 [data-theme="dark"] .home-container .doc-content-title,
 [data-theme="dark"] .home-container .doc-content-body,
 [data-theme="dark"] .home-container .cloud-label {
-  color: #f3f3f3 !important;
+  color: var(--text-primary) !important;
 }
 
 [data-theme="dark"] .home-container .history-item {
-  background: #5b3236 !important;
-  border-color: #7a4248 !important;
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--card-bg)) !important;
+  border-color: color-mix(in srgb, var(--color-primary) 22%, var(--border-color)) !important;
 }
 
 [data-theme="dark"] .home-container .history-item.active {
-  background: #6f3a40 !important;
-  border-color: #94555b !important;
+  background: color-mix(in srgb, var(--color-primary) 14%, var(--card-bg)) !important;
+  border-color: color-mix(in srgb, var(--color-primary) 34%, var(--border-color)) !important;
 }
 
 [data-theme="dark"] .home-container .history-item-date,
@@ -481,7 +486,7 @@ body {
 [data-theme="dark"] .home-container .doc-date,
 [data-theme="dark"] .home-container .news-img-date,
 [data-theme="dark"] .home-container .history-detail-text {
-  color: #d0d0d0 !important;
+  color: var(--text-secondary) !important;
 }
 
 [data-theme="dark"] .home-container .news-item {
@@ -493,32 +498,39 @@ body {
 }
 
 [data-theme="dark"] .home-container .doc-title-item {
-  background: #2a2a2a !important;
+  background: color-mix(in srgb, var(--color-primary) 5%, var(--card-bg)) !important;
+  border-color: transparent !important;
 }
 
 [data-theme="dark"] .home-container .doc-title-item:nth-child(1) {
-  background: #5e2f33 !important;
+  background: color-mix(in srgb, var(--color-primary) 14%, var(--card-bg)) !important;
 }
 
 [data-theme="dark"] .home-container .doc-title-item:nth-child(2) {
-  background: #4c272b !important;
+  background: color-mix(in srgb, var(--color-primary) 11%, var(--card-bg)) !important;
 }
 
 [data-theme="dark"] .home-container .doc-title-item:nth-child(3) {
-  background: #3f2124 !important;
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--card-bg)) !important;
 }
 
 [data-theme="dark"] .home-container .doc-title-item.active {
-  border: 1px solid #a85f66 !important;
+  background: color-mix(in srgb, var(--color-primary) 16%, var(--card-bg)) !important;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 34%, var(--border-color)) !important;
 }
 
 [data-theme="dark"] .home-container .word-cloud-chart {
-  background: #000 !important;
-  border: 1px solid #222 !important;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 7%, var(--card-bg)), var(--card-bg)) !important;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 14%, var(--border-color)) !important;
 }
 
 [data-theme="dark"] .home-container .example-card .card-image-wrapper {
-  background: linear-gradient(135deg, #4a1f24, #3b3b3b) !important;
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--color-primary) 14%, transparent),
+      color-mix(in srgb, var(--color-secondary) 10%, transparent)
+    ) !important;
 }
 
 [data-theme="dark"] .home-container .news-image-item {

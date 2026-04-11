@@ -114,39 +114,54 @@ onMounted(fetchFavorites);
 
 <style scoped>
 .favorites-container {
-  padding: 20px 30px;
+  padding: 16px 20px 24px;
   height: 100%;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
 }
 
-.page-title {
-  font-size: 24px;
-  font-weight: bold;
-  margin: 0 0 20px 0;
-  color: #111;
+.header-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .empty-state {
-  color: #999;
-  padding: 40px 0;
+  color: var(--text-secondary);
+  padding: 48px 16px;
   text-align: center;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
 }
 
 .favorites-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
 }
 
 .favorite-card {
-  background: #fff;
-  border: 1px solid #eee;
-  border-top: 3px solid #c0392b;
-  padding: 14px 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  border-top: 3px solid var(--color-primary);
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
   opacity: 0;
+  box-shadow: 0 16px 34px color-mix(in srgb, var(--color-primary) 10%, transparent);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.favorite-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 22px 38px color-mix(in srgb, var(--color-primary) 14%, transparent);
+  border-color: color-mix(in srgb, var(--color-primary) 16%, var(--border-color));
 }
 
 @keyframes fadeInUp {
@@ -161,26 +176,29 @@ onMounted(fetchFavorites);
 .card-header {
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
   gap: 10px;
 }
 
 .card-title {
-  font-size: 14px;
+  font-size: 15px;
   margin: 0;
   font-weight: 700;
-  color: #111;
+  color: var(--text-primary);
+  line-height: 1.45;
 }
 
 .card-time {
   font-size: 11px;
-  color: #999;
+  color: var(--text-muted);
+  flex-shrink: 0;
 }
 
 .card-text {
   margin: 0;
-  font-size: 12px;
-  color: #444;
-  line-height: 1.5;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.65;
 }
 
 .card-tags {
@@ -190,28 +208,31 @@ onMounted(fetchFavorites);
 }
 
 .tag {
-  background: #111;
-  color: #fff;
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--card-bg));
+  color: var(--color-primary-dark);
   font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 700;
 }
 
 .tag.subtle {
-  background: #f0f0f0;
-  color: #555;
+  background: color-mix(in srgb, var(--border-color) 46%, var(--card-bg));
+  color: var(--text-secondary);
 }
 
 .card-actions {
   display: flex;
+  justify-content: space-between;
   gap: 8px;
   align-items: center;
+  margin-top: auto;
 }
 
 .action-btn {
-  background: #c0392b;
+  background: var(--color-primary);
   border: none;
-  border-bottom: 3px solid #922b21;
+  border-bottom: 3px solid var(--color-primary-dark);
   border-radius: 999px;
   color: #fff;
   padding: 7px 18px;
@@ -222,17 +243,25 @@ onMounted(fetchFavorites);
 }
 
 .action-btn:hover {
-  background: #e74c3c;
-  border-bottom-color: #c0392b;
+  background: var(--color-primary-light);
+  border-bottom-color: var(--color-primary);
 }
 
 .star-btn {
-  background: none;
-  border: none;
+  background: color-mix(in srgb, #f1c40f 10%, var(--card-bg));
+  border: 1px solid color-mix(in srgb, #f1c40f 32%, var(--border-color));
+  border-radius: 999px;
   cursor: pointer;
-  padding: 4px;
+  padding: 6px 10px;
   display: flex;
   align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.star-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 18px color-mix(in srgb, #f1c40f 18%, transparent);
 }
 
 @keyframes star-pop {
@@ -243,5 +272,36 @@ onMounted(fetchFavorites);
 
 .star-btn.star-popping {
   animation: star-pop 0.4s ease forwards;
+}
+
+@media (max-width: 768px) {
+  .favorites-container {
+    padding: 14px 14px 24px;
+  }
+
+  .favorites-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .favorite-card {
+    padding: 16px;
+  }
+
+  .card-header {
+    flex-direction: column;
+  }
+
+  .card-time {
+    font-size: 12px;
+  }
+
+  .card-actions {
+    flex-wrap: wrap;
+  }
+
+  .action-btn {
+    flex: 1 1 auto;
+    text-align: center;
+  }
 }
 </style>

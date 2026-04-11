@@ -9,8 +9,8 @@ export const getCentralDocs = (limit = 5) =>
 export const getHotKeywords = () =>
   apiClient.get(API_ROUTES.NEWS_KEYWORDS);
 
-export const searchNews = (q, limit = 20) =>
-  apiClient.get(API_ROUTES.NEWS_SEARCH, { params: { q, limit } });
+export const searchNews = (q, limit = 20, extraParams = {}) =>
+  apiClient.get(API_ROUTES.NEWS_SEARCH, { params: { q, limit, ...extraParams } });
 
 export const getNewsWithImages = (limit = 5) =>
   apiClient.get(API_ROUTES.NEWS_WITH_IMAGES, { params: { limit } });

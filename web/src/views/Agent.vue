@@ -110,6 +110,7 @@
 
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { apiClient, API_ROUTES } from '@/router/api_routes.js';
 import { useUserStore } from '@/stores/auth.js';
 import CloudCycleConversationPanel from '@/components/agent/CloudCycleConversationPanel.vue';
@@ -117,6 +118,8 @@ import CloudCycleHero from '@/components/agent/CloudCycleHero.vue';
 import CloudCycleInspector from '@/components/agent/CloudCycleInspector.vue';
 import CloudCycleSidebar from '@/components/agent/CloudCycleSidebar.vue';
 
+const route = useRoute();
+const router = useRouter();
 const userStore = useUserStore();
 
 const fileInputRef = ref(null);
@@ -393,6 +396,29 @@ const fetchConversations = async () => {
   conversations.value = response.data || [];
 };
 
+const normalizeConversationId = (value) => {
+  const parsed = Number.parseInt(String(value ?? ''), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+};
+
+const syncConversationRoute = async (conversationId) => {
+  const nextId = normalizeConversationId(conversationId);
+  const currentId = normalizeConversationId(route.query.conversation_id);
+  if (nextId === currentId) return;
+
+  const nextQuery = { ...route.query };
+  if (nextId) nextQuery.conversation_id = String(nextId);
+  else delete nextQuery.conversation_id;
+
+  await router.replace({ path: '/agent', query: nextQuery });
+};
+
+const syncConversationFromRoute = async () => {
+  const routeConversationId = normalizeConversationId(route.query.conversation_id);
+  if (!routeConversationId || routeConversationId === activeConversationId.value) return;
+  await selectConversation(routeConversationId, { syncRoute: false });
+};
+
 const loadMessages = async (conversationId) => {
   const response = await apiClient.get(API_ROUTES.AGENT_MESSAGES(conversationId));
   messages.value = (response.data || []).map((item) =>
@@ -419,12 +445,15 @@ const createConversation = async () => {
   activeConversationId.value = response.data.id;
   messages.value = [];
   resetRunRuntime();
+  await syncConversationRoute(response.data.id);
   if (isMobile.value) sidebarOpen.value = false;
 };
 
-const selectConversation = async (conversationId) => {
+const selectConversation = async (conversationId, options = {}) => {
+  const { syncRoute = true } = options;
   activeConversationId.value = conversationId;
   await loadMessages(conversationId);
+  if (syncRoute) await syncConversationRoute(conversationId);
   if (isMobile.value) sidebarOpen.value = false;
 };
 
@@ -435,6 +464,7 @@ const deleteConversation = async (conversationId) => {
     activeConversationId.value = null;
     messages.value = [];
     resetRunRuntime();
+    await syncConversationRoute(null);
   }
   await fetchConversations();
 };
@@ -449,6 +479,7 @@ const handleSocketMessage = (raw) => {
 
   if (data.type === 'conversation') {
     activeConversationId.value = data.conversation_id;
+    syncConversationRoute(data.conversation_id).catch(() => {});
     fetchConversations();
     return;
   }
@@ -668,6 +699,7 @@ const initializePage = async () => {
   resetRunRuntime();
 
   await fetchConversations();
+  await syncConversationFromRoute();
 
   try {
     await connectSocket();
@@ -695,6 +727,14 @@ watch(
       return;
     }
     await initializePage();
+  }
+);
+
+watch(
+  () => route.query.conversation_id,
+  async () => {
+    if (!userStore.token) return;
+    await syncConversationFromRoute();
   }
 );
 

@@ -5,6 +5,7 @@ from sqlmodel import Session, select
 
 from app.models.agent_conversation import AgentConversation
 from app.models.agent_message import AgentMessage
+from app.services import history_service
 
 
 def create_conversation(session: Session, user_id: int, title: str) -> AgentConversation:
@@ -12,6 +13,14 @@ def create_conversation(session: Session, user_id: int, title: str) -> AgentConv
     session.add(convo)
     session.commit()
     session.refresh(convo)
+    history_service.record_agent_conversation_event(
+        session,
+        convo,
+        event_type="created",
+        actor_user_id=user_id,
+        dedupe_key=f"agent:create:{convo.id}",
+        occurred_time=convo.created_time,
+    )
     return convo
 
 
@@ -33,6 +42,15 @@ def delete_conversation(session: Session, user_id: int, conversation_id: int) ->
     convo = get_conversation(session, user_id, conversation_id)
     if not convo:
         return False
+    history_service.record_agent_conversation_event(
+        session,
+        convo,
+        event_type="deleted",
+        actor_user_id=user_id,
+        summary="会话已删除",
+        dedupe_key=f"agent:deleted:{convo.id}",
+        occurred_time=datetime.now(),
+    )
     messages = list(
         session.exec(
             select(AgentMessage).where(AgentMessage.conversation_id == conversation_id)
@@ -65,6 +83,17 @@ def add_message(
         session.add(convo)
     session.commit()
     session.refresh(msg)
+    if convo and role == "assistant":
+        history_service.record_agent_conversation_event(
+            session,
+            convo,
+            event_type="continued",
+            actor_user_id=user_id,
+            summary=content,
+            dedupe_key=f"agent:continued:{conversation_id}:{msg.id}",
+            occurred_time=msg.created_time,
+            extra={"message_id": msg.id},
+        )
     return msg
 
 

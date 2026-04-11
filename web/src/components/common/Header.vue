@@ -21,12 +21,14 @@
     </div>
 
     <div class="search-section" v-if="showSearch">
-      <div class="search-bar">
-        <input type="text" v-model="searchQuery" @keyup.enter="handleSearch" placeholder="搜索文档..." />
-        <button class="search-btn" @click="handleSearch">
-          <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-        </button>
-      </div>
+      <UnifiedSearchBox
+        v-model="searchQuery"
+        v-model:types="searchTypes"
+        size="header"
+        placeholder="搜索政策、文章、历史、智能体..."
+        source="header_search_dropdown"
+        @submit="handleSearchSubmit"
+      />
     </div>
     <div class="spacer" v-else></div>
 
@@ -118,12 +120,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { trackHistoryEvent } from '@/api/history';
+import UnifiedSearchBox from '@/components/common/UnifiedSearchBox.vue';
 import { useUserStore } from '@/stores/auth.js';
 import { useAppearanceTransition } from '@/composables/useAppearanceTransition';
 import { COLOR_SCHEME_OPTIONS, useSettingsStore } from '@/stores/settings';
 import { resolveAvatarUrl } from '@/utils/avatar.js';
+import { buildSearchRouteQuery, normalizeSearchTypes } from '@/utils/unifiedSearch';
 
 defineProps({
   isIconMode: { type: Boolean, default: true },
@@ -144,6 +149,8 @@ const { isAppearanceTransitioning } = useAppearanceTransition([isAgentShell]);
 
 const isDark = ref(false);
 const isSchemeSwitching = ref(false);
+const searchQuery = ref(String(route.query.q || ''));
+const searchTypes = ref(normalizeSearchTypes(route.query.types));
 let themeObserver = null;
 
 const currentSchemeIndex = computed(() => {
@@ -183,11 +190,34 @@ const handleColorSchemeToggle = async () => {
   }
 };
 
-const searchQuery = ref('');
 const showSearch = computed(() => route.name !== 'login' && route.name !== 'register');
+const trackHeaderSearch = (query, types = []) => {
+  if (!userStore.token || !query) return;
+  const routeQuery = buildSearchRouteQuery(query, types);
+  trackHistoryEvent({
+    domain: 'search',
+    event_type: 'searched',
+    subject_type: 'search_query',
+    title: query,
+    summary: `搜索: ${query}`,
+    route_path: `/search?${new URLSearchParams(routeQuery).toString()}`,
+    icon: 'search',
+    search_text: query,
+    extra: {
+      query,
+      source: 'header_search',
+      types,
+    },
+  }).catch(() => {});
+};
 
-const handleSearch = () => {
-  if (searchQuery.value.trim()) router.push({ path: '/search', query: { q: searchQuery.value } });
+const handleSearchSubmit = ({ query, types }) => {
+  if (!query) return;
+  trackHeaderSearch(query, types);
+  router.push({
+    path: '/search',
+    query: buildSearchRouteQuery(query, types),
+  });
 };
 
 const displayAvatar = computed(() => {
@@ -211,11 +241,30 @@ onMounted(() => {
   themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 });
 
-onBeforeUnmount(() => themeObserver?.disconnect());
+watch(
+  () => route.query.q,
+  (value) => {
+    searchQuery.value = String(value || '');
+  }
+);
+
+watch(
+  () => route.query.types,
+  (value) => {
+    searchTypes.value = normalizeSearchTypes(value);
+  }
+);
+
+onBeforeUnmount(() => {
+  themeObserver?.disconnect();
+});
 </script>
 
 <style scoped>
 .app-header {
+  position: relative;
+  z-index: 40;
+  overflow: visible;
   width: min(1100px, calc(100% - 32px), 66.666%);
   margin: 12px auto 0;
   height: 56px;
@@ -249,10 +298,12 @@ onBeforeUnmount(() => themeObserver?.disconnect());
 }
 
 .search-section {
+  position: relative;
+  z-index: 45;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  width: 300px;
+  width: 360px;
 }
 
 .search-bar {
@@ -277,6 +328,7 @@ onBeforeUnmount(() => themeObserver?.disconnect());
 }
 .search-bar input::placeholder { color: var(--shell-text-muted); }
 
+.search-clear,
 .search-btn {
   background: none;
   color: var(--shell-text-muted);
@@ -287,7 +339,100 @@ onBeforeUnmount(() => themeObserver?.disconnect());
   justify-content: center;
   transition: color 0.2s;
 }
+.search-clear:hover,
 .search-btn:hover { color: var(--shell-text); }
+
+.search-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  width: 100%;
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 10px;
+  border-radius: 20px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 18px 36px color-mix(in srgb, var(--color-primary) 14%, transparent);
+  z-index: 30;
+}
+
+.search-dropdown-title {
+  padding: 4px 8px 8px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.search-dropdown-item {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 8px;
+  border: none;
+  background: transparent;
+  border-radius: 14px;
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.18s ease;
+}
+
+.search-dropdown-item:hover {
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--card-bg));
+}
+
+.search-dropdown-item.is-active {
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--card-bg));
+}
+
+.dropdown-badge {
+  flex-shrink: 0;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+  background: color-mix(in srgb, var(--color-primary) 12%, var(--card-bg));
+  color: var(--color-primary-dark);
+}
+
+.dropdown-badge.accent {
+  background: color-mix(in srgb, var(--color-accent-cool) 12%, var(--card-bg));
+  color: var(--color-accent-cool);
+}
+
+.dropdown-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.dropdown-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.dropdown-subtitle {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.search-dropdown-empty {
+  padding: 10px 8px 4px;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
 
 .tag-chips {
   display: flex;
@@ -523,7 +668,7 @@ onBeforeUnmount(() => themeObserver?.disconnect());
   }
 
   .search-section {
-    width: 240px;
+    width: 300px;
   }
 
   .user-actions {
@@ -538,7 +683,7 @@ onBeforeUnmount(() => themeObserver?.disconnect());
   }
 
   .search-section {
-    width: 200px;
+    width: 260px;
   }
 
   .user-actions {

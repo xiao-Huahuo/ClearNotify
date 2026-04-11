@@ -16,9 +16,12 @@ from app.models.settings import Settings
 from app.models.agent_conversation import AgentConversation
 from app.models.agent_message import AgentMessage
 from app.models.agent_memory import AgentMemory
+from app.models.history_event import HistoryEvent
+from app.models.search_index_item import SearchIndexItem
 from app.models.stats_analysis import StatsAnalysis
 from app.core.security import get_password_hash
 from app.core.config import GlobalConfig
+from app.services import history_service, search_index_service
 
 logger = logging.getLogger(__name__)
 
@@ -39,27 +42,41 @@ def init_db_and_admin():
     # 1. 创建数据库表结构
     print(">>> [1/5] 创建数据库表结构...")
     create_db_and_tables()
-    print("✓ 数据库表结构创建完成\n")
+    print("[ok] 数据库表结构创建完成\n")
 
     # 2. 创建必要的目录
     print(">>> [2/5] 创建必要的目录...")
     _create_directories()
-    print("✓ 目录创建完成\n")
+    print("[ok] 目录创建完成\n")
 
     # 3. 执行数据库迁移（兼容旧版本字段）
     print(">>> [3/5] 执行数据库迁移...")
     _run_migrations()
-    print("✓ 数据库迁移完成\n")
+    print("[ok] 数据库迁移完成\n")
 
     # 4. 初始化管理员账户
     print(">>> [4/5] 初始化管理员账户...")
     admin_uid = _init_admin_user()
-    print("✓ 管理员账户初始化完成\n")
+    print("[ok] 管理员账户初始化完成\n")
 
     # 5. 导入演示数据（如果存在）
     print(">>> [5/5] 导入演示数据...")
     _import_seed_data(admin_uid)
-    print("✓ 演示数据导入完成\n")
+    print("[ok] 演示数据导入完成\n")
+
+    print(">>> [history] 回填统一历史事件...")
+    with Session(engine) as session:
+        created = history_service.backfill_core_history(session)
+    print(f"[ok] 统一历史事件回填完成: {created} 条\n")
+
+    print(">>> [search] 回填统一搜索索引与向量...")
+    with Session(engine) as session:
+        index_result = search_index_service.backfill_search_index(session)
+    print(
+        "[ok] 统一搜索索引回填完成: "
+        f"{index_result['history_events']} history + "
+        f"{index_result['policy_documents']} policy = {index_result['total']}\n"
+    )
 
     print("=" * 80)
     print("数据库初始化完成".center(80))
@@ -111,7 +128,7 @@ def _run_migrations():
             try:
                 conn.execute(text(sql))
                 conn.commit()
-                print(f"  ✓ 执行迁移: {sql[:60]}...")
+                print(f"  [ok] 执行迁移: {sql[:60]}...")
             except Exception as e:
                 # 字段已存在，忽略错误
                 pass
@@ -127,7 +144,7 @@ def _init_admin_user() -> int:
     admin_password = os.getenv("ADMIN_PASSWORD", GlobalConfig.DEFAULT_ADMIN_PASSWORD)
 
     if not admin_email:
-        print("  ⚠ 未配置管理员邮箱，跳过管理员初始化")
+        print("  [warn] 未配置管理员邮箱，跳过管理员初始化")
         return None
 
     with Session(engine) as session:
@@ -140,9 +157,9 @@ def _init_admin_user() -> int:
                 existing.email_verified = True
                 session.add(existing)
                 session.commit()
-                print(f"  ✓ 更新管理员账户: {existing.email}")
+                print(f"  [ok] 更新管理员账户: {existing.email}")
             else:
-                print(f"  ✓ 管理员账户已存在: {existing.email}")
+                print(f"  [ok] 管理员账户已存在: {existing.email}")
             return existing.uid
         else:
             # 创建新管理员
@@ -156,8 +173,8 @@ def _init_admin_user() -> int:
             session.add(admin)
             session.commit()
             session.refresh(admin)
-            print(f"  ✓ 创建管理员账户: {admin_username} ({admin_email})")
-            print(f"  ✓ 管理员密码: {admin_password}")
+            print(f"  [ok] 创建管理员账户: {admin_username} ({admin_email})")
+            print(f"  [ok] 管理员密码: {admin_password}")
             return admin.uid
 
 
@@ -167,19 +184,19 @@ def _import_seed_data(admin_uid: int):
     从 app/resources/db_init/ 目录读取各个 JSON 文件
     """
     if not admin_uid:
-        print("  ⚠ 管理员账户未初始化，跳过演示数据导入")
+        print("  [warn] 管理员账户未初始化，跳过演示数据导入")
         return
 
     seed_dir = GlobalConfig.DB_INIT_DIR
     if not seed_dir.exists():
-        print(f"  ⚠ 演示数据目录不存在: {seed_dir}")
+        print(f"  [warn] 演示数据目录不存在: {seed_dir}")
         return
 
     with Session(engine) as session:
         # 检查是否已有数据（除了管理员）
         user_count = session.exec(select(User)).all()
         if len(user_count) > 1:
-            print("  ⚠ 数据库已有数据，跳过演示数据导入")
+            print("  [warn] 数据库已有数据，跳过演示数据导入")
             return
 
         print(f"  从目录导入演示数据: {seed_dir}\n")
@@ -269,7 +286,7 @@ def _import_users(session: Session, seed_dir: Path):
         print(f"    + 普通用户: {user.uname} ({user.email})")
 
     session.commit()
-    print(f"  ✓ 导入用户: {len(data.get('certified_users', []))} 个认证主体, {len(data.get('normal_users', []))} 个普通用户\n")
+    print(f"  [ok] 导入用户: {len(data.get('certified_users', []))} 个认证主体, {len(data.get('normal_users', []))} 个普通用户\n")
 
 
 def _import_policy_documents(session: Session, seed_dir: Path):
@@ -306,7 +323,7 @@ def _import_policy_documents(session: Session, seed_dir: Path):
         print(f"    + 文档: {doc.title[:30]}...")
 
     session.commit()
-    print(f"  ✓ 导入政策文档: {len(data.get('documents', []))} 篇\n")
+    print(f"  [ok] 导入政策文档: {len(data.get('documents', []))} 篇\n")
 
 
 def _import_opinions(session: Session, seed_dir: Path):
@@ -346,7 +363,7 @@ def _import_opinions(session: Session, seed_dir: Path):
         print(f"    + 评议: {opinion_data['opinion_type']} - {opinion_data['content'][:20]}...")
 
     session.commit()
-    print(f"  ✓ 导入民意评议: {len(data.get('opinions', []))} 条\n")
+    print(f"  [ok] 导入民意评议: {len(data.get('opinions', []))} 条\n")
 
 
 def _import_chat_messages(session: Session, seed_dir: Path, admin_uid: int):
@@ -381,7 +398,7 @@ def _import_chat_messages(session: Session, seed_dir: Path, admin_uid: int):
         print(f"    + 解析: {msg_data['handling_matter'][:30]}...")
 
     session.commit()
-    print(f"  ✓ 导入解析记录: {len(data.get('chat_messages', []))} 条\n")
+    print(f"  [ok] 导入解析记录: {len(data.get('chat_messages', []))} 条\n")
 
 
 def _import_todos(session: Session, seed_dir: Path, admin_uid: int):
@@ -406,7 +423,7 @@ def _import_todos(session: Session, seed_dir: Path, admin_uid: int):
         print(f"    + 待办: {todo.title[:30]}...")
 
     session.commit()
-    print(f"  ✓ 导入待办事项: {len(data.get('todos', []))} 条\n")
+    print(f"  [ok] 导入待办事项: {len(data.get('todos', []))} 条\n")
 
 
 def _import_favorites(session: Session, seed_dir: Path):
@@ -440,7 +457,7 @@ def _import_favorites(session: Session, seed_dir: Path):
             print(f"    + 收藏: {fav_data.get('note', '无备注')[:30]}...")
 
     session.commit()
-    print(f"  ✓ 导入收藏记录: {len(data.get('favorites', []))} 条\n")
+    print(f"  [ok] 导入收藏记录: {len(data.get('favorites', []))} 条\n")
 
 
 def _import_settings(session: Session, seed_dir: Path):
@@ -469,7 +486,7 @@ def _import_settings(session: Session, seed_dir: Path):
         print(f"    + 设置: 用户 {setting_data['user_email']}")
 
     session.commit()
-    print(f"  ✓ 导入用户设置: {len(data.get('settings', []))} 条\n")
+    print(f"  [ok] 导入用户设置: {len(data.get('settings', []))} 条\n")
 
 
 def _import_agent_conversations(session: Session, seed_dir: Path):
@@ -495,7 +512,7 @@ def _import_agent_conversations(session: Session, seed_dir: Path):
         print(f"    + 对话: {conv.title}")
 
     session.commit()
-    print(f"  ✓ 导入智能体对话: {len(data.get('agent_conversations', []))} 条\n")
+    print(f"  [ok] 导入智能体对话: {len(data.get('agent_conversations', []))} 条\n")
 
 
 def _import_agent_messages(session: Session, seed_dir: Path):
@@ -528,7 +545,7 @@ def _import_agent_messages(session: Session, seed_dir: Path):
             print(f"    + 消息: {msg_data['role']} - {msg_data['content'][:20]}...")
 
     session.commit()
-    print(f"  ✓ 导入智能体消息: {len(data.get('agent_messages', []))} 条\n")
+    print(f"  [ok] 导入智能体消息: {len(data.get('agent_messages', []))} 条\n")
 
 
 def _import_agent_memories(session: Session, seed_dir: Path):
@@ -560,7 +577,7 @@ def _import_agent_memories(session: Session, seed_dir: Path):
             print(f"    + 记忆: {mem_data['summary'][:30]}...")
 
     session.commit()
-    print(f"  ✓ 导入智能体记忆: {len(data.get('agent_memories', []))} 条\n")
+    print(f"  [ok] 导入智能体记忆: {len(data.get('agent_memories', []))} 条\n")
 
 
 def _import_stats_analyses(session: Session, seed_dir: Path):
@@ -593,4 +610,4 @@ def _import_stats_analyses(session: Session, seed_dir: Path):
         print(f"    + 统计: 用户 {stats_data['user_email']} - 解析 {stats.total_parsed_count} 条")
 
     session.commit()
-    print(f"  ✓ 导入统计分析: {len(data.get('stats_analyses', []))} 条\n")
+    print(f"  [ok] 导入统计分析: {len(data.get('stats_analyses', []))} 条\n")

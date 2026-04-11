@@ -8,7 +8,7 @@ import threading
 import logging
 
 from app.core.config import GlobalConfig
-from app.api.routes import user, login, chat_message, stats_analysis, settings, upload, news, todo, favorite, admin, agent, policy_document, opinion, showcase
+from app.api.routes import user, login, chat_message, stats_analysis, settings, upload, news, todo, favorite, admin, agent, policy_document, opinion, showcase, history, search
 from app.services.init_db import init_db_and_admin
 from app.services.worker import start_worker, stop_worker # 导入 worker 的启动和停止函数
 from app.services.agent_plugin_service import close_agent_core, ensure_agent_graph_svg_on_startup, warmup_agent_plugin
@@ -79,7 +79,11 @@ app=CorsMiddleWare(app).add_cors_middleware(
 @app.middleware("http")
 async def log_request_middleware(request: Request, call_next):
     logger.info("HTTP %s %s", request.method, request.url.path)
-    response = await call_next(request)
+    try:
+        response = await call_next(request)
+    except Exception:
+        logger.exception("HTTP %s %s -> 500 (unhandled exception)", request.method, request.url.path)
+        raise
     logger.info("HTTP %s %s -> %s", request.method, request.url.path, response.status_code)
     return response
 # 挂载静态文件目录，使得前端可以通过 /media/... 访问上传的文件 (使用绝对路径)
@@ -93,10 +97,12 @@ app.include_router(stats_analysis.router, prefix="/analysis", tags=["analysis"])
 app.include_router(settings.router, prefix="/settings", tags=["settings"])
 app.include_router(upload.router, prefix="/upload", tags=["upload"])
 app.include_router(news.router, prefix="/news", tags=["news"])
+app.include_router(search.router, prefix="/search", tags=["search"])
 app.include_router(todo.router, prefix="/todo", tags=["todo"])
 app.include_router(favorite.router, prefix="/favorite", tags=["favorite"])
 app.include_router(admin.router, prefix="/admin", tags=["admin"])
 app.include_router(agent.router, prefix="/agent", tags=["agent"])
+app.include_router(history.router, prefix="/history", tags=["history"])
 app.include_router(showcase.router, prefix="/showcase", tags=["showcase"])
 app.include_router(policy_document.router, prefix="/policy-documents", tags=["policy_document"])
 app.include_router(opinion.router, prefix="/opinions", tags=["opinion"])

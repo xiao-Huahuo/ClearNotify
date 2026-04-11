@@ -5,6 +5,16 @@
       <p class="swipe-desc">根据您的职业和浏览偏好，为您推荐相关政策</p>
     </div>
 
+    <div class="swipe-search">
+      <UnifiedSearchBox
+        v-model="searchQuery"
+        v-model:types="searchTypes"
+        source="policy_swipe_search_dropdown"
+        placeholder="搜索政策、文章、历史、智能体..."
+        @submit="handleSearchSubmit"
+      />
+    </div>
+
     <div class="swipe-layout" :class="{ 'article-open': activeDoc }">
       <!-- 左侧：概览栏（初始）/ 文章内容（点击后） -->
       <div class="left-section" :class="{ 'show-article': activeDoc }">
@@ -65,7 +75,7 @@
         <div class="reader-panel" v-show="activeDoc">
           <template v-if="activeDoc">
             <div class="rp-header">
-              <button class="rp-close" @click="activeDoc = null; activeId = null">✕</button>
+              <button class="rp-close" @click="closeDoc()">✕</button>
               <div class="rp-tags">
                 <span v-if="activeDoc.category" class="rp-cat">{{ activeDoc.category }}</span>
                 <span v-for="tag in parsedTags" :key="tag" class="rp-tag">{{ tag }}</span>
@@ -131,7 +141,7 @@
             </div>
             <div class="doc-content-body">
               <span v-html="stripHtml(centralDocs[selectedDocIdx].description) || '暂无摘要内容'"></span>
-              <a v-if="centralDocs[selectedDocIdx].link" :href="centralDocs[selectedDocIdx].link" target="_blank" class="doc-read-more">阅读全文 →</a>
+              <button v-if="centralDocs[selectedDocIdx].link" type="button" class="doc-read-more" @click="openCentralDoc(centralDocs[selectedDocIdx])">阅读全文 →</button>
             </div>
           </div>
         </div>
@@ -144,7 +154,7 @@
               v-for="(item, idx) in hotNews"
               :key="idx"
               class="news-item"
-              @click="openLink(item.link)"
+              @click="openHotNewsItem(item)"
             >
               <span class="news-rank" :class="idx < 3 ? 'rank-top' : ''">{{ idx + 1 }}</span>
               <span class="news-title">{{ item.title }}</span>
@@ -161,12 +171,18 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import PolicyTitle from '@/components/common/PolicyTitle.vue'
+import UnifiedSearchBox from '@/components/common/UnifiedSearchBox.vue'
+import { trackHistoryEvent } from '@/api/history'
 import { useUserStore } from '@/stores/auth.js'
 import { apiClient, API_ROUTES } from '@/router/api_routes'
 import { getHotNews, getCentralDocs } from '@/api/news'
+import { buildSearchRouteQuery } from '@/utils/unifiedSearch'
 
+const route = useRoute()
+const router = useRouter()
 const userStore = useUserStore()
 const docs = ref([])
 const loading = ref(false)
@@ -191,6 +207,8 @@ const docsLoading = ref(true)
 const newsLoading = ref(true)
 const selectedDocIdx = ref(0)
 const rightPanelMode = ref('docs')
+const searchQuery = ref('')
+const searchTypes = ref([])
 
 const parsedTags = computed(() => {
   if (!activeDoc.value?.tags) return []
@@ -215,14 +233,43 @@ const getCarouselStyle = (doc) => {
   return style
 }
 
+const normalizeDocId = (value) => {
+  const parsed = Number.parseInt(String(value ?? ''), 10)
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null
+}
+
+const syncDocRoute = async (docId) => {
+  const nextId = normalizeDocId(docId)
+  const currentId = normalizeDocId(route.query.doc_id)
+  if (nextId === currentId) return
+
+  const nextQuery = { ...route.query }
+  if (nextId) nextQuery.doc_id = String(nextId)
+  else delete nextQuery.doc_id
+
+  await router.replace({ path: '/policy-swipe', query: nextQuery })
+}
+
+const handleSearchSubmit = ({ query, types }) => {
+  if (!query) return
+  router.push({
+    path: '/search',
+    query: buildSearchRouteQuery(query, types),
+  })
+}
+
 const loadMore = async () => {
   if (loading.value || !hasMore.value) return
   loading.value = true
   try {
     const route = userStore.token ? API_ROUTES.POLICY_DOC_RECOMMEND_ME : API_ROUTES.POLICY_DOC_RECOMMEND
     const res = await apiClient.get(route, { params: { skip: skip.value, limit: LIMIT } })
-    const items = res.data
-    docs.value.push(...items)
+    const items = res.data || []
+    const merged = [...docs.value]
+    items.forEach((item) => {
+      if (!merged.some((doc) => doc.id === item.id)) merged.push(item)
+    })
+    docs.value = merged
     skip.value += items.length
     if (items.length < LIMIT) hasMore.value = false
 
@@ -265,10 +312,27 @@ const onScroll = () => {
   if (el.scrollTop + el.clientHeight >= el.scrollHeight - 100) loadMore()
 }
 
-const openDoc = async (doc) => {
+const openDoc = async (doc, options = {}) => {
+  const { syncRoute = true, incrementView = true } = options
   activeDoc.value = doc
   activeId.value = doc.id
-  apiClient.post(API_ROUTES.POLICY_DOC_VIEW(doc.id)).catch(() => {})
+  if (syncRoute) await syncDocRoute(doc.id)
+  if (incrementView) {
+    apiClient.post(API_ROUTES.POLICY_DOC_VIEW(doc.id)).then((res) => {
+      const viewCount = res.data?.view_count
+      if (typeof viewCount === 'number') {
+        doc.view_count = viewCount
+        if (activeDoc.value?.id === doc.id) activeDoc.value.view_count = viewCount
+      }
+    }).catch(() => {})
+  }
+}
+
+const closeDoc = async (options = {}) => {
+  const { syncRoute = true } = options
+  activeDoc.value = null
+  activeId.value = null
+  if (syncRoute) await syncDocRoute(null)
 }
 
 const likeDoc = async (doc) => {
@@ -278,8 +342,87 @@ const likeDoc = async (doc) => {
   } catch (e) { console.error(e) }
 }
 
-const openLink = (url) => {
-  if (url) window.open(url, '_blank')
+const trackExternalBrowse = (payload) => {
+  if (!userStore.token) return
+  trackHistoryEvent(payload).catch(() => {})
+}
+
+const openCentralDoc = (doc) => {
+  if (!doc?.link) return
+  trackExternalBrowse({
+    domain: 'policy_browse',
+    event_type: 'opened_external',
+    subject_type: 'external_policy_article',
+    title: doc.title || '中央文件',
+    summary: stripHtml(doc.description),
+    route_path: window.location.pathname + window.location.search,
+    external_url: doc.link,
+    icon: 'policy',
+    search_text: [doc.title, stripHtml(doc.description)].filter(Boolean).join('\n'),
+    extra: {
+      source: 'policy_swipe_central_docs',
+      pub_date: doc.pubDate || null,
+    },
+  })
+  window.open(doc.link, '_blank')
+}
+
+const openHotNewsItem = (item) => {
+  if (!item?.link) return
+  trackExternalBrowse({
+    domain: 'article_browse',
+    event_type: 'opened_external',
+    subject_type: 'news_article',
+    title: item.title || '热点资讯',
+    summary: stripHtml(item.description),
+    route_path: window.location.pathname + window.location.search,
+    external_url: item.link,
+    icon: 'news',
+    search_text: [item.title, stripHtml(item.description)].filter(Boolean).join('\n'),
+    extra: {
+      source: 'policy_swipe_hot_news',
+      pub_date: item.pubDate || null,
+    },
+  })
+  window.open(item.link, '_blank')
+}
+
+const ensureDocLoaded = async (docId) => {
+  const normalizedId = normalizeDocId(docId)
+  if (!normalizedId) return null
+
+  const existing = docs.value.find((item) => item.id === normalizedId)
+  if (existing) return existing
+
+  const res = await apiClient.get(API_ROUTES.POLICY_DOC_DETAIL(normalizedId))
+  const fetched = res.data
+  if (!fetched) return null
+
+  docs.value = [fetched, ...docs.value.filter((item) => item.id !== fetched.id)]
+  if (!carouselDocs.value.length) {
+    carouselDocs.value = [{
+      ...fetched,
+      bgImage: carouselImages.length ? carouselImages[0] : '',
+    }]
+  }
+  return fetched
+}
+
+const syncDocFromRoute = async () => {
+  const docId = normalizeDocId(route.query.doc_id)
+  if (!docId) {
+    if (activeDoc.value) await closeDoc({ syncRoute: false })
+    return
+  }
+
+  if (activeDoc.value?.id === docId) return
+
+  try {
+    const doc = await ensureDocLoaded(docId)
+    if (doc) await openDoc(doc, { syncRoute: false })
+  } catch (error) {
+    console.warn('政策深链加载失败', error)
+  }
 }
 
 const startCarousel = () => {
@@ -289,10 +432,16 @@ const startCarousel = () => {
   }, 4000)
 }
 
-onMounted(() => {
-  loadMore()
-  loadCentralDocs()
-  loadHotNews()
+watch(
+  () => route.query.doc_id,
+  async () => {
+    await syncDocFromRoute()
+  }
+)
+
+onMounted(async () => {
+  await Promise.all([loadMore(), loadCentralDocs(), loadHotNews()])
+  await syncDocFromRoute()
   startCarousel()
 })
 
@@ -305,6 +454,7 @@ onBeforeUnmount(() => {
 .swipe-page { padding: 24px; max-width: 1600px; margin: 0 auto; height: calc(100vh - 80px); display: flex; flex-direction: column; }
 .swipe-header { margin-bottom: 20px; }
 .swipe-desc { color: var(--text-secondary, #666); font-size: 14px; margin: 4px 0 0; }
+.swipe-search { margin-top: 16px; max-width: 680px; }
 
 .swipe-layout {
   display: grid;
@@ -703,10 +853,14 @@ onBeforeUnmount(() => {
 .doc-read-more {
   display: inline-block;
   margin-top: 12px;
+  padding: 0;
+  border: none;
+  background: transparent;
   color: #c0392b;
   text-decoration: none;
   font-size: 13px;
   font-weight: 600;
+  cursor: pointer;
 }
 
 .doc-read-more:hover {

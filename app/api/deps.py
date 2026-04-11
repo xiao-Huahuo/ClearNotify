@@ -1,4 +1,4 @@
-from typing import Generator, Annotated
+from typing import Generator, Annotated, Optional
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -18,6 +18,7 @@ from app.schemas.token import TokenPayload
 reusable_oauth2 = OAuth2PasswordBearer(
     tokenUrl="/"  # 注意：这里要跟 login.py 里的路由一致
 )
+optional_oauth2 = OAuth2PasswordBearer(tokenUrl="/", auto_error=False)
 
 
 # 获取当前用户
@@ -77,3 +78,24 @@ def get_current_user_from_token_value(session: Session, token: str) -> User:
         raise HTTPException(status_code=404, detail="User not found")
 
     return user
+
+
+def get_optional_current_user(
+        session: Session = Depends(get_session),
+        token: Optional[str] = Depends(optional_oauth2)
+) -> Optional[User]:
+    if not token:
+        return None
+    try:
+        payload = jwt.decode(
+            token, GlobalConfig.SECRET_KEY, algorithms=[GlobalConfig.ALGORITHM]
+        )
+        token_data = TokenPayload(**payload)
+    except (JWTError, ValidationError):
+        return None
+
+    if token_data.sub is None:
+        return None
+
+    user = session.get(User, int(token_data.sub))
+    return user if user else None

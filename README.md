@@ -548,10 +548,12 @@ docker pull python:3.12-slim-bookworm
     ├── CLAUDE.md                             # 【协作规范】Claude/Codex 类工具协作提示与规则
     ├── CloudPolicy.openapi.yaml              # 【接口文档】项目 OpenAPI YAML 快照
     ├── PUBLIC_DATA_ANALYSIS_PLAN.md          # 【方案】公共数据分析功能规划文档
-    ├── README-NOW.md                         # 【新版说明】当前阶段的扩展版项目说明书
     ├── SHOWCASE_IMPLEMENTATION_PLAN.md       # 【方案】展示首页与展示大屏实现计划
-    ├── TODO.md                               # 【任务单】当前开发待办与部署问题清单
+    ├── HISTORY_REDESIGN_PLAN.md              # 【方案】历史记录重设计计划
+    ├── SEARCH_PLAN.md                        # 【方案】全局Trie+RAG搜索功能设计与实现计划
     ├── UI_COMPATITY_PLAN.md                  # 【方案】页面色系切换与响应式适配计划
+    ├── README-NOW.md                         # 【新版说明】当前阶段的扩展版项目说明书
+    ├── TODO.md                               # 【任务单】当前开发待办与部署问题清单
     ├── prompt.md                             # 【提示词文档】项目相关 Prompt 记录
     ├── 开发规范.md                            # 【规范】代码组织、协作与开发规范说明
     └── assets/                               # 【配图】README说明配图

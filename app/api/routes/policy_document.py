@@ -5,13 +5,14 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session, select
 
-from app.api.deps import get_current_user
+from app.api.deps import get_current_user, get_optional_current_user
 from app.core.database import get_session
 from app.models.policy_document import PolicyDocument, DocStatus
 from app.models.user import User, UserRole
 from app.schemas.policy_document import (
     PolicyDocumentCreate, PolicyDocumentOut, PolicyDocumentReview, PolicyDocumentUpdate
 )
+from app.services import history_service, search_index_service
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +44,16 @@ def create_document(
     session.add(doc)
     session.commit()
     session.refresh(doc)
+    search_index_service.upsert_policy_document(session, doc, commit=True)
+    history_service.record_policy_document_event(
+        session,
+        doc,
+        event_type="created",
+        user_id=current_user.uid,
+        actor_user_id=current_user.uid,
+        dedupe_key=f"policy:create:{doc.id}",
+        occurred_time=doc.created_time,
+    )
     logger.info(f"用户 {current_user.uid} 上传政务文件: {doc.title}")
     return _doc_to_out(doc, session)
 
@@ -76,15 +87,49 @@ def list_my_documents(
     return [_doc_to_out(d, session) for d in docs]
 
 
+@router.get("/{doc_id}", response_model=PolicyDocumentOut)
+def get_document(
+    doc_id: int,
+    session: Session = Depends(get_session),
+    current_user: User | None = Depends(get_optional_current_user),
+):
+    doc = session.get(PolicyDocument, doc_id)
+    if not doc:
+        raise HTTPException(status_code=404, detail="文件不存在")
+
+    if doc.status != DocStatus.approved:
+        if not current_user:
+            raise HTTPException(status_code=404, detail="文件不存在")
+        is_owner = current_user.uid == doc.uploader_id
+        is_admin = current_user.role == UserRole.admin
+        if not (is_owner or is_admin):
+            raise HTTPException(status_code=403, detail="无权访问该文件")
+
+    return _doc_to_out(doc, session)
+
+
 # 浏览量+1
 @router.post("/{doc_id}/view")
-def increment_view(doc_id: int, session: Session = Depends(get_session)):
+def increment_view(
+    doc_id: int,
+    session: Session = Depends(get_session),
+    current_user: User | None = Depends(get_optional_current_user),
+):
     doc = session.get(PolicyDocument, doc_id)
     if not doc or doc.status != DocStatus.approved:
         raise HTTPException(status_code=404, detail="文件不存在")
     doc.view_count += 1
     session.add(doc)
     session.commit()
+    if current_user:
+        history_service.record_policy_document_event(
+            session,
+            doc,
+            event_type="viewed",
+            user_id=current_user.uid,
+            actor_user_id=current_user.uid,
+            summary="浏览政策文档",
+        )
     return {"view_count": doc.view_count}
 
 
@@ -121,6 +166,17 @@ def review_document(
     session.add(doc)
     session.commit()
     session.refresh(doc)
+    search_index_service.upsert_policy_document(session, doc, commit=True)
+    history_service.record_policy_document_event(
+        session,
+        doc,
+        event_type="approved" if review.status == DocStatus.approved else "rejected",
+        user_id=doc.uploader_id,
+        actor_user_id=current_user.uid,
+        dedupe_key=f"policy:{review.status}:{doc.id}",
+        occurred_time=doc.reviewed_time,
+        summary="政策文档已审核通过" if review.status == DocStatus.approved else "政策文档已驳回",
+    )
     logger.info(f"管理员 {current_user.uid} 审核文件 {doc_id}: {review.status}")
     return _doc_to_out(doc, session)
 

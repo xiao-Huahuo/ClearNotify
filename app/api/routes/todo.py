@@ -6,6 +6,7 @@ from app.core.database import get_session
 from app.api.deps import get_current_user
 from app.models.user import User
 from app.models.todo import TodoItem
+from app.services import history_service
 
 router = APIRouter()
 
@@ -43,6 +44,12 @@ def create_todo(
     session.add(todo)
     session.commit()
     session.refresh(todo)
+    history_service.record_todo_event(
+        session,
+        todo=todo,
+        event_type="created",
+        dedupe_key=f"todo:create:{todo.id}",
+    )
     return todo
 
 # ── 批量从对话生成 Todo 草稿 ──────────────────────────────────────────────────
@@ -69,6 +76,12 @@ def create_todos_from_chat(
     session.commit()
     for t in todos:
         session.refresh(t)
+        history_service.record_todo_event(
+            session,
+            todo=t,
+            event_type="created",
+            dedupe_key=f"todo:create:{t.id}",
+        )
     return todos
 
 # ── 确认草稿 Todo ─────────────────────────────────────────────────────────────
@@ -86,6 +99,12 @@ def confirm_todo(
     session.add(todo)
     session.commit()
     session.refresh(todo)
+    history_service.record_todo_event(
+        session,
+        todo=todo,
+        event_type="confirmed",
+        dedupe_key=f"todo:confirm:{todo.id}",
+    )
     return todo
 
 # ── 切换完成状态 ──────────────────────────────────────────────────────────────
@@ -103,6 +122,12 @@ def toggle_todo(
     session.add(todo)
     session.commit()
     session.refresh(todo)
+    history_service.record_todo_event(
+        session,
+        todo=todo,
+        event_type="completed" if todo.is_done else "reopened",
+        dedupe_key=f"todo:{'complete' if todo.is_done else 'reopen'}:{todo.id}",
+    )
     return todo
 
 # ── 删除 Todo ─────────────────────────────────────────────────────────────────
@@ -115,6 +140,12 @@ def delete_todo(
     todo = session.get(TodoItem, todo_id)
     if not todo or todo.user_id != current_user.uid:
         raise HTTPException(status_code=404, detail="Todo not found")
+    history_service.record_todo_event(
+        session,
+        todo=todo,
+        event_type="deleted",
+        dedupe_key=f"todo:deleted:{todo.id}",
+    )
     session.delete(todo)
     session.commit()
     return {"ok": True}

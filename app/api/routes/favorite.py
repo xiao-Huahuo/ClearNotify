@@ -6,6 +6,7 @@ from app.api.deps import get_current_user
 from app.models.user import User
 from app.models.favorite import Favorite
 from app.models.chat_message import ChatMessage
+from app.services import history_service
 
 router = APIRouter()
 
@@ -41,6 +42,13 @@ def add_favorite(
     session.add(fav)
     session.commit()
     session.refresh(fav)
+    history_service.record_favorite_event(
+        session,
+        favorite=fav,
+        message=msg,
+        event_type="added",
+        dedupe_key=f"favorite:add:{fav.id}",
+    )
     return fav
 
 @router.delete("/{fav_id}")
@@ -52,6 +60,15 @@ def remove_favorite(
     fav = session.get(Favorite, fav_id)
     if not fav or fav.user_id != current_user.uid:
         raise HTTPException(status_code=404, detail="Favorite not found")
+    msg = session.get(ChatMessage, fav.chat_message_id)
+    if msg:
+        history_service.record_favorite_event(
+            session,
+            favorite=fav,
+            message=msg,
+            event_type="removed",
+            dedupe_key=f"favorite:removed:{fav.id}",
+        )
     session.delete(fav)
     session.commit()
     return {"ok": True}

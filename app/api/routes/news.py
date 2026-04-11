@@ -1,5 +1,9 @@
-from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from sqlmodel import Session
 
+from app.api.deps import get_optional_current_user
+from app.core.database import get_session
+from app.models.user import User
 from app.services.news_crawler import (
     _get_cache,
     get_central_docs,
@@ -9,6 +13,7 @@ from app.services.news_crawler import (
     get_news_with_images,
     search_news,
 )
+from app.services import history_service
 from app.services.rate_limit_service import allow_request
 from app.services.redis_queue import crawler_queue
 
@@ -64,9 +69,20 @@ async def news_search(
     request: Request,
     q: str = Query("", description="搜索关键词"),
     limit: int = 20,
+    track: bool = Query(default=False),
+    session: Session = Depends(get_session),
+    current_user: User | None = Depends(get_optional_current_user),
 ):
     _enforce_rate_limit(request, "news_search")
     items = search_news(q, limit)
+    if track and current_user and q.strip():
+        history_service.record_search_event(
+            session,
+            user_id=current_user.uid,
+            query=q,
+            source="news_search",
+            result_count=len(items),
+        )
     return {"items": items, "query": q}
 
 

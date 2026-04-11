@@ -471,6 +471,12 @@
 
 这一步是“首次建库回填”，不是每次启动重跑。
 
+当前已落地：
+
+- `app/services/init_db.py` 在种子数据导入后先执行 `history_service.backfill_core_history(session)`
+- 然后执行 `search_index_service.backfill_search_index(session)`
+- 因此删库后首启会自动重建历史事件和搜索向量基础层
+
 ### 13.2 运行期新增历史时
 
 当用户产生新的历史对象时，应在业务写入成功后同步或异步追加历史事件，并按类型决定是否进入向量索引。
@@ -495,6 +501,12 @@
   - 生成 `policy_browse.viewed`
 - 用户浏览文章
   - 生成 `article_browse.viewed`
+
+当前已落地的同步增量路径：
+
+- 历史事件通过 `history_service.record_event(..., commit=True)` 写入后，会立即 upsert 到 `search_index_item`
+- 新建或审核 `PolicyDocument` 成功后，会立即刷新对应政策索引
+- Header 搜索、搜索页点击外链、政策浏览等行为都会继续沉淀为新的历史事件
 
 ### 13.3 哪些历史应该向量化
 
@@ -655,3 +667,12 @@
 4. 让统一搜索可以直接搜索历史。
 
 这样做完以后，项目里的“历史”才会从旧式解析记录列表，真正升级为覆盖浏览、搜索、发布、对话、办理沉淀的完整历史系统。
+
+## 0. Current Delivery Status (2026-04-11)
+
+- Landed unified backend history event model and API routes: `/api/history/feed`, `/api/history/facets`, `/api/history/track`.
+- Landed unified History page V1 that reads the event stream instead of the old dual-mode page.
+- Landed deep-link restore/open flows for chat restore, agent conversation jump, policy document jump, search replay, and external browse jump.
+- Landed history tracking for document parsing, agent conversation actions, favorites, todo, policy publish/review/view, explicit search, and several external browse flows.
+- Search-facing integration is now using the unified history stream as one of the primary retrieval sources.
+- DB initialization and runtime commits now both drive unified search index updates from the history layer, so history and search no longer drift apart after rebuild.

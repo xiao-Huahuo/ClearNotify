@@ -288,7 +288,7 @@
             <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
             砖块
           </button>
-          <router-link to="/public-opinion-hall" class="ps-hall-link">民意评议大厅 →</router-link>
+          <router-link to="/public-opinion-hall" class="ps-hall-link">民生大厅 →</router-link>
         </div>
       </div>
 
@@ -469,7 +469,7 @@ const bricks = [
     iconPath: '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>',
     action: () => router.push('/policy-publish-center'),
   },
-  { id: 6, name: '民意评议大厅', desc: '查看实时评议与反馈', size: 'brick-md', color: '#e65100', colSpan: 4, rowSpan: 4,
+  { id: 6, name: '民生大厅', desc: '查看实时评议与反馈', size: 'brick-md', color: '#e65100', colSpan: 4, rowSpan: 4,
     iconProps: { viewBox: '0 0 24 24', width: '24', height: '24', stroke: '#fff', 'stroke-width': '2', fill: 'none' },
     iconPath: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>',
     action: () => router.push('/public-opinion-hall'),

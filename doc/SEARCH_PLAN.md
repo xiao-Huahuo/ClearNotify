@@ -195,9 +195,13 @@ Trie 节点附带的不是全文，而是轻量候选：
 
 ## 5.4 向量索引层
 
-建议新增独立 Chroma collection，例如：
+当前实现优先采用“SQLite 检索读模型 + 持久化 embedding”：
 
-- `unified_search_index`
+- 向量直接落在 `search_index_item.embedding_json`
+- 查询时从 `search_index_item` 读候选与已持久化向量
+- 只对当前 query 实时做 embedding
+
+后续如果数据规模继续扩大，再演进到独立向量库或专用 collection。
 
 索引内容：
 
@@ -216,7 +220,7 @@ metadata 至少包含：
 - `visibility`
 - `updated_time`
 
-建议不要和 Agent 的长期记忆 collection 混用，原因如下：
+即使后续升级到独立向量库，也不要和 Agent 的长期记忆 collection 混用，原因如下：
 
 - Agent 长记忆的写入目标是“对话辅助”。
 - 统一搜索的写入目标是“全站检索”。
@@ -326,6 +330,17 @@ metadata 至少包含：
 
 `final_score = prefix_score + lexical_score + semantic_score + recency_boost + heat_boost + personal_boost`
 
+## 0. Current Delivery Status (2026-04-11)
+
+- Landed `GET /api/search/unified` for mixed retrieval across history, agent conversations, internal policy documents, central docs, and news.
+- Landed `GET /api/search/suggest-index` to provide a lightweight suggestion index for frontend Trie construction.
+- Landed Header V1 search dropdown: local Trie prefix matching plus remote semantic suggestion preview.
+- Landed Search page V1 mixed result rendering with grouped source types: `history`, `agent`, `policy`, `news`.
+- Current semantic retrieval uses the local embedding model plus persisted vectors stored in `search_index_item.embedding_json`.
+- DB initialization now runs `history_event` backfill first, then runs unified search index backfill and vectorization automatically.
+- Runtime incremental indexing is already wired for committed `history_event` writes and committed `PolicyDocument` writes.
+- Query-time only vectorizes the query itself; candidate documents/history are not re-embedded on every search.
+
 排序规则建议：
 
 - Header 下拉联想
@@ -418,8 +433,9 @@ metadata 至少包含：
 3. 检查统一搜索索引是否存在
 4. 如果索引不存在，执行一次全量回填
 5. 将所有可搜索对象写入：
+   - `history_event`
    - `search_index_item`
-   - `unified_search_index` 向量库
+   - `search_index_item.embedding_json`
 
 注意：
 
@@ -433,7 +449,7 @@ metadata 至少包含：
 建议触发全量回填的条件：
 
 - `search_index_item` 表为空
-- `unified_search_index` collection 不存在
+- `search_index_item` 中缺少 embedding 数据
 - 索引版本与代码版本不兼容
 - 管理员手动触发重建
 
@@ -460,7 +476,12 @@ metadata 至少包含：
 核心原则：
 
 - 必须在数据库事务 `commit` 成功后再提交索引任务
-- 不要在事务提交前写向量库
+- 不要在事务提交前写搜索索引或 embedding
+
+当前已落地的增量路径：
+
+- `history_service.record_event(..., commit=True)` 在历史事件提交成功后同步 upsert `search_index_item`
+- `policy_document` 创建/审核成功后同步 upsert 对应政策搜索索引
 
 否则会出现：
 

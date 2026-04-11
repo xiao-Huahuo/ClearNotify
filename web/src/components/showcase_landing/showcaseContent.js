@@ -139,7 +139,7 @@ export const features = [
     icon: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.4-3.4"/>',
   },
   {
-    title: '民意评论大厅',
+    title: '民生大厅',
     desc: '把群众意见和评分可视化展示出来，让政策理解与真实反馈同屏发生。',
     color: '#87f0a6',
     icon: '<path d="M4 5h16v10H7l-3 3V5z"/><path d="M8 9h8M8 13h5"/>',

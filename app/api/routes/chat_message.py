@@ -1,5 +1,6 @@
 ﻿import asyncio
 import json
+from datetime import datetime
 from typing import List, Optional
 
 from fastapi import APIRouter, Body, Depends, File, HTTPException, Query, UploadFile
@@ -11,7 +12,7 @@ from app.api.deps import get_current_user, get_current_user_from_token_value
 from app.core.database import get_session
 from app.models.user import User
 from app.schemas.chat_message import ChatMessageCreate, ChatMessageRead, ChatMessageUpdate
-from app.services import chat_message_service, parse_progress_service
+from app.services import chat_message_service, history_service, parse_progress_service
 
 
 router = APIRouter()
@@ -275,6 +276,14 @@ def export_chat_message(
     export_path = chat_message_service.get_export_file_path(message)
     if export_path is None or not export_path.exists():
         export_path = chat_message_service.persist_message_snapshot(session, message)
+
+    history_service.record_chat_message_event(
+        session,
+        message,
+        event_type="exported",
+        actor_user_id=current_user.uid,
+        dedupe_key=f"chat:exported:{message.id}:{int(datetime.now().timestamp())}",
+    )
 
     return FileResponse(
         path=str(export_path),

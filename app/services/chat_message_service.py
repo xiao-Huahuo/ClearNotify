@@ -14,6 +14,7 @@ from app.ai.analysis_agent import analyze_complexity_and_type
 from app.ai.document_parser import rewrite_document
 from app.core.config import GlobalConfig
 from app.models.chat_message import ChatMessage
+from app.services import history_service
 
 
 logger = logging.getLogger(__name__)
@@ -39,11 +40,31 @@ def estimate_message_time_saved(message: ChatMessage) -> int:
 
 
 def serialize_message(message: ChatMessage) -> dict[str, Any]:
-    data = message.model_dump()
-    # 遍历字典，将所有 datetime 对象转换为 ISO 格式的字符串
-    for key, value in data.items():
-        if isinstance(value, datetime):
-            data[key] = value.isoformat()
+    # SQLAlchemy expires ORM instances after commit by default. For freshly
+    # created messages, calling `model_dump()` after follow-up commits can
+    # produce an incomplete payload. Read concrete attributes explicitly so
+    # expired fields are reloaded from the session when needed.
+    data = {
+        "id": message.id,
+        "created_time": message.created_time.isoformat()
+        if isinstance(message.created_time, datetime)
+        else message.created_time,
+        "original_text": message.original_text,
+        "file_url": message.file_url,
+        "target_audience": message.target_audience,
+        "handling_matter": message.handling_matter,
+        "time_deadline": message.time_deadline,
+        "location_entrance": message.location_entrance,
+        "required_materials": message.required_materials,
+        "handling_process": message.handling_process,
+        "precautions": message.precautions,
+        "risk_warnings": message.risk_warnings,
+        "original_text_mapping": message.original_text_mapping,
+        "user_id": message.user_id,
+        "source_chat_id": message.source_chat_id,
+        "session_json_path": message.session_json_path,
+        "chat_analysis": message.chat_analysis,
+    }
     analysis = _parse_chat_analysis(message.chat_analysis)
     data["chat_analysis"] = analysis
     data["content"] = analysis.get("content") or message.original_text or ""
@@ -138,6 +159,7 @@ def create_message_from_payload(
     message_payload: dict[str, Any],
     user_id: int,
     source_chat_id: Optional[int] = None,
+    history_event_type: str = "created",
 ) -> ChatMessage:
     if isinstance(message_payload.get("chat_analysis"), dict):
         message_payload["chat_analysis"] = json.dumps(
@@ -156,6 +178,13 @@ def create_message_from_payload(
     session.commit()
     session.refresh(db_message)
     persist_message_snapshot(session, db_message)
+    history_service.record_chat_message_event(
+        session,
+        db_message,
+        event_type=history_event_type,
+        actor_user_id=user_id,
+        dedupe_key=f"chat:{history_event_type}:{db_message.id}",
+    )
     return db_message
 
 
@@ -260,6 +289,13 @@ def delete_message_by_id(
     session.add(message)
     session.commit()
     session.refresh(message)
+    history_service.record_chat_message_event(
+        session,
+        message,
+        event_type="deleted",
+        actor_user_id=user_id,
+        dedupe_key=f"chat:deleted:{message.id}",
+    )
     return message
 
 
@@ -277,6 +313,14 @@ def delete_messages_by_ids(session: Session, user_id: int, message_ids: List[int
         message.is_deleted = True
         session.add(message)
     session.commit()
+    for message in messages_to_delete:
+        history_service.record_chat_message_event(
+            session,
+            message,
+            event_type="deleted",
+            actor_user_id=user_id,
+            dedupe_key=f"chat:deleted:{message.id}",
+        )
     return len(messages_to_delete)
 
 
@@ -297,6 +341,13 @@ def update_message_audience_via_ai(
     session.commit()
     session.refresh(message)
     persist_message_snapshot(session, message)
+    history_service.record_chat_message_event(
+        session,
+        message,
+        event_type="updated",
+        actor_user_id=user_id,
+        dedupe_key=f"chat:updated:{message.id}:{new_audience}",
+    )
     return message
 
 
@@ -342,7 +393,12 @@ def import_message_from_file(
         clean_payload["chat_analysis"] = analysis
     if not clean_payload.get("original_text"):
         raise ValueError("导入的会话文件缺少 original_text")
-    return create_message_from_payload(session, clean_payload, user_id)
+    return create_message_from_payload(
+        session,
+        clean_payload,
+        user_id,
+        history_event_type="imported",
+    )
 
 
 def get_export_file_path(message: ChatMessage) -> Optional[Path]:

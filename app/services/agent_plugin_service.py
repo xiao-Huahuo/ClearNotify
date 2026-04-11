@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 from pathlib import Path
 from threading import Thread
 from threading import Lock
@@ -57,7 +58,10 @@ def ensure_agent_graph_svg_on_startup(overwrite: bool = True) -> None:
 
 
 def _ensure_agent_embedding_ready() -> None:
-    ensure_agent_embedding_ready(skip_if_disabled=True)
+    ensure_agent_embedding_ready(
+        skip_if_disabled=True,
+        allow_download=not os.getenv("DOCKER_DEPLOYMENT"),
+    )
     return
 
     if not GlobalConfig.AGENT_PLUGIN_ENABLED:

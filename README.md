@@ -394,7 +394,7 @@ docker pull node:16-alpine
 docker pull nginx:stable-alpine
 docker pull python:3.12-slim-bullseye
 ```
-0. 在Docker部署前,要么应该在本地先跑一次后端以下载Embedding,要么单独运行脚本以下载Embedding:
+0. 在 Docker 部署前，必须先准备好本地 Embedding；否则容器启动时只会检查并直接报错，不会在容器内自动下载。可以先在本地跑一次后端，或单独执行以下脚本：
     ```bash
     python -m app.scripts.download_embedding
     ```

@@ -21,6 +21,7 @@ def resolve_agent_embedding_path() -> Path:
 def ensure_agent_embedding_ready(
     force: bool = False,
     skip_if_disabled: bool = False,
+    allow_download: bool = True,
 ) -> Path:
     embedding_path = resolve_agent_embedding_path()
 
@@ -31,6 +32,12 @@ def ensure_agent_embedding_ready(
     if embedding_path.exists() and not force:
         _console(f"[AgentPlugin] Embedding already exists: {embedding_path}")
         return embedding_path
+
+    if not allow_download:
+        raise RuntimeError(
+            "Embedding model is missing. Run `python -m app.scripts.download_embedding` "
+            "before starting Docker."
+        )
 
     model_name = str(GlobalConfig.AGENT_PLUGIN_EMBEDDING_MODEL_NAME)
     action = "Refreshing" if force and embedding_path.exists() else "Downloading"

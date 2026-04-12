@@ -20,8 +20,14 @@
 
     <div class="kg-content" :class="{ 'json-open': showJson }">
       <div class="kg-main">
-        <div v-show="activeView === '2d'" class="graph-2d-wrapper">
+        <div v-show="activeView === '2d'" ref="graph2DWrapperRef" class="graph-2d-wrapper">
           <div ref="graph2DRef" class="graph-2d" @click.self="clearHighlight"></div>
+          <div
+            v-if="selectedGlowState.visible"
+            class="kg-selected-gloss"
+            :style="selectedGlowStyle"
+            aria-hidden="true"
+          ></div>
           <div class="kg-ops-panel">
             <template v-if="sidePanelMode === 'query'">
               <div class="kg-side-kicker">图谱查询</div>
@@ -200,6 +206,7 @@ const activeNodeId = ref(null);
 const highlightedNodeId = ref(null);
 const sidePanelMode = ref('query');
 const panelRef = ref(null);
+const graph2DWrapperRef = ref(null);
 const graph2DRef = ref(null);
 const graph3DRef = ref(null);
 const graphZoom = ref(1);
@@ -207,12 +214,22 @@ const searchQuery = ref('');
 const filterDepth = ref(null);
 const isFullscreen = ref(false);
 const graphThemeVersion = ref(0);
+const selectedGlowState = ref({
+  visible: false,
+  left: 0,
+  top: 0,
+  size: 0,
+  core: 'rgba(255, 255, 255, 0.88)',
+  halo: 'rgba(255, 255, 255, 0.28)',
+  accent: 'rgba(255, 255, 255, 0.18)',
+});
 
 let chart2D = null;
 let themeObserver = null;
 let resizeObserver = null;
 let animationFrame = null;
 let clusterFollowFrame = null;
+let selectedGlowFrame = null;
 let isSyncingOverlayRoam = false;
 
 const SOURCE_STRUCTURE_NODE_TYPES = new Set(['结构', '章节', '段落', '条目', '句子']);
@@ -225,6 +242,8 @@ const CLUSTER_OVERLAY_SERIES_ID = 'kg_cluster_overlay';
 const GRAPH_DEFAULT_CENTER = ['50%', '50%'];
 const SOURCE_CONTEXT_RADIUS = 180;
 const MAX_RELATION_CHIPS = 24;
+const FILTER_FADE_OPACITY = 0.06;
+const FILTER_EDGE_FADE_OPACITY = 0.025;
 
 const isDark = () => document.documentElement.getAttribute('data-theme') === 'dark';
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
@@ -377,6 +396,16 @@ const depthColor = (depthValue = 0) => {
 };
 
 const typeColor = (type) => graphTheme.value.typePalette[type] || depthColor(1);
+
+const selectedGlowStyle = computed(() => ({
+  left: `${selectedGlowState.value.left}px`,
+  top: `${selectedGlowState.value.top}px`,
+  width: `${selectedGlowState.value.size}px`,
+  height: `${selectedGlowState.value.size}px`,
+  '--kg-gloss-core': selectedGlowState.value.core,
+  '--kg-gloss-halo': selectedGlowState.value.halo,
+  '--kg-gloss-accent': selectedGlowState.value.accent,
+}));
 
 const baseNodes = computed(() =>
   (props.nodes || []).map((item, idx) => ({
@@ -925,7 +954,9 @@ const toggleDepthFilter = (d) => {
   highlightedNodeId.value = null;
   sidePanelMode.value = 'query';
   filterDepth.value = filterDepth.value === d ? null : d;
-  applyHighlightOverlay();
+  stopSelectedGlowSync();
+  hideSelectedGlow();
+  nextTick(() => { render2DGraph(); });
 };
 
 // ── descendant helpers ─────────────────────────────────────────────────────
@@ -1294,6 +1325,7 @@ const focusNodeById = (nodeId, options = {}) => {
   } else {
     applySimpleNodeEmphasis(id, prevHighlightedId);
     applyHighlightOverlay();
+    startSelectedGlowSync();
   }
   return true;
 };
@@ -1347,6 +1379,108 @@ const readLiveNodePositions = (seriesRef = MAIN_GRAPH_SERIES_ID) => {
     positions.set(node.id, toXY(node.getLayout()));
   });
   return positions;
+};
+
+const hideSelectedGlow = () => {
+  selectedGlowState.value = {
+    ...selectedGlowState.value,
+    visible: false,
+  };
+};
+
+const stopSelectedGlowSync = () => {
+  if (!selectedGlowFrame) return;
+  cancelAnimationFrame(selectedGlowFrame);
+  selectedGlowFrame = null;
+};
+
+const buildHighlightContext = () => {
+  const query = searchQuery.value.trim().toLowerCase();
+  const hasQuery = !!query;
+  const hasDepthFilter = filterDepth.value !== null;
+  const focusId = String(highlightedNodeId.value || '').trim();
+  const descendants = focusId ? getDescendants(focusId) : null;
+  const matchedNodeIds = new Set();
+
+  if (hasQuery || hasDepthFilter) {
+    safeNodes.value.forEach((node) => {
+      const id = String(node?.id || '').trim();
+      if (!id) return;
+      const matchesSearch = hasQuery && String(node?.label || '').toLowerCase().includes(query);
+      const matchesDepth = hasDepthFilter && Number(depthMapCache.value.get(id) ?? 0) === filterDepth.value;
+      if (matchesSearch || matchesDepth) matchedNodeIds.add(id);
+    });
+  }
+
+  return {
+    query,
+    hasQuery,
+    hasDepthFilter,
+    hasFilters: hasQuery || hasDepthFilter,
+    focusId,
+    descendants,
+    matchedNodeIds,
+  };
+};
+
+const syncSelectedNodeGlow = () => {
+  if (!chart2D || activeView.value !== '2d' || !graph2DRef.value || !graph2DWrapperRef.value) {
+    hideSelectedGlow();
+    return;
+  }
+  const nodeId = String(highlightedNodeId.value || '').trim();
+  if (!nodeId) {
+    hideSelectedGlow();
+    return;
+  }
+
+  const option = chart2D.getOption?.();
+  const seriesList = Array.isArray(option?.series) ? option.series : [];
+  const graphRect = graph2DRef.value.getBoundingClientRect();
+  const wrapperRect = graph2DWrapperRef.value.getBoundingClientRect();
+
+  for (const { seriesIndex, dataIndex } of findSeriesNodeRefsById(nodeId)) {
+    const runtime = getGraphRuntime(seriesIndex);
+    const graphNode = runtime.graph?.getNodeById?.(nodeId);
+    if (!graphNode) continue;
+
+    const point = toXY(graphNode.getLayout());
+    const pixel = chart2D.convertToPixel?.({ seriesIndex }, [point.x, point.y]);
+    if (!Array.isArray(pixel) || pixel.length < 2 || !pixel.every((value) => Number.isFinite(Number(value)))) continue;
+
+    const renderedItem = seriesList[seriesIndex]?.data?.[dataIndex] || {};
+    const baseSize = clamp(Number(renderedItem?.symbolSize || 28), 18, 120);
+    const fillColor = renderedItem?.itemStyle?.color || depthColor(Number(depthMapCache.value.get(nodeId) ?? 0));
+    const fillRgb = parseColor(fillColor, parseColor(readCssVar('--color-primary', '#c0392b')));
+    const haloRgb = mixColor(fillRgb, [255, 255, 255], isDark() ? 0.18 : 0.26);
+    const coreRgb = mixColor(fillRgb, [255, 255, 255], 0.48);
+
+    selectedGlowState.value = {
+      visible: true,
+      left: graphRect.left - wrapperRect.left + Number(pixel[0]),
+      top: graphRect.top - wrapperRect.top + Number(pixel[1]),
+      size: baseSize * 1.95,
+      core: colorToRgba(coreRgb, isDark() ? 0.84 : 0.74),
+      halo: colorToRgba(haloRgb, isDark() ? 0.54 : 0.42),
+      accent: colorToRgba(fillRgb, isDark() ? 0.46 : 0.34),
+    };
+    return;
+  }
+
+  hideSelectedGlow();
+};
+
+const startSelectedGlowSync = () => {
+  stopSelectedGlowSync();
+  if (activeView.value !== '2d' || !highlightedNodeId.value) {
+    hideSelectedGlow();
+    return;
+  }
+  const tick = () => {
+    selectedGlowFrame = requestAnimationFrame(tick);
+    syncSelectedNodeGlow();
+  };
+  tick();
 };
 
 const resolveEdgeCurveness = (points, edge) => {
@@ -1677,7 +1811,7 @@ const syncOverlayRoam = (payload, targetSeriesRef = CLUSTER_OVERLAY_SERIES_ID) =
   }
 };
 
-const decorateDisplayedNode = (item, livePositions, dark) => {
+const decorateDisplayedNode = (item, livePositions, dark, context) => {
   const id = String(item?.id || '');
   const point = livePositions.get(id);
   if (item?.isClusterAnchor) {
@@ -1693,37 +1827,48 @@ const decorateDisplayedNode = (item, livePositions, dark) => {
   const baseCol = depthColor(depthValue);
   const clusterInfo = clusterMetaMap.value.get(id);
   const isCollapsedCluster = clusterInfo && !expandedClusterIds.value.has(id);
-  const query = searchQuery.value.trim().toLowerCase();
-  const matchesSearch = query && src?.label?.toLowerCase().includes(query);
-  const matchesDepth = filterDepth.value !== null && depthValue === filterDepth.value;
-  const descendants = highlightedNodeId.value ? getDescendants(highlightedNodeId.value) : null;
   const theme = graphTheme.value;
+  const matchesFilter = context.matchedNodeIds.has(id);
 
   let color = baseCol;
   let opacity = 1;
   let borderWidth = isCollapsedCluster ? 3 : 1.1;
   let borderColor = isCollapsedCluster ? theme.collapsedBorder : colorToRgba(parseColor(baseCol), dark ? 0.16 : 0.12);
   let labelShow = shouldShowNodeLabel(src || { id, importance: 0.5 });
+  let shadowBlur = Number(item?.itemStyle?.shadowBlur ?? (isCollapsedCluster ? 24 : isRoot ? 18 : 10));
+  let shadowColor = item?.itemStyle?.shadowColor || (isCollapsedCluster ? theme.glow : colorToRgba(parseColor(baseCol), dark ? 0.28 : 0.14));
+  let symbolSize = Number(item?.symbolSize || 0) || undefined;
 
-  if (highlightedNodeId.value) {
-    if (id === highlightedNodeId.value) {
+  if (context.focusId) {
+    if (id === context.focusId) {
       color = baseCol;
-      borderWidth = 4;
+      borderWidth = 4.4;
       borderColor = theme.highlightBorder;
       opacity = 1;
-    } else if (descendants?.has(id)) {
-      opacity = 0.85;
+      shadowBlur = 28;
+      shadowColor = theme.glow;
+      symbolSize = Math.max(symbolSize || 0, (Number(item?.symbolSize || 0) || 0) * 1.08);
+    } else if (context.descendants?.has(id)) {
+      opacity = 0.88;
+      shadowBlur = Math.max(12, shadowBlur);
     } else {
-      opacity = 0.15;
+      opacity = 0.09;
       labelShow = false;
+      shadowBlur = 0;
     }
-  } else if (matchesSearch || matchesDepth) {
-    borderWidth = 3;
+  } else if (matchesFilter) {
+    borderWidth = 3.4;
     borderColor = theme.highlightBorder;
     opacity = 1;
-  } else if (query || filterDepth.value !== null) {
-    opacity = 0.2;
+    shadowBlur = 20;
+    shadowColor = theme.glow;
+    symbolSize = Math.max(symbolSize || 0, (Number(item?.symbolSize || 0) || 0) * 1.05);
+  } else if (context.hasFilters) {
+    opacity = FILTER_FADE_OPACITY;
     labelShow = false;
+    shadowBlur = 0;
+    borderWidth = Math.max(0.7, borderWidth * 0.6);
+    borderColor = colorToRgba(parseColor(baseCol), dark ? 0.06 : 0.05);
   }
 
   return {
@@ -1731,13 +1876,55 @@ const decorateDisplayedNode = (item, livePositions, dark) => {
     x: point?.x ?? item.x,
     y: point?.y ?? item.y,
     name: isRoot ? documentTitle.value : formatNodeLabel(src || item),
-    itemStyle: { ...(item.itemStyle || {}), color, opacity, borderWidth, borderColor },
+    ...(symbolSize ? { symbolSize } : {}),
+    itemStyle: { ...(item.itemStyle || {}), color, opacity, borderWidth, borderColor, shadowBlur, shadowColor },
     label: {
       ...item.label,
       show: labelShow,
       color: theme.label,
       fontSize: isRoot ? 14 : item?.isOverlayNode ? 10 : 12,
       fontWeight: isRoot ? 700 : 400,
+    },
+  };
+};
+
+const decorateDisplayedEdge = (item, context) => {
+  const sourceId = String(item?.source || '');
+  const targetId = String(item?.target || '');
+  const lineStyle = { ...(item?.lineStyle || {}) };
+  let opacity = Number(lineStyle.opacity ?? 0.85);
+  let width = Number(lineStyle.width ?? 1);
+
+  if (context.focusId) {
+    const sourceVisible = sourceId === context.focusId || context.descendants?.has(sourceId);
+    const targetVisible = targetId === context.focusId || context.descendants?.has(targetId);
+    if (sourceVisible && targetVisible) {
+      opacity = Math.max(opacity, 0.66);
+      width *= 1.04;
+    } else {
+      opacity = 0.04;
+    }
+  } else if (context.hasFilters) {
+    const sourceMatched = context.matchedNodeIds.has(sourceId);
+    const targetMatched = context.matchedNodeIds.has(targetId);
+    if (sourceMatched || targetMatched) {
+      opacity = Math.max(opacity * 0.6, 0.18);
+      width *= sourceMatched && targetMatched ? 1.08 : 0.9;
+    } else {
+      opacity = FILTER_EDGE_FADE_OPACITY;
+    }
+  }
+
+  return {
+    ...item,
+    lineStyle: {
+      ...lineStyle,
+      opacity,
+      width,
+    },
+    label: {
+      ...(item?.label || {}),
+      show: context.focusId ? false : (!context.hasFilters && !!item?.label?.show),
     },
   };
 };
@@ -1749,13 +1936,15 @@ const applyHighlightOverlay = () => {
   const seriesList = Array.isArray(option?.series) ? option.series : [];
   if (!seriesList.length) return;
   const dark = isDark();
+  const context = buildHighlightContext();
   const nextSeries = [];
   const mainSeries = seriesList.find((series) => series?.id === MAIN_GRAPH_SERIES_ID);
   if (mainSeries?.data) {
     const livePositions = readLiveNodePositions(MAIN_GRAPH_SERIES_ID);
     nextSeries.push({
       id: MAIN_GRAPH_SERIES_ID,
-      data: mainSeries.data.map((item) => decorateDisplayedNode(item, livePositions, dark)),
+      data: mainSeries.data.map((item) => decorateDisplayedNode(item, livePositions, dark, context)),
+      links: (Array.isArray(mainSeries.links) ? mainSeries.links : []).map((item) => decorateDisplayedEdge(item, context)),
     });
   }
   const overlaySeries = seriesList.find((series) => series?.id === CLUSTER_OVERLAY_SERIES_ID);
@@ -1763,7 +1952,8 @@ const applyHighlightOverlay = () => {
     const livePositions = readLiveNodePositions(CLUSTER_OVERLAY_SERIES_ID);
     nextSeries.push({
       id: CLUSTER_OVERLAY_SERIES_ID,
-      data: overlaySeries.data.map((item) => decorateDisplayedNode(item, livePositions, dark)),
+      data: overlaySeries.data.map((item) => decorateDisplayedNode(item, livePositions, dark, context)),
+      links: (Array.isArray(overlaySeries.links) ? overlaySeries.links : []).map((item) => decorateDisplayedEdge(item, context)),
     });
   }
   if (nextSeries.length) chart2D.setOption({ series: nextSeries });
@@ -1774,6 +1964,8 @@ const onSearch = () => {
   highlightedNodeId.value = null;
   filterDepth.value = null;
   sidePanelMode.value = 'query';
+  stopSelectedGlowSync();
+  hideSelectedGlow();
   nextTick(() => { render2DGraph(); });
 };
 
@@ -1784,12 +1976,16 @@ const clearHighlight = () => {
   searchQuery.value = '';
   filterDepth.value = null;
   sidePanelMode.value = 'query';
+  stopSelectedGlowSync();
+  hideSelectedGlow();
   if (hadSearchOrDepth) nextTick(() => { render2DGraph(); });
 };
 
 const render2DGraph = () => {
   if (!graph2DRef.value) return;
   stopClusterFollowerSync();
+  stopSelectedGlowSync();
+  hideSelectedGlow();
   const preservedRoam = getCurrentGraphRoamState();
   if (!chart2D) chart2D = echarts.init(graph2DRef.value);
   else chart2D.clear();
@@ -2069,17 +2265,25 @@ const render2DGraph = () => {
     const sourceSeries = seriesList[Number.isFinite(sourceIndex) ? sourceIndex : (mainSeriesIndex >= 0 ? mainSeriesIndex : 0)];
     const z = Number(sourceSeries?.zoom || seriesList[mainSeriesIndex >= 0 ? mainSeriesIndex : 0]?.zoom || 1);
     graphZoom.value = clamp(z, 0.2, 2.8);
-    if (isSyncingOverlayRoam) return;
-    if (!Number.isFinite(sourceIndex)) return;
+    if (isSyncingOverlayRoam) {
+      syncSelectedNodeGlow();
+      return;
+    }
+    if (!Number.isFinite(sourceIndex)) {
+      syncSelectedNodeGlow();
+      return;
+    }
     if (sourceIndex === mainSeriesIndex && overlaySeriesIndex >= 0) {
       syncOverlayRoam(params, overlaySeriesIndex);
     } else if (sourceIndex === overlaySeriesIndex && mainSeriesIndex >= 0) {
       syncOverlayRoam(params, mainSeriesIndex);
     }
+    syncSelectedNodeGlow();
   });
 
   applyHighlightOverlay();
   startClusterFollowerSync();
+  startSelectedGlowSync();
 };
 
 // ── Three.js (kept for future use, 3D tab disabled in UI) ─────────────────
@@ -2313,6 +2517,8 @@ watch(
       sidePanelMode.value = 'query';
       highlightedNodeId.value = null;
       activeNodeId.value = null;
+      stopSelectedGlowSync();
+      hideSelectedGlow();
       return;
     }
     userExpandedClusterIds.value = new Set([...userExpandedClusterIds.value].filter((id) => clusterMetaMap.value.has(id)));
@@ -2320,6 +2526,8 @@ watch(
     if (textMode.value === 'source' && !hasSourceStructureTree.value) textMode.value = 'graph';
     sidePanelMode.value = 'query';
     highlightedNodeId.value = null;
+    stopSelectedGlowSync();
+    hideSelectedGlow();
     if (!activeNodeId.value || !nodeById.value.has(activeNodeId.value)) {
       activeNodeId.value = props.visualConfig?.focus_node || rootNodeId.value || safeNodes.value[0].id;
     }
@@ -2330,12 +2538,24 @@ watch(
 
 watch(activeView, (view) => {
   if (view !== '3d') stopThreeAnimation();
-  if (view !== '2d') stopClusterFollowerSync();
-  if (view === '2d') nextTick(() => { render2DGraph(); chart2D?.resize(); });
+  if (view !== '2d') {
+    stopClusterFollowerSync();
+    stopSelectedGlowSync();
+    hideSelectedGlow();
+  }
+  if (view === '2d') nextTick(() => {
+    render2DGraph();
+    chart2D?.resize();
+    syncSelectedNodeGlow();
+  });
   if (view === '3d') nextTick(() => { rebuildThreeGraph(); startThreeAnimation(); });
 });
 
-watch(showJson, () => nextTick(() => { chart2D?.resize(); resizeThreeRenderer(); }));
+watch(showJson, () => nextTick(() => {
+  chart2D?.resize();
+  resizeThreeRenderer();
+  syncSelectedNodeGlow();
+}));
 
 onMounted(() => {
   if (safeNodes.value.length) activeNodeId.value = props.visualConfig?.focus_node || rootNodeId.value || safeNodes.value[0].id;
@@ -2349,7 +2569,11 @@ onMounted(() => {
   });
   themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'data-color-scheme'] });
   if (graph2DRef.value) {
-    resizeObserver = new ResizeObserver(() => { chart2D?.resize(); resizeThreeRenderer(); });
+    resizeObserver = new ResizeObserver(() => {
+      chart2D?.resize();
+      resizeThreeRenderer();
+      syncSelectedNodeGlow();
+    });
     resizeObserver.observe(graph2DRef.value);
     if (graph3DRef?.value) resizeObserver.observe(graph3DRef.value);
   }
@@ -2358,6 +2582,7 @@ onMounted(() => {
 onBeforeUnmount(() => {
   stopThreeAnimation();
   stopClusterFollowerSync();
+  stopSelectedGlowSync();
   document.removeEventListener('fullscreenchange', syncFullscreenState);
   threeRenderer?.domElement?.removeEventListener('pointerdown', onThreePointerDown);
   disposeThreeGraph(); threeControls?.dispose?.(); threeRenderer?.dispose?.();
@@ -2548,9 +2773,55 @@ onBeforeUnmount(() => {
   height: 840px;
 }
 
+.kg-selected-gloss {
+  position: absolute;
+  z-index: 2;
+  border-radius: 999px;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  background:
+    radial-gradient(circle at 34% 30%, var(--kg-gloss-core) 0%, rgba(255, 255, 255, 0.18) 24%, rgba(255, 255, 255, 0) 58%),
+    radial-gradient(circle at center, var(--kg-gloss-accent) 0%, rgba(255, 255, 255, 0.04) 48%, rgba(255, 255, 255, 0) 74%);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--kg-gloss-core) 46%, transparent),
+    0 0 24px var(--kg-gloss-halo),
+    0 0 54px var(--kg-gloss-accent);
+  mix-blend-mode: screen;
+  isolation: isolate;
+  overflow: hidden;
+  animation: kgGlossPulse 2.15s ease-in-out infinite;
+}
+
+.kg-selected-gloss::before,
+.kg-selected-gloss::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+.kg-selected-gloss::before {
+  background:
+    linear-gradient(115deg, transparent 16%, rgba(255, 255, 255, 0.08) 36%, rgba(255, 255, 255, 0.52) 50%, rgba(255, 255, 255, 0.12) 62%, transparent 82%);
+  transform: translateX(-135%) rotate(8deg);
+  opacity: 0.88;
+  animation: kgGlossSweep 2.7s cubic-bezier(0.24, 0.1, 0.22, 1) infinite;
+}
+
+.kg-selected-gloss::after {
+  inset: 10%;
+  border: 1px solid color-mix(in srgb, var(--kg-gloss-core) 72%, transparent);
+  box-shadow:
+    inset 0 0 16px color-mix(in srgb, var(--kg-gloss-core) 22%, transparent),
+    0 0 18px color-mix(in srgb, var(--kg-gloss-halo) 80%, transparent);
+  opacity: 0.78;
+  animation: kgGlossRing 1.95s ease-in-out infinite;
+}
+
 .kg-ops-panel {
   position: relative;
-  z-index: 2;
+  z-index: 3;
   width: 300px;
   flex-shrink: 0;
   border-left: 1px solid var(--kg-panel-border);
@@ -2562,6 +2833,49 @@ onBeforeUnmount(() => {
   backdrop-filter: blur(16px);
   box-sizing: border-box;
   overflow-y: auto;
+}
+
+@keyframes kgGlossPulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(0.96);
+    filter: saturate(1) brightness(1);
+  }
+  45% {
+    transform: translate(-50%, -50%) scale(1.05);
+    filter: saturate(1.12) brightness(1.08);
+  }
+  72% {
+    transform: translate(-50%, -50%) scale(1.01);
+    filter: saturate(1.08) brightness(1.03);
+  }
+}
+
+@keyframes kgGlossSweep {
+  0% {
+    transform: translateX(-135%) rotate(8deg);
+    opacity: 0;
+  }
+  18% {
+    opacity: 0.9;
+  }
+  56% {
+    opacity: 0.72;
+  }
+  100% {
+    transform: translateX(135%) rotate(8deg);
+    opacity: 0;
+  }
+}
+
+@keyframes kgGlossRing {
+  0%, 100% {
+    transform: scale(0.94);
+    opacity: 0.38;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 0.92;
+  }
 }
 
 .kg-side-kicker {

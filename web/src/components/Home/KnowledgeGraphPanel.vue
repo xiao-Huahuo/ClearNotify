@@ -8,8 +8,9 @@
       </div>
       <div class="kg-actions">
         <div class="kg-meta">
-          <span>节点 {{ safeNodes.length }}</span>
-          <span>关系 {{ safeLinks.length }}</span>
+          <span>节点 {{ graphNodes.length }}/{{ safeNodes.length }}</span>
+          <span>关系 {{ graphLinks.length }}/{{ safeLinks.length }}</span>
+          <span v-if="collapsedClusterCount">收拢 {{ collapsedClusterCount }}</span>
           <span>缩放 {{ graphZoom.toFixed(2) }}</span>
         </div>
         <button class="kg-json-toggle" @click="showJson = !showJson">{{ showJson ? '隐藏 JSON' : '显示 JSON' }}</button>
@@ -39,6 +40,10 @@
                   @click="toggleDepthFilter(d)"
                 >{{ d }}</button>
               </div>
+            </div>
+            <div v-if="clusterMetaMap.size" class="kg-cluster-tip">
+              <div class="kg-depth-label">自适应簇</div>
+              <div class="kg-cluster-copy">同级子节点过多的父节点会默认收拢，点击该节点可局部展开。</div>
             </div>
           </div>
         </div>
@@ -100,6 +105,7 @@ const activeView = ref('2d');
 const showJson = ref(false);
 const activeNodeId = ref(null);
 const highlightedNodeId = ref(null);
+const pendingClusterFocusId = ref(null);
 const graph2DRef = ref(null);
 const graph3DRef = ref(null);
 const graphZoom = ref(1);
@@ -110,8 +116,17 @@ let chart2D = null;
 let themeObserver = null;
 let resizeObserver = null;
 let animationFrame = null;
+let clusterFollowFrame = null;
+let isSyncingOverlayRoam = false;
 
 const DEPTH_COLORS = ['#e74c3c','#f1c40f','#2ecc71','#3498db','#9b59b6','#e67e22','#1abc9c'];
+const CLUSTER_CHILD_THRESHOLD = 30;
+const CLUSTER_MIN_DOMINANT_TYPE_RATIO = 0.68;
+const CLUSTER_MIN_LEAF_RATIO = 0.62;
+const CLUSTER_MAX_AVG_LABEL = 18;
+const MAIN_GRAPH_SERIES_ID = 'kg_main_graph';
+const CLUSTER_OVERLAY_SERIES_ID = 'kg_cluster_overlay';
+const GRAPH_DEFAULT_CENTER = ['50%', '50%'];
 const depthColor = (d) => DEPTH_COLORS[d % DEPTH_COLORS.length];
 
 const isDark = () => document.documentElement.getAttribute('data-theme') === 'dark';
@@ -238,8 +253,138 @@ const safeLinks = computed(() => {
   return result;
 });
 
+const nodeById = computed(() => new Map(safeNodes.value.map((node) => [node.id, node])));
+
+const graphHierarchy = computed(() => {
+  if (!safeNodes.value.length || !rootNodeId.value) {
+    return { parent: new Map(), depth: new Map(), children: new Map() };
+  }
+  return buildParentDepthMap(safeNodes.value, safeLinks.value, rootNodeId.value);
+});
+
+const collectDescendants = (nodeId, childrenMap) => {
+  const result = new Set();
+  const queue = [...(childrenMap.get(nodeId) || [])];
+  while (queue.length) {
+    const current = queue.shift();
+    if (result.has(current)) continue;
+    result.add(current);
+    for (const child of (childrenMap.get(current) || [])) queue.push(child);
+  }
+  return result;
+};
+
+const clusterMetaMap = computed(() => {
+  const map = new Map();
+  const rootId = rootNodeId.value;
+  for (const node of safeNodes.value) {
+    if (!node?.id || node.id === rootId) continue;
+    const children = graphHierarchy.value.children.get(node.id) || [];
+    if (children.length < CLUSTER_CHILD_THRESHOLD) continue;
+    const childNodes = children.map((id) => nodeById.value.get(id)).filter(Boolean);
+    if (!childNodes.length) continue;
+    const leafCount = childNodes.filter((child) => !(graphHierarchy.value.children.get(child.id) || []).length).length;
+    const leafRatio = leafCount / childNodes.length;
+    const typeCounts = new Map();
+    let totalLabelLength = 0;
+    for (const child of childNodes) {
+      totalLabelLength += String(child.label || '').trim().length;
+      const type = child.type || '实体';
+      typeCounts.set(type, (typeCounts.get(type) || 0) + 1);
+    }
+    const dominantTypeRatio = Math.max(...typeCounts.values()) / childNodes.length;
+    const avgLabelLength = totalLabelLength / childNodes.length;
+    map.set(node.id, {
+      childCount: childNodes.length,
+      leafRatio,
+      dominantTypeRatio,
+      avgLabelLength,
+    });
+  }
+  return map;
+});
+
+const userExpandedClusterIds = ref(new Set());
+
+const autoExpandedClusterIds = computed(() => {
+  const expanded = new Set();
+  const query = searchQuery.value.trim().toLowerCase();
+  const markAncestors = (nodeId) => {
+    let current = String(nodeId || '').trim();
+    const seen = new Set();
+    while (current && !seen.has(current)) {
+      seen.add(current);
+      const parentId = graphHierarchy.value.parent.get(current);
+      if (!parentId) break;
+      if (clusterMetaMap.value.has(parentId)) expanded.add(parentId);
+      current = parentId;
+    }
+  };
+  if (query) {
+    for (const node of safeNodes.value) {
+      if (String(node.label || '').toLowerCase().includes(query)) markAncestors(node.id);
+    }
+  }
+  if (activeNodeId.value) markAncestors(activeNodeId.value);
+  if (highlightedNodeId.value) markAncestors(highlightedNodeId.value);
+  return expanded;
+});
+
+const expandedClusterIds = computed(() => {
+  const merged = new Set();
+  for (const id of userExpandedClusterIds.value) {
+    if (clusterMetaMap.value.has(id)) merged.add(id);
+  }
+  for (const id of autoExpandedClusterIds.value) merged.add(id);
+  return merged;
+});
+
+const hiddenNodeIds = computed(() => {
+  const hidden = new Set();
+  for (const [clusterId] of clusterMetaMap.value.entries()) {
+    if (expandedClusterIds.value.has(clusterId)) continue;
+    for (const nodeId of collectDescendants(clusterId, graphHierarchy.value.children)) hidden.add(nodeId);
+  }
+  return hidden;
+});
+
+const graphNodes = computed(() => safeNodes.value.filter((node) => !hiddenNodeIds.value.has(node.id)));
+
+const graphLinks = computed(() => {
+  const visibleIds = new Set(graphNodes.value.map((node) => node.id));
+  return safeLinks.value.filter((link) => visibleIds.has(link.source) && visibleIds.has(link.target));
+});
+
+const collapsedClusterCount = computed(() => {
+  let count = 0;
+  for (const [clusterId] of clusterMetaMap.value.entries()) {
+    if (!expandedClusterIds.value.has(clusterId)) count += 1;
+  }
+  return count;
+});
+
+const expandedClusterOwnerMap = computed(() => {
+  const ownerMap = new Map();
+  if (!expandedClusterIds.value.size) return ownerMap;
+  for (const node of graphNodes.value) {
+    let current = graphHierarchy.value.parent.get(node.id);
+    while (current) {
+      if (expandedClusterIds.value.has(current)) {
+        ownerMap.set(node.id, current);
+        break;
+      }
+      current = graphHierarchy.value.parent.get(current);
+    }
+  }
+  return ownerMap;
+});
+
+const expandedClusterChildNodeIds = computed(() => {
+  return new Set(expandedClusterOwnerMap.value.keys());
+});
+
 const nodeTypes = computed(() => {
-  const all = safeNodes.value.map((item) => item.type).filter(Boolean);
+  const all = graphNodes.value.map((item) => item.type).filter(Boolean);
   return [...new Set(all)].slice(0, 10);
 });
 
@@ -279,6 +424,7 @@ const highlightedText = computed(() => {
 const buildParentDepthMap = (nodes, links, rootId) => {
   const ids = new Set(nodes.map((n) => n.id));
   const parent = new Map();
+  const children = new Map();
   parent.set(rootId, null);
   for (const node of nodes) {
     if (node.parent_id && ids.has(node.parent_id) && node.parent_id !== node.id)
@@ -290,6 +436,15 @@ const buildParentDepthMap = (nodes, links, rootId) => {
       parent.set(edge.target, edge.source);
   }
   for (const node of nodes) { if (!parent.has(node.id)) parent.set(node.id, rootId); }
+  for (const [id, p] of parent.entries()) {
+    if (!p || p === id) continue;
+    if (!children.has(p)) children.set(p, []);
+    children.get(p).push(id);
+  }
+  for (const [pid, arr] of children.entries()) {
+    arr.sort((a, b) => (a || '').localeCompare(b || ''));
+    children.set(pid, arr);
+  }
   const depth = new Map();
   const visit = (id, seen = new Set()) => {
     if (depth.has(id)) return depth.get(id);
@@ -302,7 +457,7 @@ const buildParentDepthMap = (nodes, links, rootId) => {
     return d;
   };
   for (const node of nodes) visit(node.id);
-  return { parent, depth };
+  return { parent, depth, children };
 };
 
 // ── tree layout ────────────────────────────────────────────────────────────
@@ -313,38 +468,167 @@ const hashSeed = (text) => {
   return Math.abs(hash >>> 0);
 };
 
-const buildTreeLayout = (nodes, links, rootId) => {
+const toXY = (value, fallback = { x: 0, y: 0 }) => {
+  if (Array.isArray(value)) {
+    return {
+      x: Number.isFinite(Number(value[0])) ? Number(value[0]) : fallback.x,
+      y: Number.isFinite(Number(value[1])) ? Number(value[1]) : fallback.y,
+    };
+  }
+  if (value && typeof value === 'object') {
+    const x = value.x ?? value[0];
+    const y = value.y ?? value[1];
+    return {
+      x: Number.isFinite(Number(x)) ? Number(x) : fallback.x,
+      y: Number.isFinite(Number(y)) ? Number(y) : fallback.y,
+    };
+  }
+  return { ...fallback };
+};
+
+const buildClusterLocalLayout = (clusterId, childrenMap, links) => {
+  const subtreeIds = [...collectDescendants(clusterId, childrenMap)];
+  if (!subtreeIds.length) return new Map();
+  const nodeSet = new Set([clusterId, ...subtreeIds]);
+  const localChildren = new Map();
+  const localParent = new Map([[clusterId, null]]);
+  const localDepth = new Map([[clusterId, 0]]);
+  const queue = [clusterId];
+  while (queue.length) {
+    const current = queue.shift();
+    const children = (childrenMap.get(current) || []).filter((id) => nodeSet.has(id));
+    localChildren.set(current, children);
+    for (const child of children) {
+      if (localParent.has(child)) continue;
+      localParent.set(child, current);
+      localDepth.set(child, (localDepth.get(current) || 0) + 1);
+      queue.push(child);
+    }
+  }
+
+  const positions = new Map([[clusterId, { x: 0, y: 0 }]]);
+  const velocities = new Map();
+  const depthGroups = new Map();
+  const orbitTargets = new Map();
+  for (const id of subtreeIds) {
+    const depth = localDepth.get(id) || 1;
+    if (!depthGroups.has(depth)) depthGroups.set(depth, []);
+    depthGroups.get(depth).push(id);
+  }
+  let orbitBaseRadius = 84;
+  const orderedDepths = [...depthGroups.keys()].sort((a, b) => a - b);
+  for (const depth of orderedDepths) {
+    const ids = [...(depthGroups.get(depth) || [])].sort((a, b) => {
+      const parentA = localParent.get(a) || '';
+      const parentB = localParent.get(b) || '';
+      return parentA.localeCompare(parentB) || a.localeCompare(b);
+    });
+    const orbitGap = 34 + Math.min(depth * 2, 8);
+    const desiredArcGap = 32 + Math.min(depth * 3, 10);
+    let cursor = 0;
+    let orbitIndex = 0;
+    while (cursor < ids.length) {
+      const radius = orbitBaseRadius + orbitIndex * orbitGap;
+      const circumference = Math.max(2 * Math.PI * radius, desiredArcGap * 6);
+      const capacity = Math.max(6, Math.floor(circumference / desiredArcGap));
+      const slice = ids.slice(cursor, cursor + Math.max(1, capacity));
+      const orbitSeed = hashSeed(`${clusterId}_${depth}_${orbitIndex}`);
+      slice.forEach((id, idx) => {
+        const angle = ((Math.PI * 2 * idx) / Math.max(slice.length, 1)) + ((orbitSeed % 360) * Math.PI) / 180;
+        const point = { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius };
+        positions.set(id, point);
+        velocities.set(id, { x: 0, y: 0 });
+        orbitTargets.set(id, { radius, angle, x: point.x, y: point.y });
+      });
+      cursor += slice.length;
+      orbitIndex += 1;
+    }
+    orbitBaseRadius += Math.max(orbitIndex, 1) * orbitGap + 28;
+  }
+
+  const visibleLinks = links.filter((link) => nodeSet.has(link.source) && nodeSet.has(link.target));
+  const springs = visibleLinks.length
+    ? visibleLinks
+    : subtreeIds.map((id) => ({ source: localParent.get(id) || clusterId, target: id }));
+
+  for (let iter = 0; iter < 90; iter++) {
+    const forces = new Map(subtreeIds.map((id) => [id, { x: 0, y: 0 }]));
+    for (let i = 0; i < subtreeIds.length; i++) {
+      const aId = subtreeIds[i];
+      const a = positions.get(aId);
+      for (let j = i + 1; j < subtreeIds.length; j++) {
+        const bId = subtreeIds[j];
+        const b = positions.get(bId);
+        const dx = a.x - b.x;
+        const dy = a.y - b.y;
+        const distSq = Math.max(dx * dx + dy * dy, 196);
+        const dist = Math.sqrt(distSq);
+        const push = 2400 / distSq;
+        const fx = (dx / dist) * push;
+        const fy = (dy / dist) * push;
+        forces.get(aId).x += fx;
+        forces.get(aId).y += fy;
+        forces.get(bId).x -= fx;
+        forces.get(bId).y -= fy;
+      }
+    }
+
+    for (const edge of springs) {
+      const source = positions.get(edge.source) || { x: 0, y: 0 };
+      const target = positions.get(edge.target);
+      if (!target) continue;
+      const dx = source.x - target.x;
+      const dy = source.y - target.y;
+      const dist = Math.max(Math.hypot(dx, dy), 1);
+      const sourceOrbit = orbitTargets.get(edge.source);
+      const targetOrbit = orbitTargets.get(edge.target);
+      const sourceRadius = sourceOrbit?.radius || 0;
+      const targetRadius = targetOrbit?.radius || (localDepth.get(edge.target) || 1) * 52;
+      const targetLen = Math.max(44, Math.abs(targetRadius - sourceRadius) + 22);
+      const pull = (dist - targetLen) * 0.06;
+      const fx = (dx / dist) * pull;
+      const fy = (dy / dist) * pull;
+      forces.get(edge.target).x += fx;
+      forces.get(edge.target).y += fy;
+    }
+
+    for (const id of subtreeIds) {
+      const point = positions.get(id);
+      const force = forces.get(id);
+      const orbitTarget = orbitTargets.get(id);
+      const targetRadius = orbitTarget?.radius || (62 + (localDepth.get(id) || 1) * 44);
+      const currentRadius = Math.max(Math.hypot(point.x, point.y), 1);
+      const radialPull = (currentRadius - targetRadius) * 0.035;
+      force.x -= (point.x / currentRadius) * radialPull;
+      force.y -= (point.y / currentRadius) * radialPull;
+      if (orbitTarget) {
+        force.x += (orbitTarget.x - point.x) * 0.022;
+        force.y += (orbitTarget.y - point.y) * 0.022;
+      }
+
+      const vel = velocities.get(id) || { x: 0, y: 0 };
+      vel.x = (vel.x + force.x) * 0.84;
+      vel.y = (vel.y + force.y) * 0.84;
+      const speed = Math.hypot(vel.x, vel.y);
+      if (speed > 10) {
+        vel.x = (vel.x / speed) * 10;
+        vel.y = (vel.y / speed) * 10;
+      }
+      point.x += vel.x;
+      point.y += vel.y;
+      velocities.set(id, vel);
+    }
+  }
+  return positions;
+};
+
+const buildTreeLayout = (nodes, links, rootId, clusterMap = new Map(), expandedSet = new Set(), layoutHierarchy = null, clusterLayouts = new Map()) => {
   const map = new Map();
   if (!nodes.length || !rootId) return map;
-  const nodeIds = new Set(nodes.map((n) => n.id));
-  const adj = new Map();
-  const addAdj = (s, t) => {
-    if (!nodeIds.has(s) || !nodeIds.has(t) || s === t) return;
-    if (!adj.has(s)) adj.set(s, []);
-    if (!adj.get(s).includes(t)) adj.get(s).push(t);
-  };
-  for (const n of nodes) {
-    if (n.parent_id && nodeIds.has(n.parent_id) && n.parent_id !== n.id) addAdj(n.parent_id, n.id);
-  }
-  for (const e of links) addAdj(e.source, e.target);
-  const parent = new Map();
-  const queue = [rootId];
-  parent.set(rootId, null);
-  while (queue.length) {
-    const cur = queue.shift();
-    const children = [...(adj.get(cur) || [])].sort((a, b) => a.localeCompare(b));
-    for (const c of children) { if (parent.has(c)) continue; parent.set(c, cur); queue.push(c); }
-  }
-  for (const id of nodeIds) { if (!parent.has(id)) parent.set(id, rootId); }
-  const childrenMap = new Map();
-  for (const [id, p] of parent.entries()) {
-    if (p === null) continue;
-    if (!childrenMap.has(p)) childrenMap.set(p, []);
-    childrenMap.get(p).push(id);
-  }
-  for (const arr of childrenMap.values()) arr.sort((a, b) => a.localeCompare(b));
+  const nodeByIdLocal = new Map(nodes.map((node) => [node.id, node]));
+  const { children: childrenMap } = layoutHierarchy || buildParentDepthMap(nodes, links, rootId);
   const placed = [];
-  const minDist = 56;
+  const minDist = 48;
   const placeAvoid = (x0, y0, seed) => {
     let x = x0, y = y0, r = 0, ang = ((seed % 360) * Math.PI) / 180;
     for (let k = 0; k < 80; k++) {
@@ -354,16 +638,47 @@ const buildTreeLayout = (nodes, links, rootId) => {
     placed.push({ x, y }); return { x, y };
   };
   map.set(rootId, { x: 0, y: 0 }); placed.push({ x: 0, y: 0 });
+  const placeClusterChildren = (pid) => {
+    const p = map.get(pid) || { x: 0, y: 0 };
+    const localLayout = clusterLayouts.get(pid) || buildClusterLocalLayout(pid, childrenMap, links);
+    for (const [nodeId, point] of localLayout.entries()) {
+      if (nodeId === pid) continue;
+      const pos = placeAvoid(p.x + point.x, p.y + point.y, hashSeed(`${pid}_${nodeId}`));
+      map.set(nodeId, pos);
+    }
+  };
   const walk = (pid, depth) => {
-    const children = childrenMap.get(pid) || [];
+    const children = [...(childrenMap.get(pid) || [])].sort((a, b) => {
+      const aLabel = nodeByIdLocal.get(a)?.label || a;
+      const bLabel = nodeByIdLocal.get(b)?.label || b;
+      return aLabel.localeCompare(bLabel);
+    });
     if (!children.length) return;
     const p = map.get(pid) || { x: 0, y: 0 };
+    if (clusterMap.has(pid) && expandedSet.has(pid)) {
+      placeClusterChildren(pid);
+      return;
+    }
     const n = children.length;
-    const base = 120 + depth * 34;
+    const base = 136 + depth * 34;
     const offset = (hashSeed(pid) % 360) * (Math.PI / 180);
+    const sector = n <= 2 ? Math.PI * 0.5 : Math.min(Math.PI * 1.8, Math.PI * 0.72 + n * 0.18);
     children.forEach((cid, idx) => {
-      const angle = offset + (Math.PI * 2 * idx) / n;
-      const pos = placeAvoid(p.x + Math.cos(angle) * base, p.y + Math.sin(angle) * base, hashSeed(cid));
+      const clusterInfo = clusterMap.get(cid);
+      const isExpandedCluster = clusterInfo && expandedSet.has(cid);
+      const isCollapsedCluster = clusterInfo && !isExpandedCluster;
+      const angle = n === 1 ? offset : offset - sector / 2 + (sector * idx) / Math.max(n - 1, 1);
+      const extraRadius = isExpandedCluster
+        ? 420 + Math.min(clusterInfo.childCount * 12, 320)
+        : isCollapsedCluster
+          ? 100 + Math.min(clusterInfo.childCount * 4, 120)
+          : 0;
+      const radius = base + extraRadius;
+      const pos = placeAvoid(
+        p.x + Math.cos(angle) * radius,
+        p.y + Math.sin(angle) * (radius * (isExpandedCluster ? 0.88 : isCollapsedCluster ? 0.8 : 0.66)),
+        hashSeed(cid),
+      );
       map.set(cid, pos); walk(cid, depth + 1);
     });
   };
@@ -373,6 +688,7 @@ const buildTreeLayout = (nodes, links, rootId) => {
 
 // ── depth filter helpers ───────────────────────────────────────────────────
 const depthMapCache = ref(new Map());
+const expandedClusterFollowerStates = ref(new Map());
 
 const depthRange = computed(() => {
   const depths = [...depthMapCache.value.values()];
@@ -388,20 +704,39 @@ const toggleDepthFilter = (d) => {
 
 // ── descendant helpers ─────────────────────────────────────────────────────
 const getDescendants = (nodeId) => {
-  const adj = new Map();
-  for (const link of safeLinks.value) {
-    if (!adj.has(link.source)) adj.set(link.source, []);
-    adj.get(link.source).push(link.target);
-  }
   const result = new Set();
-  const queue = [nodeId];
+  const queue = [...(graphHierarchy.value.children.get(nodeId) || [])];
   while (queue.length) {
     const cur = queue.shift();
-    for (const child of (adj.get(cur) || [])) {
-      if (!result.has(child)) { result.add(child); queue.push(child); }
-    }
+    if (result.has(cur)) continue;
+    result.add(cur);
+    for (const child of (graphHierarchy.value.children.get(cur) || [])) queue.push(child);
   }
   return result;
+};
+
+const formatNodeLabel = (node) => {
+  const clusterInfo = clusterMetaMap.value.get(node?.id);
+  if (clusterInfo && !expandedClusterIds.value.has(node.id)) {
+    return `${node.label}（${clusterInfo.childCount}）`;
+  }
+  return node?.label || '';
+};
+
+const toggleClusterExpansion = (nodeId) => {
+  if (!clusterMetaMap.value.has(nodeId)) return false;
+  const next = new Set(userExpandedClusterIds.value);
+  const isExpanded = expandedClusterIds.value.has(nodeId);
+  if (isExpanded) {
+    next.delete(nodeId);
+    const descendants = collectDescendants(nodeId, graphHierarchy.value.children);
+    if (activeNodeId.value && descendants.has(activeNodeId.value)) activeNodeId.value = nodeId;
+    if (highlightedNodeId.value && descendants.has(highlightedNodeId.value)) highlightedNodeId.value = nodeId;
+  } else {
+    next.add(nodeId);
+  }
+  userExpandedClusterIds.value = next;
+  return true;
 };
 
 // ── 2D graph ───────────────────────────────────────────────────────────────
@@ -421,109 +756,670 @@ const shouldShowEdgeLabel = (link) => {
   return z > 1.05 && Number(link?.strength || 0) >= 0.55;
 };
 
-const applyHighlightOverlay = () => {
-  if (!chart2D) return;
+const buildClusterAnchorId = (clusterId) => `cluster_anchor__${clusterId}`;
+
+const getSeriesIndex = (seriesRef = MAIN_GRAPH_SERIES_ID) => {
+  if (!chart2D) return -1;
+  if (typeof seriesRef === 'number') return seriesRef;
   const option = chart2D.getOption?.();
-  const series = option?.series?.[0];
-  if (!series?.data) return;
-  const dark = isDark();
-  const rootId = rootNodeId.value;
-  const hlId = highlightedNodeId.value;
-  const searchQ = searchQuery.value.trim().toLowerCase();
-  const descendants = hlId ? getDescendants(hlId) : null;
+  const seriesList = Array.isArray(option?.series) ? option.series : [];
+  return seriesList.findIndex((series) => series?.id === seriesRef);
+};
 
-  const nextData = series.data.map((item) => {
-    const id = String(item?.id || '');
-    const src = safeNodes.value.find((n) => n.id === id);
-    const d = Number(depthMapCache.value.get(id) ?? 0);
-    const isRoot = id === rootId;
-    const baseCol = depthColor(d);
+const getGraphRuntime = (seriesRef = MAIN_GRAPH_SERIES_ID) => {
+  if (!chart2D) return {};
+  const seriesIndex = getSeriesIndex(seriesRef);
+  if (seriesIndex < 0) return {};
+  const ecModel = chart2D.getModel?.();
+  const seriesModel = ecModel?.getSeriesByIndex?.(seriesIndex);
+  const graph = seriesModel?.getGraph?.();
+  const view = seriesModel ? chart2D.getViewOfSeriesModel?.(seriesModel) : null;
+  return { seriesIndex, seriesModel, graph, view };
+};
 
-    // search match
-    const matchesSearch = searchQ && src?.label?.toLowerCase().startsWith(searchQ);
-    // depth filter match
-    const matchesDepth = filterDepth.value !== null && d === filterDepth.value;
+const readLiveNodePositions = (seriesRef = MAIN_GRAPH_SERIES_ID) => {
+  const positions = new Map();
+  const { graph } = getGraphRuntime(seriesRef);
+  graph?.eachNode?.((node) => {
+    positions.set(node.id, toXY(node.getLayout()));
+  });
+  return positions;
+};
 
-    let color = baseCol;
-    let opacity = 1;
-    let borderWidth = 0;
-    let borderColor = 'transparent';
-    let labelShow = shouldShowNodeLabel(src || { id, importance: 0.5 });
+const resolveEdgeCurveness = (points, edge) => {
+  const explicit = Number(edge?.getModel?.()?.get?.(['lineStyle', 'curveness']) ?? 0);
+  if (explicit) return explicit;
+  if (!Array.isArray(points) || !points[2]) return 0;
+  const p1 = toXY(points[0]);
+  const p2 = toXY(points[1]);
+  const c = toXY(points[2]);
+  const dx = p2.x - p1.x;
+  const dy = p2.y - p1.y;
+  const denom = dx * dx + dy * dy;
+  if (denom < 1) return 0;
+  const midX = (p1.x + p2.x) / 2;
+  const midY = (p1.y + p2.y) / 2;
+  return (((c.x - midX) * dy) - ((c.y - midY) * dx)) / denom;
+};
 
-    if (hlId) {
-      if (id === hlId) {
-        color = baseCol; borderWidth = 4; borderColor = '#fff'; opacity = 1;
-      } else if (descendants?.has(id)) {
-        opacity = 0.85;
-      } else {
-        opacity = 0.15; labelShow = false;
-      }
-    } else if (matchesSearch || matchesDepth) {
-      borderWidth = 3; borderColor = '#fff'; opacity = 1;
-    } else if (searchQ || filterDepth.value !== null) {
-      opacity = 0.2; labelShow = false;
+const updateEdgeLayoutForPoints = (edge, sourcePoint, targetPoint) => {
+  if (!edge) return false;
+  const currentLayout = edge.getLayout?.();
+  const currentSource = toXY(currentLayout?.[0], sourcePoint);
+  const currentTarget = toXY(currentLayout?.[1], targetPoint);
+  const points = Array.isArray(currentLayout) ? currentLayout.slice() : [];
+  const curveness = resolveEdgeCurveness(currentLayout, edge);
+  points[0] = [sourcePoint.x, sourcePoint.y];
+  points[1] = [targetPoint.x, targetPoint.y];
+  let changed = Math.hypot(currentSource.x - sourcePoint.x, currentSource.y - sourcePoint.y) > 0.35
+    || Math.hypot(currentTarget.x - targetPoint.x, currentTarget.y - targetPoint.y) > 0.35;
+  if (curveness) {
+    const controlPoint = [
+      (sourcePoint.x + targetPoint.x) / 2 + (targetPoint.y - sourcePoint.y) * curveness,
+      (sourcePoint.y + targetPoint.y) / 2 - (targetPoint.x - sourcePoint.x) * curveness,
+    ];
+    const currentControl = toXY(currentLayout?.[2], { x: controlPoint[0], y: controlPoint[1] });
+    if (Math.hypot(currentControl.x - controlPoint[0], currentControl.y - controlPoint[1]) > 0.35) changed = true;
+    points[2] = controlPoint;
+  } else if (points[2]) {
+    points.length = 2;
+    changed = true;
+  }
+  if (!changed) return false;
+  edge.setLayout(points);
+  return true;
+};
+
+const syncForceNodePosition = (seriesModel, graphNode, point) => {
+  if (!graphNode || !point) return;
+  if (seriesModel?.preservedPoints) {
+    seriesModel.preservedPoints[graphNode.id] = [point.x, point.y];
+  }
+  if (!seriesModel?.forceLayout?.setNodePosition) return;
+  seriesModel.forceLayout.setNodePosition(graphNode.dataIndex, [point.x, point.y], true);
+};
+
+const syncPreservedPointsFromLiveLayout = () => {
+  const { seriesModel, graph } = getGraphRuntime(MAIN_GRAPH_SERIES_ID);
+  if (!seriesModel?.preservedPoints || !graph) return;
+  graph.eachNode?.((node) => {
+    const point = toXY(node.getLayout());
+    seriesModel.preservedPoints[node.id] = [point.x, point.y];
+  });
+};
+
+const buildGraphNodeItem = (node, point, depthValue, dark, options = {}) => {
+  const {
+    isRoot = false,
+    isCollapsedCluster = false,
+    isExpandedCluster = false,
+    isOverlayNode = false,
+    isClusterAnchor = false,
+    clusterCount = 0,
+    fixed = false,
+    draggable = true,
+    ignoreForceRepulsion = false,
+  } = options;
+  if (isClusterAnchor) {
+    return {
+      id: node.id,
+      name: '',
+      value: '',
+      x: point.x,
+      y: point.y,
+      fixed: true,
+      draggable: false,
+      silent: true,
+      isClusterAnchor: true,
+      symbolSize: 1,
+      itemStyle: { color: 'rgba(0,0,0,0)', opacity: 0 },
+      label: { show: false },
+      tooltip: { show: false },
+      emphasis: { disabled: true },
+      blur: { itemStyle: { opacity: 0 } },
+      select: { disabled: true },
+    };
+  }
+  const imp = clamp(Number(node.importance || 0.5), 0, 1);
+  const baseDepthSize = Math.max(10, 26 - depthValue * 2.2 + imp * 8);
+  const symbolSize = isRoot
+    ? 52
+    : isCollapsedCluster
+      ? Math.max(18, baseDepthSize + Math.min(clusterCount * 0.26, 8))
+      : isExpandedCluster
+        ? Math.max(isOverlayNode ? 10 : 13, baseDepthSize - (isOverlayNode ? 6 : 4))
+        : isOverlayNode
+          ? Math.max(7, baseDepthSize - 8)
+          : baseDepthSize;
+  return {
+    id: node.id,
+    name: isRoot ? documentTitle.value : formatNodeLabel(node),
+    value: clusterCount ? `${node.type} 路 ${clusterCount} 涓瓙鑺傜偣` : node.type,
+    clusterCount,
+    x: point.x,
+    y: point.y,
+    fixed,
+    ignoreForceRepulsion,
+    draggable,
+    isOverlayNode,
+    symbolSize,
+    itemStyle: {
+      color: depthColor(depthValue),
+      opacity: 1,
+      borderWidth: isCollapsedCluster ? 2 : 0,
+      borderColor: isCollapsedCluster ? (dark ? 'rgba(255,255,255,0.72)' : 'rgba(17,17,17,0.28)') : 'transparent',
+      shadowBlur: isCollapsedCluster ? 14 : 0,
+      shadowColor: isCollapsedCluster ? (dark ? 'rgba(255,255,255,0.18)' : 'rgba(52,73,94,0.18)') : 'transparent',
+    },
+    label: {
+      show: shouldShowNodeLabel(node),
+      color: dark ? '#f2f2f2' : '#333',
+      fontSize: isRoot ? 13 : isOverlayNode ? 10 : 11,
+      fontWeight: isRoot ? 700 : 400,
+      formatter: () => shorten(isRoot ? documentTitle.value : formatNodeLabel(node), isRoot ? 38 : isOverlayNode ? 18 : 24),
+    },
+  };
+};
+
+const buildEdgeItem = (link, dark, source = link.source, target = link.target, options = {}) => {
+  const {
+    ignoreForceLayout = false,
+    widthScale = 1,
+    opacity = 0.85,
+  } = options;
+  return {
+    source,
+    target,
+    value: link.relation,
+    ignoreForceLayout,
+    lineStyle: {
+      color: link.logic_type === 'negative' ? '#e74c3c' : dark ? '#9da5b3' : '#7f8c8d',
+      type: link.logic_type === 'negative' ? 'dashed' : 'solid',
+      width: (0.7 + clamp(Number(link.strength || 0.6), 0, 1) * 2.2) * widthScale,
+      opacity,
+    },
+    label: {
+      show: shouldShowEdgeLabel(link),
+      formatter: () => shorten(link.relation, 10),
+      color: dark ? '#d6d6d6' : '#666',
+      fontSize: 10,
+    },
+  };
+};
+
+const syncExpandedClusterFollowers = () => {
+  if (!chart2D || activeView.value !== '2d' || !expandedClusterFollowerStates.value.size) return;
+  const mainRuntime = getGraphRuntime(MAIN_GRAPH_SERIES_ID);
+  const overlayRuntime = getGraphRuntime(CLUSTER_OVERLAY_SERIES_ID);
+  if (!mainRuntime.seriesModel || !mainRuntime.graph || !mainRuntime.view || !overlayRuntime.seriesModel || !overlayRuntime.graph || !overlayRuntime.view) return;
+  const option = chart2D.getOption?.();
+  const seriesList = Array.isArray(option?.series) ? option.series : [];
+  const mainSeries = seriesList.find((series) => series?.id === MAIN_GRAPH_SERIES_ID);
+  const overlaySeries = seriesList.find((series) => series?.id === CLUSTER_OVERLAY_SERIES_ID);
+  if (mainSeries && overlaySeries) {
+    const mainCenter = Array.isArray(mainSeries.center) ? mainSeries.center : GRAPH_DEFAULT_CENTER;
+    const overlayCenter = Array.isArray(overlaySeries.center) ? overlaySeries.center : GRAPH_DEFAULT_CENTER;
+    const mainZoom = clamp(Number(mainSeries.zoom || graphZoom.value || 1), 0.2, 2.8);
+    const overlayZoom = clamp(Number(overlaySeries.zoom || graphZoom.value || 1), 0.2, 2.8);
+    if (mainCenter[0] !== overlayCenter[0] || mainCenter[1] !== overlayCenter[1] || Math.abs(mainZoom - overlayZoom) > 0.0001) {
+      chart2D.setOption({
+        series: [{
+          id: CLUSTER_OVERLAY_SERIES_ID,
+          center: [...mainCenter],
+          zoom: mainZoom,
+        }],
+      });
     }
+  }
+  let overlayUpdated = false;
+  for (const [clusterId, state] of expandedClusterFollowerStates.value.entries()) {
+    const rootNode = mainRuntime.graph.getNodeById(clusterId);
+    if (!rootNode) continue;
+    const liveRootPoint = toXY(rootNode.getLayout());
+    const lastDisplayRootPoint = toXY(state.displayRootPoint, liveRootPoint);
+    const rootDeltaX = liveRootPoint.x - lastDisplayRootPoint.x;
+    const rootDeltaY = liveRootPoint.y - lastDisplayRootPoint.y;
+    const rootDelta = Math.hypot(rootDeltaX, rootDeltaY);
+    const rootPoint = rootDelta <= 0.8
+      ? lastDisplayRootPoint
+      : {
+          x: lastDisplayRootPoint.x + rootDeltaX * (rootDelta > 36 ? 0.34 : 0.18),
+          y: lastDisplayRootPoint.y + rootDeltaY * (rootDelta > 36 ? 0.34 : 0.18),
+        };
+    state.displayRootPoint = rootPoint;
+    const anchorNode = overlayRuntime.graph.getNodeById(state.anchorId);
+    if (anchorNode) {
+      const currentAnchor = toXY(anchorNode.getLayout(), rootPoint);
+      if (Math.hypot(currentAnchor.x - rootPoint.x, currentAnchor.y - rootPoint.y) > 0.6) {
+        anchorNode.setLayout([rootPoint.x, rootPoint.y]);
+        overlayUpdated = true;
+      }
+    }
+    for (const [nodeId, offset] of state.offsets.entries()) {
+      const node = overlayRuntime.graph.getNodeById(nodeId);
+      if (!node) continue;
+      const target = { x: rootPoint.x + offset.x, y: rootPoint.y + offset.y };
+      const current = toXY(node.getLayout(), target);
+      if (Math.hypot(current.x - target.x, current.y - target.y) > 0.6) {
+        node.setLayout([target.x, target.y]);
+        overlayUpdated = true;
+      }
+    }
+    for (const edgeRef of state.edges) {
+      const sourceNode = overlayRuntime.graph.getNodeById(edgeRef.source);
+      const targetNode = overlayRuntime.graph.getNodeById(edgeRef.target);
+      if (!sourceNode || !targetNode) continue;
+      const edge = overlayRuntime.graph.getEdge(edgeRef.source, edgeRef.target) || overlayRuntime.graph.getEdge(edgeRef.target, edgeRef.source);
+      overlayUpdated = updateEdgeLayoutForPoints(
+        edge,
+        toXY(sourceNode.getLayout()),
+        toXY(targetNode.getLayout()),
+      ) || overlayUpdated;
+    }
+  }
+  if (overlayUpdated) overlayRuntime.view.updateLayout(overlayRuntime.seriesModel);
+};
 
+const stopClusterFollowerSync = () => {
+  if (!clusterFollowFrame) return;
+  cancelAnimationFrame(clusterFollowFrame);
+  clusterFollowFrame = null;
+};
+
+const startClusterFollowerSync = () => {
+  stopClusterFollowerSync();
+  if (activeView.value !== '2d' || !expandedClusterFollowerStates.value.size) return;
+  syncPreservedPointsFromLiveLayout();
+  const tick = () => {
+    clusterFollowFrame = requestAnimationFrame(tick);
+    syncExpandedClusterFollowers();
+  };
+  tick();
+};
+
+const focusClusterInView = (clusterId) => {
+  if (!chart2D || !graph2DRef.value || !clusterId) return;
+  const option = chart2D.getOption?.();
+  const series = (Array.isArray(option?.series) ? option.series : []).find((item) => item?.id === MAIN_GRAPH_SERIES_ID);
+  const data = Array.isArray(series?.data) ? series.data : [];
+  const target = data.find((item) => String(item?.id || '') === String(clusterId));
+  const mainSeriesIndex = getSeriesIndex(MAIN_GRAPH_SERIES_ID);
+  if (!target || mainSeriesIndex < 0) return;
+  let pixel = null;
+  try {
+    pixel = chart2D.convertToPixel({ seriesIndex: mainSeriesIndex }, [Number(target.x || 0), Number(target.y || 0)]);
+  } catch {
+    pixel = null;
+  }
+  if (!Array.isArray(pixel) || pixel.length < 2) return;
+  const rect = graph2DRef.value.getBoundingClientRect();
+  const desiredX = rect.width * 0.72;
+  const desiredY = rect.height * 0.5;
+  const dx = desiredX - pixel[0];
+  const dy = desiredY - pixel[1];
+  if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+    chart2D.dispatchAction({ type: 'graphRoam', seriesIndex: mainSeriesIndex, dx, dy });
+  }
+  const zoomFactor = 0.82;
+  const nextZoom = clamp(graphZoom.value * zoomFactor, 0.2, 2.8);
+  if (nextZoom < graphZoom.value - 0.02) {
+    chart2D.dispatchAction({ type: 'graphRoam', seriesIndex: mainSeriesIndex, zoom: zoomFactor, originX: desiredX, originY: desiredY });
+    graphZoom.value = nextZoom;
+  }
+};
+
+const findSeriesNodeRefsById = (nodeId) => {
+  if (!chart2D || !nodeId) return [];
+  const option = chart2D.getOption?.();
+  const seriesList = Array.isArray(option?.series) ? option.series : [];
+  const refs = [];
+  seriesList.forEach((series, seriesIndex) => {
+    const data = Array.isArray(series?.data) ? series.data : [];
+    const dataIndex = data.findIndex((item) => String(item?.id || '') === String(nodeId));
+    if (dataIndex >= 0) refs.push({ seriesIndex, dataIndex });
+  });
+  return refs;
+};
+
+const applySimpleNodeEmphasis = (nextId, prevId = null) => {
+  if (!chart2D) return;
+  const previousRefs = findSeriesNodeRefsById(prevId || highlightedNodeId.value);
+  previousRefs.forEach(({ seriesIndex, dataIndex }) => {
+    chart2D.dispatchAction({ type: 'downplay', seriesIndex, dataIndex });
+  });
+  const nextRefs = findSeriesNodeRefsById(nextId);
+  nextRefs.forEach(({ seriesIndex, dataIndex }) => {
+    chart2D.dispatchAction({ type: 'highlight', seriesIndex, dataIndex });
+  });
+};
+
+const clearSimpleNodeEmphasis = (nodeId = highlightedNodeId.value) => {
+  if (!chart2D || !nodeId) return;
+  findSeriesNodeRefsById(nodeId).forEach(({ seriesIndex, dataIndex }) => {
+    chart2D.dispatchAction({ type: 'downplay', seriesIndex, dataIndex });
+  });
+};
+
+const syncOverlayRoam = (payload, targetSeriesRef = CLUSTER_OVERLAY_SERIES_ID) => {
+  const targetSeriesIndex = getSeriesIndex(targetSeriesRef);
+  if (targetSeriesIndex < 0) return;
+  const sourceSeriesId = String(payload?.seriesId || '').trim();
+  const sourceSeriesIndex = sourceSeriesId ? getSeriesIndex(sourceSeriesId) : Number(payload?.seriesIndex);
+  const option = chart2D?.getOption?.();
+  const seriesList = Array.isArray(option?.series) ? option.series : [];
+  const sourceSeries = seriesList[sourceSeriesIndex];
+  if (!sourceSeries) return;
+  const center = Array.isArray(sourceSeries.center) ? [...sourceSeries.center] : [...GRAPH_DEFAULT_CENTER];
+  const zoom = clamp(Number(sourceSeries.zoom || graphZoom.value || 1), 0.2, 2.8);
+  isSyncingOverlayRoam = true;
+  try {
+    chart2D.setOption({
+      series: [{
+        id: typeof targetSeriesRef === 'number' ? seriesList[targetSeriesIndex]?.id : targetSeriesRef,
+        center,
+        zoom,
+      }],
+    });
+  } finally {
+    isSyncingOverlayRoam = false;
+  }
+};
+
+const decorateDisplayedNode = (item, livePositions, dark) => {
+  const id = String(item?.id || '');
+  const point = livePositions.get(id);
+  if (item?.isClusterAnchor) {
     return {
       ...item,
-      name: isRoot ? documentTitle.value : (src?.label || item?.name || ''),
-      itemStyle: { color, opacity, borderWidth, borderColor },
-      label: { ...item.label, show: labelShow, color: dark ? '#f2f2f2' : '#333', fontSize: isRoot ? 14 : 12, fontWeight: isRoot ? 700 : 400 },
+      x: point?.x ?? item.x,
+      y: point?.y ?? item.y,
     };
-  });
+  }
+  const src = nodeById.value.get(id);
+  const depthValue = Number(depthMapCache.value.get(id) ?? 0);
+  const isRoot = id === rootNodeId.value;
+  const baseCol = depthColor(depthValue);
+  const clusterInfo = clusterMetaMap.value.get(id);
+  const isCollapsedCluster = clusterInfo && !expandedClusterIds.value.has(id);
+  const query = searchQuery.value.trim().toLowerCase();
+  const matchesSearch = query && src?.label?.toLowerCase().includes(query);
+  const matchesDepth = filterDepth.value !== null && depthValue === filterDepth.value;
+  const descendants = highlightedNodeId.value ? getDescendants(highlightedNodeId.value) : null;
 
-  chart2D.setOption({ series: [{ id: 'kg_main_graph', data: nextData }] });
+  let color = baseCol;
+  let opacity = 1;
+  let borderWidth = isCollapsedCluster ? 3 : 0;
+  let borderColor = isCollapsedCluster ? (dark ? 'rgba(255,255,255,0.72)' : 'rgba(17,17,17,0.28)') : 'transparent';
+  let labelShow = shouldShowNodeLabel(src || { id, importance: 0.5 });
+
+  if (highlightedNodeId.value) {
+    if (id === highlightedNodeId.value) {
+      color = baseCol;
+      borderWidth = 4;
+      borderColor = '#fff';
+      opacity = 1;
+    } else if (descendants?.has(id)) {
+      opacity = 0.85;
+    } else {
+      opacity = 0.15;
+      labelShow = false;
+    }
+  } else if (matchesSearch || matchesDepth) {
+    borderWidth = 3;
+    borderColor = '#fff';
+    opacity = 1;
+  } else if (query || filterDepth.value !== null) {
+    opacity = 0.2;
+    labelShow = false;
+  }
+
+  return {
+    ...item,
+    x: point?.x ?? item.x,
+    y: point?.y ?? item.y,
+    name: isRoot ? documentTitle.value : formatNodeLabel(src || item),
+    itemStyle: { ...(item.itemStyle || {}), color, opacity, borderWidth, borderColor },
+    label: {
+      ...item.label,
+      show: labelShow,
+      color: dark ? '#f2f2f2' : '#333',
+      fontSize: isRoot ? 14 : item?.isOverlayNode ? 10 : 12,
+      fontWeight: isRoot ? 700 : 400,
+    },
+  };
+};
+
+const applyHighlightOverlay = () => {
+  if (!chart2D) return;
+  syncPreservedPointsFromLiveLayout();
+  const option = chart2D.getOption?.();
+  const seriesList = Array.isArray(option?.series) ? option.series : [];
+  if (!seriesList.length) return;
+  const dark = isDark();
+  const nextSeries = [];
+  const mainSeries = seriesList.find((series) => series?.id === MAIN_GRAPH_SERIES_ID);
+  if (mainSeries?.data) {
+    const livePositions = readLiveNodePositions(MAIN_GRAPH_SERIES_ID);
+    nextSeries.push({
+      id: MAIN_GRAPH_SERIES_ID,
+      data: mainSeries.data.map((item) => decorateDisplayedNode(item, livePositions, dark)),
+    });
+  }
+  const overlaySeries = seriesList.find((series) => series?.id === CLUSTER_OVERLAY_SERIES_ID);
+  if (overlaySeries?.data) {
+    const livePositions = readLiveNodePositions(CLUSTER_OVERLAY_SERIES_ID);
+    nextSeries.push({
+      id: CLUSTER_OVERLAY_SERIES_ID,
+      data: overlaySeries.data.map((item) => decorateDisplayedNode(item, livePositions, dark)),
+    });
+  }
+  if (nextSeries.length) chart2D.setOption({ series: nextSeries });
 };
 
 const onSearch = () => {
   highlightedNodeId.value = null;
   filterDepth.value = null;
-  applyHighlightOverlay();
+  nextTick(() => { render2DGraph(); });
 };
 
 const clearHighlight = () => {
+  const hadSearchOrDepth = !!searchQuery.value || filterDepth.value !== null;
+  clearSimpleNodeEmphasis();
   highlightedNodeId.value = null;
   searchQuery.value = '';
   filterDepth.value = null;
-  applyHighlightOverlay();
+  if (hadSearchOrDepth) nextTick(() => { render2DGraph(); });
 };
 
 const render2DGraph = () => {
   if (!graph2DRef.value) return;
+  stopClusterFollowerSync();
   if (!chart2D) chart2D = echarts.init(graph2DRef.value);
+  else chart2D.clear();
   const dark = isDark();
   const rootId = rootNodeId.value;
-  const posMap = buildTreeLayout(safeNodes.value, safeLinks.value, rootId);
-  const { depth } = buildParentDepthMap(safeNodes.value, safeLinks.value, rootId);
+  const hierarchy = buildParentDepthMap(graphNodes.value, graphLinks.value, rootId);
+  const { depth, children } = hierarchy;
+  const clusterLayouts = new Map();
+  const orderedExpandedClusterIds = [...expandedClusterIds.value].sort((a, b) => {
+    const depthA = Number(hierarchy.depth.get(a) ?? 0);
+    const depthB = Number(hierarchy.depth.get(b) ?? 0);
+    return depthA - depthB;
+  });
+  for (const clusterId of orderedExpandedClusterIds) {
+    clusterLayouts.set(clusterId, buildClusterLocalLayout(clusterId, children, graphLinks.value));
+  }
+  const posMap = buildTreeLayout(
+    graphNodes.value,
+    graphLinks.value,
+    rootId,
+    clusterMetaMap.value,
+    expandedClusterIds.value,
+    hierarchy,
+    clusterLayouts,
+  );
   depthMapCache.value = depth;
+  const overlayOwnedNodeIds = new Set(
+    [...expandedClusterOwnerMap.value.entries()]
+      .filter(([nodeId]) => !expandedClusterIds.value.has(nodeId))
+      .map(([nodeId]) => nodeId),
+  );
+  const mainNodes = graphNodes.value.filter((node) => !overlayOwnedNodeIds.has(node.id));
+  const mainNodeIds = new Set(mainNodes.map((node) => node.id));
+  const mainLinks = graphLinks.value.filter((link) => mainNodeIds.has(link.source) && mainNodeIds.has(link.target));
+  const graphLinkLookup = new Map();
+  graphLinks.value.forEach((link) => {
+    if (!graphLinkLookup.has(`${link.source}__${link.target}`)) graphLinkLookup.set(`${link.source}__${link.target}`, link);
+    if (!graphLinkLookup.has(`${link.target}__${link.source}`)) graphLinkLookup.set(`${link.target}__${link.source}`, link);
+  });
 
-  const nodeData = safeNodes.value.map((node) => {
+  const followerStates = new Map();
+  const overlayNodeData = [];
+  const overlayEdgeData = [];
+  for (const clusterId of orderedExpandedClusterIds) {
+    const layout = clusterLayouts.get(clusterId);
+    if (!layout) continue;
+    const childIds = [...expandedClusterOwnerMap.value.entries()]
+      .filter(([nodeId, ownerId]) => ownerId === clusterId && !expandedClusterIds.value.has(nodeId))
+      .map(([nodeId]) => nodeId)
+      .filter((nodeId) => layout.has(nodeId));
+    if (!childIds.length) continue;
+    const childSet = new Set(childIds);
+    const clusterPoint = posMap.get(clusterId) || { x: 0, y: 0 };
+    const anchorId = buildClusterAnchorId(clusterId);
+    overlayNodeData.push(buildGraphNodeItem(
+      { id: anchorId, label: '', type: '', importance: 0 },
+      clusterPoint,
+      Number(depth.get(clusterId) ?? 0),
+      dark,
+      { isClusterAnchor: true },
+    ));
+    const offsets = new Map();
+    childIds.forEach((nodeId) => {
+      const node = nodeById.value.get(nodeId);
+      if (!node) return;
+      const offset = layout.get(nodeId) || { x: 0, y: 0 };
+      offsets.set(nodeId, { ...offset });
+      const point = { x: clusterPoint.x + offset.x, y: clusterPoint.y + offset.y };
+      const clusterInfo = clusterMetaMap.value.get(nodeId);
+      overlayNodeData.push(buildGraphNodeItem(
+        node,
+        point,
+        Number(depth.get(nodeId) ?? 0),
+        dark,
+        {
+          isCollapsedCluster: !!(clusterInfo && !expandedClusterIds.value.has(nodeId)),
+          isExpandedCluster: !!(clusterInfo && expandedClusterIds.value.has(nodeId)),
+          isOverlayNode: true,
+          clusterCount: clusterInfo?.childCount || 0,
+          fixed: true,
+          draggable: false,
+        },
+      ));
+    });
+
+    const edgeKeys = new Set();
+    const edgeRefs = [];
+    const pushOverlayEdge = (link, sourceId, targetId) => {
+      if (!sourceId || !targetId || sourceId === targetId) return;
+      const key = `${sourceId}__${targetId}__${link.relation || ''}__${link.logic_type || ''}`;
+      if (edgeKeys.has(key)) return;
+      edgeKeys.add(key);
+      overlayEdgeData.push(buildEdgeItem(link, dark, sourceId, targetId, { widthScale: 0.88, opacity: 0.78 }));
+      edgeRefs.push({ source: sourceId, target: targetId });
+    };
+
+    childIds.forEach((nodeId) => {
+      const parentId = hierarchy.parent.get(nodeId);
+      if (!parentId || (parentId !== clusterId && !childSet.has(parentId))) return;
+      const rawLink = graphLinkLookup.get(`${parentId}__${nodeId}`) || graphLinkLookup.get(`${nodeId}__${parentId}`) || {
+        source: parentId,
+        target: nodeId,
+        relation: '',
+        logic_type: 'positive',
+        strength: 0.48,
+      };
+      pushOverlayEdge(rawLink, parentId === clusterId ? anchorId : parentId, nodeId);
+    });
+    graphLinks.value.forEach((link) => {
+      if (!childSet.has(link.source) || !childSet.has(link.target)) return;
+      pushOverlayEdge(link, link.source, link.target);
+    });
+
+    const docRootPoint = posMap.get(rootId) || { x: 0, y: 0 };
+    const rootDx = clusterPoint.x - docRootPoint.x;
+    const rootDy = clusterPoint.y - docRootPoint.y;
+    const rootDistance = Math.hypot(rootDx, rootDy);
+    const preferredDirection = rootDistance > 1
+      ? { x: rootDx / rootDistance, y: rootDy / rootDistance }
+      : (() => {
+          const angle = ((hashSeed(`cluster_dir_${clusterId}`) % 360) * Math.PI) / 180;
+          return { x: Math.cos(angle), y: Math.sin(angle) };
+        })();
+    followerStates.set(clusterId, {
+      anchorId,
+      offsets,
+      edges: edgeRefs,
+      displayRootPoint: { ...clusterPoint },
+      minRootDistance: Math.max(rootDistance * 1.02, 760 + Math.min(childIds.length * 2.4, 140)),
+      preferredDirection,
+    });
+  }
+  expandedClusterFollowerStates.value = followerStates;
+
+  const nodeData = mainNodes.map((node) => {
     const isRoot = node.id === rootId;
+    const clusterInfo = clusterMetaMap.value.get(node.id);
+    const isCollapsedCluster = clusterInfo && !expandedClusterIds.value.has(node.id);
+    const isExpandedCluster = clusterInfo && expandedClusterIds.value.has(node.id);
+    const isExpandedClusterChild = false;
     const imp = clamp(Number(node.importance || 0.5), 0, 1);
-    const symbolSize = isRoot ? 56 : 12 + imp * 28;
     const pos = posMap.get(node.id) || { x: 0, y: 0 };
     const d = Number(depth.get(node.id) ?? 0);
+    const baseDepthSize = Math.max(10, 26 - d * 2.2 + imp * 8);
+    const symbolSize = isRoot
+      ? 52
+      : isCollapsedCluster
+        ? Math.max(18, baseDepthSize + Math.min(clusterInfo.childCount * 0.26, 8))
+        : isExpandedCluster
+          ? Math.max(13, baseDepthSize - 4)
+          : isExpandedClusterChild
+            ? Math.max(9, baseDepthSize - 6)
+            : baseDepthSize;
+    const isPinned = node.id === rootId;
     return {
       id: node.id,
-      name: isRoot ? documentTitle.value : node.label,
-      value: node.type,
+      name: isRoot ? documentTitle.value : formatNodeLabel(node),
+      value: clusterInfo ? `${node.type} · ${clusterInfo.childCount} 个子节点` : node.type,
+      clusterCount: clusterInfo?.childCount || 0,
       x: pos.x, y: pos.y,
-      fixed: isRoot,
+      fixed: isPinned,
+      ignoreForceRepulsion: isExpandedClusterChild,
       symbolSize,
-      draggable: !isRoot,
-      itemStyle: { color: depthColor(d), opacity: 1, borderWidth: 0, borderColor: 'transparent' },
+      draggable: node.id !== rootId,
+      itemStyle: {
+        color: depthColor(d),
+        opacity: 1,
+        borderWidth: isCollapsedCluster ? 2 : 0,
+        borderColor: isCollapsedCluster ? (dark ? 'rgba(255,255,255,0.72)' : 'rgba(17,17,17,0.28)') : 'transparent',
+        shadowBlur: isCollapsedCluster ? 14 : 0,
+        shadowColor: isCollapsedCluster ? (dark ? 'rgba(255,255,255,0.18)' : 'rgba(52,73,94,0.18)') : 'transparent',
+      },
       label: {
         show: shouldShowNodeLabel(node),
         color: dark ? '#f2f2f2' : '#333',
-        fontSize: isRoot ? 14 : 12,
+        fontSize: isRoot ? 13 : 11,
         fontWeight: isRoot ? 700 : 400,
-        formatter: () => shorten(isRoot ? documentTitle.value : node.label, isRoot ? 38 : 22),
+        formatter: () => shorten(isRoot ? documentTitle.value : formatNodeLabel(node), isRoot ? 38 : 24),
       },
     };
   });
 
-  const edgeData = safeLinks.value.map((link) => ({
-    source: link.source, target: link.target, value: link.relation,
+  const edgeData = mainLinks.map((link) => ({
+    source: link.source,
+    target: link.target,
+    value: link.relation,
+    ignoreForceLayout: false,
     lineStyle: {
       color: link.logic_type === 'negative' ? '#e74c3c' : dark ? '#9da5b3' : '#7f8c8d',
       type: link.logic_type === 'negative' ? 'dashed' : 'solid',
@@ -532,6 +1428,43 @@ const render2DGraph = () => {
     },
     label: { show: shouldShowEdgeLabel(link), formatter: () => shorten(link.relation, 10), color: dark ? '#d6d6d6' : '#666', fontSize: 10 },
   }));
+  const series = [{
+    id: MAIN_GRAPH_SERIES_ID,
+    type: 'graph',
+    layout: 'force',
+    layoutAnimation: true,
+    roam: true,
+    center: [...GRAPH_DEFAULT_CENTER],
+    zoom: clamp(graphZoom.value || 1, 0.2, 2.8),
+    data: nodeData,
+    links: edgeData,
+    edgeSymbol: ['none', 'arrow'],
+    edgeSymbolSize: 8,
+    force: {
+      repulsion: [110, 240],
+      gravity: 0.05,
+      edgeLength: [70, 150],
+      friction: 0.82,
+      layoutAnimation: true,
+    },
+  }];
+  if (overlayNodeData.length) {
+    series.push({
+      id: CLUSTER_OVERLAY_SERIES_ID,
+      type: 'graph',
+      layout: 'none',
+      roam: true,
+      center: [...GRAPH_DEFAULT_CENTER],
+      zoom: clamp(graphZoom.value || 1, 0.2, 2.8),
+      data: overlayNodeData,
+      links: overlayEdgeData,
+      edgeSymbol: ['none', 'arrow'],
+      edgeSymbolSize: 6,
+      animation: false,
+      z: 3,
+      emphasis: { focus: 'none' },
+    });
+  }
 
   chart2D.setOption({
     backgroundColor: 'transparent',
@@ -541,38 +1474,67 @@ const render2DGraph = () => {
       backgroundColor: dark ? 'rgba(20,20,20,0.95)' : 'rgba(255,255,255,0.95)',
       borderColor: dark ? '#444' : '#ddd',
       textStyle: { color: dark ? '#f2f2f2' : '#333' },
-      formatter: (params) => params.dataType === 'edge' ? `${params.data.value || '关系'}` : `${params.name}<br/>${params.data.value || ''}`,
+      formatter: (params) => {
+        if (params.dataType === 'edge') return `${params.data.value || '关系'}`;
+        const clusterLine = params.data?.clusterCount ? `<br/>默认收拢 ${params.data.clusterCount} 个子节点` : '';
+        return `${params.name}<br/>${params.data.value || ''}${clusterLine}`;
+      },
     },
-    series: [{
-      id: 'kg_main_graph', type: 'graph', layout: 'force', layoutAnimation: true, roam: true,
-      zoom: clamp(graphZoom.value || 1, 0.2, 2.8),
-      data: nodeData, links: edgeData,
-      edgeSymbol: ['none', 'arrow'], edgeSymbolSize: 8,
-      force: { repulsion: [160, 340], gravity: 0.06, edgeLength: [90, 175], friction: 0.86, layoutAnimation: true },
-    }],
-  });
+    series,
+  }, { replaceMerge: ['series'] });
 
   chart2D.off('click');
   chart2D.on('click', (params) => {
-    if (params.dataType === 'node' && params.data?.id) {
+    if (params.dataType === 'node' && params.data?.id && !params.data?.isClusterAnchor) {
       const id = params.data.id;
+      if (toggleClusterExpansion(id)) {
+        highlightedNodeId.value = null;
+        activeNodeId.value = id;
+        searchQuery.value = '';
+        filterDepth.value = null;
+        pendingClusterFocusId.value = id;
+        nextTick(() => { render2DGraph(); });
+        return;
+      }
       if (highlightedNodeId.value === id) { clearHighlight(); return; }
+      const prevHighlightedId = highlightedNodeId.value;
       highlightedNodeId.value = id;
       activeNodeId.value = id;
       searchQuery.value = '';
       filterDepth.value = null;
-      applyHighlightOverlay();
+      applySimpleNodeEmphasis(id, prevHighlightedId);
     } else if (params.dataType !== 'edge') {
       clearHighlight();
     }
   });
 
   chart2D.off('graphRoam');
-  chart2D.on('graphRoam', () => {
+  chart2D.on('graphRoam', (params = {}) => {
     const option = chart2D?.getOption?.();
-    const z = Number(option?.series?.[0]?.zoom || 1);
+    const seriesList = Array.isArray(option?.series) ? option.series : [];
+    const mainSeriesIndex = getSeriesIndex(MAIN_GRAPH_SERIES_ID);
+    const overlaySeriesIndex = getSeriesIndex(CLUSTER_OVERLAY_SERIES_ID);
+    const sourceSeriesId = String(params?.seriesId || '').trim();
+    const sourceIndex = sourceSeriesId ? getSeriesIndex(sourceSeriesId) : Number(params?.seriesIndex);
+    const sourceSeries = seriesList[Number.isFinite(sourceIndex) ? sourceIndex : (mainSeriesIndex >= 0 ? mainSeriesIndex : 0)];
+    const z = Number(sourceSeries?.zoom || seriesList[mainSeriesIndex >= 0 ? mainSeriesIndex : 0]?.zoom || 1);
     graphZoom.value = clamp(z, 0.2, 2.8);
+    if (isSyncingOverlayRoam) return;
+    if (!Number.isFinite(sourceIndex)) return;
+    if (sourceIndex === mainSeriesIndex && overlaySeriesIndex >= 0) {
+      syncOverlayRoam(params, overlaySeriesIndex);
+    } else if (sourceIndex === overlaySeriesIndex && mainSeriesIndex >= 0) {
+      syncOverlayRoam(params, mainSeriesIndex);
+    }
   });
+
+  applyHighlightOverlay();
+  if (pendingClusterFocusId.value) {
+    const focusId = pendingClusterFocusId.value;
+    pendingClusterFocusId.value = null;
+    nextTick(() => { focusClusterInView(focusId); });
+  }
+  startClusterFollowerSync();
 };
 
 // ── Three.js (kept for future use, 3D tab disabled in UI) ─────────────────
@@ -731,15 +1693,11 @@ const stopThreeAnimation = () => { if (!animationFrame) return; cancelAnimationF
 // ── tree view ──────────────────────────────────────────────────────────────
 const treeRoots = computed(() => {
   const rootId = rootNodeId.value;
-  return safeNodes.value.filter((n) => {
-    const d = depthMapCache.value.get(n.id);
-    return d === 1 || (d === undefined && n.id !== rootId);
-  });
+  return (graphHierarchy.value.children.get(rootId) || []).map((id) => nodeById.value.get(id)).filter(Boolean);
 });
 
 const treeChildren = (parentId) => {
-  const childIds = new Set(safeLinks.value.filter((l) => l.source === parentId).map((l) => l.target));
-  return safeNodes.value.filter((n) => childIds.has(n.id));
+  return (graphHierarchy.value.children.get(parentId) || []).map((id) => nodeById.value.get(id)).filter(Boolean);
 };
 
 // ── watchers & lifecycle ───────────────────────────────────────────────────
@@ -747,8 +1705,11 @@ watch(
   () => [props.nodes, props.links, props.content, props.visualConfig, props.dynamicPayload],
   () => {
     if (!safeNodes.value.length) return;
+    userExpandedClusterIds.value = new Set([...userExpandedClusterIds.value].filter((id) => clusterMetaMap.value.has(id)));
     graphZoom.value = clamp(Number(props.visualConfig?.initial_zoom ?? 1), 0.2, 2.8);
-    if (!activeNodeId.value) activeNodeId.value = props.visualConfig?.focus_node || rootNodeId.value || safeNodes.value[0].id;
+    if (!activeNodeId.value || !nodeById.value.has(activeNodeId.value)) {
+      activeNodeId.value = props.visualConfig?.focus_node || rootNodeId.value || safeNodes.value[0].id;
+    }
     nextTick(() => { render2DGraph(); rebuildThreeGraph(); });
   },
   { immediate: true, deep: true }
@@ -756,6 +1717,7 @@ watch(
 
 watch(activeView, (view) => {
   if (view !== '3d') stopThreeAnimation();
+  if (view !== '2d') stopClusterFollowerSync();
   if (view === '2d') nextTick(() => { render2DGraph(); chart2D?.resize(); });
   if (view === '3d') nextTick(() => { rebuildThreeGraph(); startThreeAnimation(); });
 });
@@ -776,6 +1738,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   stopThreeAnimation();
+  stopClusterFollowerSync();
   threeRenderer?.domElement?.removeEventListener('pointerdown', onThreePointerDown);
   disposeThreeGraph(); threeControls?.dispose?.(); threeRenderer?.dispose?.();
   threeScene = threeCamera = threeControls = threeRenderer = null;
@@ -819,6 +1782,11 @@ onBeforeUnmount(() => {
   padding: 3px 9px; border-radius: 999px; border: 1.5px solid; font-size: 12px;
   cursor: pointer; background: transparent; transition: all 0.15s;
 }
+.kg-cluster-tip {
+  border: 1px solid #ececec; border-radius: 10px; padding: 10px 10px 8px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(247,247,247,0.96));
+}
+.kg-cluster-copy { font-size: 12px; line-height: 1.6; color: #666; }
 
 /* text / tree view */
 .graph-text { width: 100%; height: 840px; overflow-y: auto; padding: 14px; box-sizing: border-box; }
@@ -853,6 +1821,8 @@ details[open] > .tree-summary::before { content: '▼ '; }
 :global([data-theme="dark"]) .kg-meta { color: #bbb; }
 :global([data-theme="dark"]) .kg-ops-panel { background: #1a1a1a; border-color: #333; }
 :global([data-theme="dark"]) .kg-search { background: #111; border-color: #444; color: #eee; }
+:global([data-theme="dark"]) .kg-cluster-tip { background: linear-gradient(180deg, rgba(37,37,37,0.94), rgba(28,28,28,0.98)); border-color: #333; }
+:global([data-theme="dark"]) .kg-cluster-copy { color: #b8b8b8; }
 :global([data-theme="dark"]) .tree-node { background: #1e1e1e; border-color: #333; color: #eee; }
 :global([data-theme="dark"]) .tree-empty { color: #ececec; }
 :global([data-theme="dark"]) .graph-text { color: #ececec; }

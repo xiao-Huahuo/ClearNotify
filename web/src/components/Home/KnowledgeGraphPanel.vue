@@ -871,6 +871,40 @@ const buildClusterLocalLayout = (clusterId, childrenMap, links) => {
       velocities.set(id, vel);
     }
   }
+
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
+  subtreeIds.forEach((id) => {
+    const point = positions.get(id);
+    if (!point) return;
+    minX = Math.min(minX, point.x);
+    maxX = Math.max(maxX, point.x);
+    minY = Math.min(minY, point.y);
+    maxY = Math.max(maxY, point.y);
+  });
+
+  if (
+    Number.isFinite(minX)
+    && Number.isFinite(maxX)
+    && Number.isFinite(minY)
+    && Number.isFinite(maxY)
+  ) {
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+    if (Math.abs(centerX) > 0.5 || Math.abs(centerY) > 0.5) {
+      subtreeIds.forEach((id) => {
+        const point = positions.get(id);
+        if (!point) return;
+        positions.set(id, {
+          x: point.x - centerX,
+          y: point.y - centerY,
+        });
+      });
+    }
+  }
+
   return positions;
 };
 
@@ -1677,17 +1711,7 @@ const syncExpandedClusterFollowers = () => {
     const rootNode = mainRuntime.graph.getNodeById(clusterId);
     if (!rootNode) continue;
     const liveRootPoint = toXY(rootNode.getLayout());
-    const lastDisplayRootPoint = toXY(state.displayRootPoint, liveRootPoint);
-    const rootDeltaX = liveRootPoint.x - lastDisplayRootPoint.x;
-    const rootDeltaY = liveRootPoint.y - lastDisplayRootPoint.y;
-    const rootDelta = Math.hypot(rootDeltaX, rootDeltaY);
-    const rootPoint = rootDelta <= 0.8
-      ? lastDisplayRootPoint
-      : {
-          x: lastDisplayRootPoint.x + rootDeltaX * (rootDelta > 36 ? 0.34 : 0.18),
-          y: lastDisplayRootPoint.y + rootDeltaY * (rootDelta > 36 ? 0.34 : 0.18),
-        };
-    state.displayRootPoint = rootPoint;
+    const rootPoint = liveRootPoint;
     const anchorNode = overlayRuntime.graph.getNodeById(state.anchorId);
     if (anchorNode) {
       const currentAnchor = toXY(anchorNode.getLayout(), rootPoint);
@@ -2041,6 +2065,14 @@ const render2DGraph = () => {
     const childSet = new Set(childIds);
     const clusterPoint = posMap.get(clusterId) || { x: 0, y: 0 };
     const anchorId = buildClusterAnchorId(clusterId);
+    const displayedOffsetCenter = childIds.reduce((acc, nodeId) => {
+      const point = toXY(layout.get(nodeId));
+      acc.x += point.x;
+      acc.y += point.y;
+      return acc;
+    }, { x: 0, y: 0 });
+    displayedOffsetCenter.x /= childIds.length;
+    displayedOffsetCenter.y /= childIds.length;
     overlayNodeData.push(buildGraphNodeItem(
       { id: anchorId, label: '', type: '', importance: 0 },
       clusterPoint,
@@ -2052,7 +2084,11 @@ const render2DGraph = () => {
     childIds.forEach((nodeId) => {
       const node = nodeById.value.get(nodeId);
       if (!node) return;
-      const offset = layout.get(nodeId) || { x: 0, y: 0 };
+      const rawOffset = toXY(layout.get(nodeId));
+      const offset = {
+        x: rawOffset.x - displayedOffsetCenter.x,
+        y: rawOffset.y - displayedOffsetCenter.y,
+      };
       offsets.set(nodeId, { ...offset });
       const point = { x: clusterPoint.x + offset.x, y: clusterPoint.y + offset.y };
       const clusterInfo = clusterMetaMap.value.get(nodeId);
@@ -2100,23 +2136,10 @@ const render2DGraph = () => {
       pushOverlayEdge(link, link.source, link.target);
     });
 
-    const docRootPoint = posMap.get(rootId) || { x: 0, y: 0 };
-    const rootDx = clusterPoint.x - docRootPoint.x;
-    const rootDy = clusterPoint.y - docRootPoint.y;
-    const rootDistance = Math.hypot(rootDx, rootDy);
-    const preferredDirection = rootDistance > 1
-      ? { x: rootDx / rootDistance, y: rootDy / rootDistance }
-      : (() => {
-          const angle = ((hashSeed(`cluster_dir_${clusterId}`) % 360) * Math.PI) / 180;
-          return { x: Math.cos(angle), y: Math.sin(angle) };
-        })();
     followerStates.set(clusterId, {
       anchorId,
       offsets,
       edges: edgeRefs,
-      displayRootPoint: { ...clusterPoint },
-      minRootDistance: Math.max(rootDistance * 1.02, 760 + Math.min(childIds.length * 2.4, 140)),
-      preferredDirection,
     });
   }
   expandedClusterFollowerStates.value = followerStates;

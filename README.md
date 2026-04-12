@@ -96,7 +96,7 @@
 * **Agent 插件化架构**：在基础 AI 链路之上，项目进一步落地了基于 **LangGraph** 的通用 Agent 插件系统，具备短期会话记忆、长期向量记忆、工具注册、图谱输出与流式执行能力，并在应用启动阶段进行 AgentGraph 生成与插件预热。
 * **本地 Embedding 与知识预热机制**：后端通过 **sentence-transformers** 管理本地 embedding 模型，支持独立脚本下载、启动前检查、Docker 外预下载与知识库首次向量化同步，降低容器部署阶段对外部网络和 GPU 环境的依赖。
 * **自由结构化解析引擎**：文档解析并非固定模板抽取，而是基于 LLM 输出严格 JSON、局部修复、失败回退和动态载荷生成的多级容错链路，同时支持 `nodes / links / dynamic_payload / visual_config` 等结构化结果，便于后续图谱展示与二次处理。
-* **文档解析与 OCR 处理链**：系统支持 **PDF / DOCX / DOC / XLSX / XLS / TXT** 多格式文档上传与解析，结合 **pdfplumber、python-docx、openpyxl、xlrd** 等工具链，并在扫描版 PDF 或图片场景下调用 **Kimi 视觉模型 OCR** 完成文字提取。
+* **文档解析与 OCR 处理链**：系统支持 **PDF / DOCX / DOC / XLSX / XLS / TXT** 多格式文档上传与解析，结合 **PyMuPDF、pdfplumber、python-docx、openpyxl、xlrd** 等工具链，并对图片、扫描版 PDF、图文混排 PDF 与 DOCX 内嵌图片统一采用“**本地 PaddleOCR 优先，LLM OCR 兜底**”的混合链路完成文字提取。
 * **实时通信编排**：智能体服务基于 **FastAPI WebSocket + asyncio.Queue + to_thread** 形成“轨迹先行、结果后达、正文分块输出”的实时推理编排机制，支持 trace step、trace done 与 chunk 化回答分阶段推送。
 * **统计建模与内容分析**：后端通过 **jieba** 进行材料词频、风险词频与复杂度分布计算，结合时间节省估算模型、RAG 命中率统计、向量散点数据与用户画像摘要，为个人中心、管理后台与展示大屏提供统一的数据分析底座。
 * **新闻抓取与缓存回退**：项目已实现基于 **RSS + Redis 缓存 + 内存回退缓存 + 限流控制** 的资讯服务链路，在外部源不稳定时仍可退回到可展示的数据状态，保障展示层连续可用。
@@ -150,6 +150,11 @@
 │   ├── services/               # 【业务层】核心逻辑实现、复杂统计计算与邮件发送服务
 │   ├── scripts/                # 【工具脚本】独立运行的数据初始化、测试脚本与管理命令
 │   ├── resources/              # 【静态资源】政策原文、办事百科等 RAG 检索数据存放目录,Embedding 模型文件等
+│   │   ├── embedding/          # 【需下载】【Embedding模型】本地向量模型与缓存目录
+│   │   ├── paddleocr/          # 【需下载】【OCR模型】本地 PaddleOCR 模型目录
+│   │   ├── db_init/            # 【初始化数据】数据库演示数据与种子文件
+│   │   ├── vector_init/        # 【知识库】RAG 初始知识文本与向量化源文件
+│   │   └── sensitive/          # 【敏感词】内容安全与过滤相关资源
 │   ├── requirements.txt        # 【环境】后端 Python 核心依赖库清单
 │   └── Dockerfile              # 后台Dockerfile配置
 ├── web/                        # 前端核心 (Vue3)
@@ -304,8 +309,8 @@ $$
 ### 5. 多模态文档解析与 OCR 容错链 (Multimodal Parsing & OCR Fallback)
 平台的多模态入口背后并不是单一路径识别，而是一条面向复杂材料的分层解析链。
 * **多格式文档解析**：系统支持 **PDF / DOCX / DOC / XLSX / XLS / TXT / 图片 / 截图 / URL** 等多类输入，分别接入不同的解析路径。
-* **文本优先、视觉回退**：在 PDF 场景下优先尝试 `pdfplumber` 文本提取；若检测不到有效文字，则自动回退至 Kimi OCR。
-* **双阶段 OCR 容错**：OCR 服务优先走文件抽取接口；若返回为空，再切换到视觉 OCR 提示词模式，提升扫描件、布告栏拍照和移动端截图的识别成功率。
+* **文本优先、混合提取**：在 PDF 场景下优先使用 `PyMuPDF` 提取文本块与图片块，并按页面阅读顺序混排；文本层直接保留，图片块走 OCR，从而兼容扫描件、图文混排 PDF 与图片型 PDF。
+* **本地优先、LLM 兜底**：OCR 统一优先使用本地 `PaddleOCR`；若本地 OCR 未启用、依赖缺失、模型不可用或识别结果为空，再回退到 LLM OCR，覆盖图片上传、截图上传、扫描 PDF、DOCX 内嵌图片等入口。
 * **解析结果直连结构化引擎**：OCR 与文档提取出的文本不会停留在“纯文字展示”，而是直接进入自由结构解析、图谱生成与结果可视化链路。
 
 ### 6. 复杂度评估与轻量评分模型 (Complexity Assessment & Lightweight Scoring)
@@ -397,7 +402,7 @@ CRAWLER_RATE_WINDOW_SECONDS=60
 # 模型密钥（如需）
 LLM_API_KEY=sk-xxxxx
 LLM_BASE_URL=https://api.moonshot.cn/v1
-LLM_TIMEOUT=60
+LLM_TIMEOUT=240
 LLM_MODEL=moonshot-v1-8k
 LLM_TEMPERATURE=0
 
@@ -410,10 +415,20 @@ AGENT_PLUGIN_RAG_METADATA_EXTRAS=category,source
 AGENT_PLUGIN_RAG_FORCE_UPDATE=false
 AGENT_PLUGIN_RAG_TOP_K=5
 AGENT_PLUGIN_RAG_SCORE_THRESHOLD=0.7
-AGENT_PLUGIN_SYSTEM_PROMPT=你是一个具备自主能力的 AI 助手。请在必要时调用工具，并给出准确、简洁、可执行的答案。
+AGENT_PLUGIN_SYSTEM_PROMPT=You are an autonomous AI assistant called 云小圆. Call tools when necessary and answer accurately and concisely.
+
+# PaddleOCR（本地图片 OCR / PDF 图片 OCR / DOCX 图片 OCR，可选）
+PADDLEOCR_ENABLED=false
+PADDLEOCR_MODELS_DIR=paddleocr
+PADDLEOCR_LANG=ch
+PADDLEOCR_USE_ANGLE_CLS=true
+PADDLEOCR_ENABLE_STRUCTURE=true
 ```
 说明：未配置 SMTP 时系统会自动将邮件写入 `mail_outbox` 目录供本地预览。
-
+OCR 运行策略说明：
+- 图片、截图、扫描型 PDF、图片型 PDF、图文混排 PDF、DOCX 内嵌图片默认优先走本地 PaddleOCR。
+- 当 PaddleOCR 未启用、依赖缺失、模型不可用或本地识别结果为空时，系统会自动回退到 LLM OCR。
+- 因此，未配置 PaddleOCR 时系统不会失去 OCR 能力，但图片类解析会更多依赖 LLM OCR，速度、成本与稳定性会弱于本地模型链路。
 
 ### 运行
 
@@ -432,6 +447,8 @@ npm run dev
     - 启动 Redis： `docker start redis`
 1. 配置环境变量:在根目录创建`.env`,写入上面所要求的环境变量字段.
 2. 创建虚拟环境:
+先保证系统已安装 Python 3.12 ，并已将 Python 添加到系统 PATH 中。
+然后在终端输入:
 Windows:     ```python -m venv .venv```
 macOS/Linux: ```python3 -m venv .venv```
 
@@ -441,18 +458,15 @@ macOS/Linux: `source .venv/bin/activate`
 
 4. 安装依赖:
 ```
-pip install -r requirements.txt
+pip install -r app/requirements.txt
 ```
 5. 启动后台服务:
 ```
 uvicorn app.main:app --reload
 ```
-初次启动时会进行数据库初始化+Embedding模型下载+向量库初始化(建议科学上网以稳定下载).
-注:数据库不存在时,后台会初始化管理员账户:
-```python
-DEFAULT_ADMIN_USERNAME = "admin"
-DEFAULT_ADMIN_PASSWORD = "111111"
-```
+初次启动时会进行数据库初始化+Embedding模型下载+PaddleOCR模型下载+向量库初始化(建议科学上网以稳定下载).
+当前 OCR 链路为“PaddleOCR 优先，LLM OCR 兜底”；如果只想先保证服务可启动，也可以暂时关闭 `PADDLEOCR_ENABLED`，系统会保留 LLM OCR 备选机制。
+对于两个模型下载,app/scripts目录下也提供了独立的下载脚本,可以单独执行以提前准备好模型文件,避免在容器环境下下载失败.
 或者可以在.env中添加以下两句,自定义初始化管理员账户,然后再进行后台启动:
 ```
 ADMIN_USERNAME = your_admin_username
@@ -518,10 +532,12 @@ docker pull node:16-alpine
 docker pull nginx:stable-alpine
 docker pull python:3.12-slim-bookworm
 ```
-0. 在 Docker 部署前，必须先准备好本地 Embedding；否则容器启动时只会检查并直接报错，不会在容器内自动下载。可以先在本地跑一次后端，或单独执行以下脚本：
+0. 在 Docker 部署前，必须先准备好本地 Embedding；如果你要启用文档图片 OCR，也建议同时准备好本地 PaddleOCR 模型。否则容器启动时只会检查并直接报错，不会在容器内自动下载。可以先在本地跑一次后端，或单独执行以下脚本：
     ```bash
     python -m app.scripts.download_embedding
+    python -m app.scripts.download_paddleocr_models
     ```
+   说明：线上部署推荐使用“本地 PaddleOCR + LLM OCR 兜底”策略；如果部署环境无法顺利下载或预热本地模型，也可以先关闭 `PADDLEOCR_ENABLED`，保留 LLM OCR 作为备选链路。
 1.  **启动服务**:
     在项目根目录执行以下命令：
     ```bash

@@ -50,6 +50,26 @@ def warmup_agent_plugin() -> None:
     _console("=" * 80 + "\n")
 
 
+def _console_banner(title: str) -> None:
+    _console("=" * 80)
+    _console(title)
+    _console("=" * 80)
+
+
+def warmup_agent_plugin() -> None:
+    if not GlobalConfig.AGENT_PLUGIN_ENABLED:
+        _console("[AgentPlugin] AGENT_PLUGIN_ENABLED=false, skip warmup")
+        return
+
+    started = time.perf_counter()
+    _console("")
+    _console_banner("[Startup] Agent Plugin Warmup Start")
+    _console(">>> [1/2] Initializing Agent Core (including embedding check)...")
+    _get_agent_core()
+    _console(">>> [2/2] Agent Core initialization completed")
+    _console_banner(f"[Startup] Agent Plugin Warmup Done ({time.perf_counter() - started:.2f}s)")
+
+
 def ensure_agent_graph_svg_on_startup(overwrite: bool = True) -> None:
     graph_path = Path(str(GlobalConfig.AGENT_GRAPH_SVG_PATH))
     try:

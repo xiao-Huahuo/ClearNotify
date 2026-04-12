@@ -4,12 +4,12 @@ from pathlib import Path
 
 from sqlmodel import Session
 
-from app.ai.document_parser import extract_pdf_with_ai, parse_document
+from app.ai.document_parser import parse_document
 from app.core.config import GlobalConfig
 from app.models.chat_message import ChatMessage
 from app.services import chat_message_service
-from app.services.document_extractor import extract_text_from_docx, extract_text_from_excel
-from app.services.ocr_service import perform_kimi_ocr
+from app.services.document_text_service import extract_supported_document_text
+from app.services.ocr_pipeline_service import extract_text_from_file_with_fallback
 from app.services.agent_tool_services.base import (
     compact_text,
     file_item_payload,
@@ -95,12 +95,8 @@ def _extract_document_text(path: Path) -> str:
     suffix = path.suffix.lower()
     if suffix in TEXT_SUFFIXES:
         return _read_text_file(path)
-    if suffix in {".doc", ".docx"}:
-        return extract_text_from_docx(path)
-    if suffix in {".xls", ".xlsx"}:
-        return extract_text_from_excel(path)
-    if suffix == ".pdf":
-        return str(run_async(extract_pdf_with_ai(path)))
+    if suffix in {".pdf", ".doc", ".docx", ".xls", ".xlsx"}:
+        return str(run_async(extract_supported_document_text(path, original_filename=path.name)))
     raise ValueError(f"UNSUPPORTED_DOCUMENT_SUFFIX:{suffix}")
 
 
@@ -134,7 +130,15 @@ def parse_uploaded_image_ocr_payload(user_id: int, *, file_ref: str) -> dict[str
         ".tiff": "image/tiff",
         ".tif": "image/tiff",
     }.get(suffix, "image/jpeg")
-    text = str(run_async(perform_kimi_ocr(path, mime, path.name)))
+    text = str(
+        run_async(
+            extract_text_from_file_with_fallback(
+                path,
+                content_type=mime,
+                original_filename=path.name,
+            )
+        )
+    )
     return ok_item_payload(
         {
             "file": file_item_payload(path, kind=_file_kind(path), file_url=media_url_for_path(path)),

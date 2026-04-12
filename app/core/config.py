@@ -42,6 +42,7 @@ class GlobalConfig:
     KNOWLEDGE_BASE_PATH = KNOWLEDGE_DIR / "vector_init" / "policy_knowledge.json"
     EMBEDDING_MODELS_DIR = KNOWLEDGE_DIR / "embedding"
     DEFAULT_AGENT_PLUGIN_EMBEDDING_MODEL = EMBEDDING_MODELS_DIR / "paraphrase-multilingual-MiniLM-L12-v2"
+    DEFAULT_PADDLEOCR_MODELS_DIR = KNOWLEDGE_DIR / "paddleocr"
     DB_INIT_DIR = KNOWLEDGE_DIR / "db_init"
     DB_INIT_DATA_PATH = PROJECT_ROOT / "seed_data.json"  # deprecated compatibility only
     LOG_DIR = PROJECT_ROOT / "logs"
@@ -115,6 +116,24 @@ class GlobalConfig:
     AGENT_PLUGIN_RAG_TOP_K = int(os.getenv("AGENT_PLUGIN_RAG_TOP_K"))
     AGENT_PLUGIN_RAG_SCORE_THRESHOLD = float(os.getenv("AGENT_PLUGIN_RAG_SCORE_THRESHOLD"))
     AGENT_PLUGIN_SYSTEM_PROMPT = os.getenv("AGENT_PLUGIN_SYSTEM_PROMPT")
+
+    # PaddleOCR model bootstrap params from env
+    PADDLEOCR_ENABLED = _to_bool(os.getenv("PADDLEOCR_ENABLED"))
+    _paddleocr_models_dir_raw = os.getenv("PADDLEOCR_MODELS_DIR", "paddleocr")
+    _paddleocr_models_dir_path = Path(_paddleocr_models_dir_raw)
+    PADDLEOCR_MODELS_DIR = (
+        _paddleocr_models_dir_path
+        if _paddleocr_models_dir_path.is_absolute()
+        else KNOWLEDGE_DIR / _paddleocr_models_dir_path
+    )
+    PADDLEOCR_LANG = os.getenv("PADDLEOCR_LANG", "ch")
+    PADDLEOCR_USE_ANGLE_CLS = _to_bool(os.getenv("PADDLEOCR_USE_ANGLE_CLS"))
+    PADDLEOCR_ENABLE_STRUCTURE = _to_bool(os.getenv("PADDLEOCR_ENABLE_STRUCTURE"))
+    PADDLEOCR_DET_MODEL_DIR = str(PADDLEOCR_MODELS_DIR / "det")
+    PADDLEOCR_REC_MODEL_DIR = str(PADDLEOCR_MODELS_DIR / "rec")
+    PADDLEOCR_CLS_MODEL_DIR = str(PADDLEOCR_MODELS_DIR / "cls")
+    PADDLEOCR_LAYOUT_MODEL_DIR = str(PADDLEOCR_MODELS_DIR / "layout")
+    PADDLEOCR_TABLE_MODEL_DIR = str(PADDLEOCR_MODELS_DIR / "table")
 
     @staticmethod
     def _show_config():

@@ -73,7 +73,7 @@ export const API_ROUTES = {
 export const apiClient = axios.create({
   baseURL: '/api',
   headers: { 'Content-Type': 'application/json' },
-  timeout: 60000, // 将超时时间增加到 60 秒
+  timeout: 240000, // 将超时时间增加到 240 秒
 });
 
 // 请求拦截器：自动附加 Token

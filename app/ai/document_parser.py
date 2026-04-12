@@ -1283,6 +1283,12 @@ def rewrite_document(original_text: str, target_audience: str, user_id: int) -> 
 
 
 async def extract_pdf_with_ai(file_path: Path) -> str:
+    from app.services.pdf_extractor import extract_pdf_with_ai as extract_pdf_with_service
+
+    return await extract_pdf_with_service(file_path)
+
+
+async def _legacy_extract_pdf_with_ai(file_path: Path) -> str:
     """
     使用 Kimi 或 OCR 解析 PDF（含扫描件）。
     """

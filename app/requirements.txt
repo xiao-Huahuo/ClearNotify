@@ -10,6 +10,12 @@ python-dotenv
 jieba
 python-docx
 pdfplumber
+PyMuPDF
+Pillow
+numpy
+paddleocr
+paddlepaddle
+paddlex[ocr]==3.4.3
 PyJWT==2.8.0
 passlib==1.7.4
 bcrypt==4.1.2

@@ -1,0 +1,564 @@
+Creating model: ('PP-OCRv5_server_rec', None)
+Model files already exist. Using cached files. To redownload, please delete the directory manually: `C:\Users\slump\.paddlex\official_models\PP-OCRv5_server_rec`.
+2026-04-12 21:14:46,679 | INFO | app.services.local_ocr_service | PaddleOCR runtime initialized successfully.
+2026-04-12 21:14:46,719 | WARNING | app.services.local_ocr_service | PaddleOCR image recognition failed: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\local_ocr_service.py", line 171, in extract_text_from_image_bytes
+    result = ocr.ocr(image_array, cls=GlobalConfig.PADDLEOCR_USE_ANGLE_CLS)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\typing_extensions.py", line 3004, in wrapper
+    return arg(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\paddleocr\_pipelines\ocr.py", line 231, in ocr
+    return self.predict(img, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+2026-04-12 21:14:46,723 | INFO | app.services.ocr_pipeline_service | Local OCR returned empty result for image bytes, fallback to Kimi vision OCR.
+2026-04-12 21:14:47,366 | INFO | httpx | HTTP Request: POST https://api.moonshot.cn/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-04-12 21:14:47,366 | WARNING | app.services.ocr_pipeline_service | Kimi image OCR fallback failed: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\ocr_pipeline_service.py", line 35, in _perform_kimi_vision_ocr_from_bytes
+    completion = kimi.client.chat.completions.create(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_utils\_utils.py", line 286, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\resources\chat\completions\completions.py", line 1211, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1314, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1087, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.BadRequestError: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+2026-04-12 21:14:47,371 | WARNING | app.services.local_ocr_service | PaddleOCR image recognition failed: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\local_ocr_service.py", line 171, in extract_text_from_image_bytes
+    result = ocr.ocr(image_array, cls=GlobalConfig.PADDLEOCR_USE_ANGLE_CLS)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\typing_extensions.py", line 3004, in wrapper
+    return arg(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\paddleocr\_pipelines\ocr.py", line 231, in ocr
+    return self.predict(img, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+2026-04-12 21:14:47,372 | INFO | app.services.ocr_pipeline_service | Local OCR returned empty result for image bytes, fallback to Kimi vision OCR.
+2026-04-12 21:14:47,808 | INFO | httpx | HTTP Request: POST https://api.moonshot.cn/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-04-12 21:14:47,808 | WARNING | app.services.ocr_pipeline_service | Kimi image OCR fallback failed: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\ocr_pipeline_service.py", line 35, in _perform_kimi_vision_ocr_from_bytes
+    completion = kimi.client.chat.completions.create(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_utils\_utils.py", line 286, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\resources\chat\completions\completions.py", line 1211, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1314, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1087, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.BadRequestError: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+2026-04-12 21:14:47,812 | WARNING | app.services.local_ocr_service | PaddleOCR image recognition failed: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\local_ocr_service.py", line 171, in extract_text_from_image_bytes
+    result = ocr.ocr(image_array, cls=GlobalConfig.PADDLEOCR_USE_ANGLE_CLS)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\typing_extensions.py", line 3004, in wrapper
+    return arg(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\paddleocr\_pipelines\ocr.py", line 231, in ocr
+    return self.predict(img, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+2026-04-12 21:14:47,812 | INFO | app.services.ocr_pipeline_service | Local OCR returned empty result for image bytes, fallback to Kimi vision OCR.
+2026-04-12 21:14:48,252 | INFO | httpx | HTTP Request: POST https://api.moonshot.cn/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-04-12 21:14:48,253 | WARNING | app.services.ocr_pipeline_service | Kimi image OCR fallback failed: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\ocr_pipeline_service.py", line 35, in _perform_kimi_vision_ocr_from_bytes
+    completion = kimi.client.chat.completions.create(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_utils\_utils.py", line 286, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\resources\chat\completions\completions.py", line 1211, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1314, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1087, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.BadRequestError: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+2026-04-12 21:14:48,257 | WARNING | app.services.local_ocr_service | PaddleOCR image recognition failed: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\local_ocr_service.py", line 171, in extract_text_from_image_bytes
+    result = ocr.ocr(image_array, cls=GlobalConfig.PADDLEOCR_USE_ANGLE_CLS)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\typing_extensions.py", line 3004, in wrapper
+    return arg(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\paddleocr\_pipelines\ocr.py", line 231, in ocr
+    return self.predict(img, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+2026-04-12 21:14:48,257 | INFO | app.services.ocr_pipeline_service | Local OCR returned empty result for image bytes, fallback to Kimi vision OCR.
+2026-04-12 21:14:48,699 | INFO | httpx | HTTP Request: POST https://api.moonshot.cn/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-04-12 21:14:48,701 | WARNING | app.services.ocr_pipeline_service | Kimi image OCR fallback failed: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\ocr_pipeline_service.py", line 35, in _perform_kimi_vision_ocr_from_bytes
+    completion = kimi.client.chat.completions.create(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_utils\_utils.py", line 286, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\resources\chat\completions\completions.py", line 1211, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1314, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1087, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.BadRequestError: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+2026-04-12 21:14:48,704 | WARNING | app.services.local_ocr_service | PaddleOCR image recognition failed: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\local_ocr_service.py", line 171, in extract_text_from_image_bytes
+    result = ocr.ocr(image_array, cls=GlobalConfig.PADDLEOCR_USE_ANGLE_CLS)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\typing_extensions.py", line 3004, in wrapper
+    return arg(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\paddleocr\_pipelines\ocr.py", line 231, in ocr
+    return self.predict(img, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+2026-04-12 21:14:48,704 | INFO | app.services.ocr_pipeline_service | Local OCR returned empty result for image bytes, fallback to Kimi vision OCR.
+2026-04-12 21:14:49,137 | INFO | httpx | HTTP Request: POST https://api.moonshot.cn/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-04-12 21:14:49,137 | WARNING | app.services.ocr_pipeline_service | Kimi image OCR fallback failed: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\ocr_pipeline_service.py", line 35, in _perform_kimi_vision_ocr_from_bytes
+    completion = kimi.client.chat.completions.create(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_utils\_utils.py", line 286, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\resources\chat\completions\completions.py", line 1211, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1314, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1087, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.BadRequestError: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+2026-04-12 21:14:49,142 | WARNING | app.services.local_ocr_service | PaddleOCR image recognition failed: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\local_ocr_service.py", line 171, in extract_text_from_image_bytes
+    result = ocr.ocr(image_array, cls=GlobalConfig.PADDLEOCR_USE_ANGLE_CLS)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\typing_extensions.py", line 3004, in wrapper
+    return arg(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\paddleocr\_pipelines\ocr.py", line 231, in ocr
+    return self.predict(img, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+2026-04-12 21:14:49,142 | INFO | app.services.ocr_pipeline_service | Local OCR returned empty result for image bytes, fallback to Kimi vision OCR.
+2026-04-12 21:14:49,601 | INFO | httpx | HTTP Request: POST https://api.moonshot.cn/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-04-12 21:14:49,602 | WARNING | app.services.ocr_pipeline_service | Kimi image OCR fallback failed: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\ocr_pipeline_service.py", line 35, in _perform_kimi_vision_ocr_from_bytes
+    completion = kimi.client.chat.completions.create(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_utils\_utils.py", line 286, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\resources\chat\completions\completions.py", line 1211, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1314, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1087, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.BadRequestError: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+2026-04-12 21:14:49,609 | WARNING | app.services.local_ocr_service | PaddleOCR image recognition failed: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\local_ocr_service.py", line 171, in extract_text_from_image_bytes
+    result = ocr.ocr(image_array, cls=GlobalConfig.PADDLEOCR_USE_ANGLE_CLS)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\typing_extensions.py", line 3004, in wrapper
+    return arg(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\paddleocr\_pipelines\ocr.py", line 231, in ocr
+    return self.predict(img, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+2026-04-12 21:14:49,610 | INFO | app.services.ocr_pipeline_service | Local OCR returned empty result for image bytes, fallback to Kimi vision OCR.
+2026-04-12 21:14:50,076 | INFO | httpx | HTTP Request: POST https://api.moonshot.cn/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-04-12 21:14:50,076 | WARNING | app.services.ocr_pipeline_service | Kimi image OCR fallback failed: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\ocr_pipeline_service.py", line 35, in _perform_kimi_vision_ocr_from_bytes
+    completion = kimi.client.chat.completions.create(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_utils\_utils.py", line 286, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\resources\chat\completions\completions.py", line 1211, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1314, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1087, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.BadRequestError: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+2026-04-12 21:14:50,079 | WARNING | app.services.local_ocr_service | PaddleOCR image recognition failed: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\local_ocr_service.py", line 171, in extract_text_from_image_bytes
+    result = ocr.ocr(image_array, cls=GlobalConfig.PADDLEOCR_USE_ANGLE_CLS)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\typing_extensions.py", line 3004, in wrapper
+    return arg(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\paddleocr\_pipelines\ocr.py", line 231, in ocr
+    return self.predict(img, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+2026-04-12 21:14:50,080 | INFO | app.services.ocr_pipeline_service | Local OCR returned empty result for image bytes, fallback to Kimi vision OCR.
+2026-04-12 21:14:50,513 | INFO | httpx | HTTP Request: POST https://api.moonshot.cn/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-04-12 21:14:50,514 | WARNING | app.services.ocr_pipeline_service | Kimi image OCR fallback failed: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\ocr_pipeline_service.py", line 35, in _perform_kimi_vision_ocr_from_bytes
+    completion = kimi.client.chat.completions.create(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_utils\_utils.py", line 286, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\resources\chat\completions\completions.py", line 1211, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1314, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1087, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.BadRequestError: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+2026-04-12 21:14:50,516 | WARNING | app.services.local_ocr_service | PaddleOCR image recognition failed: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\local_ocr_service.py", line 171, in extract_text_from_image_bytes
+    result = ocr.ocr(image_array, cls=GlobalConfig.PADDLEOCR_USE_ANGLE_CLS)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\typing_extensions.py", line 3004, in wrapper
+    return arg(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\paddleocr\_pipelines\ocr.py", line 231, in ocr
+    return self.predict(img, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+2026-04-12 21:14:50,517 | INFO | app.services.ocr_pipeline_service | Local OCR returned empty result for image bytes, fallback to Kimi vision OCR.
+2026-04-12 21:14:50,935 | INFO | httpx | HTTP Request: POST https://api.moonshot.cn/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-04-12 21:14:50,936 | WARNING | app.services.ocr_pipeline_service | Kimi image OCR fallback failed: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\ocr_pipeline_service.py", line 35, in _perform_kimi_vision_ocr_from_bytes
+    completion = kimi.client.chat.completions.create(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_utils\_utils.py", line 286, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\resources\chat\completions\completions.py", line 1211, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1314, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1087, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.BadRequestError: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+2026-04-12 21:14:50,940 | WARNING | app.services.local_ocr_service | PaddleOCR image recognition failed: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\local_ocr_service.py", line 171, in extract_text_from_image_bytes
+    result = ocr.ocr(image_array, cls=GlobalConfig.PADDLEOCR_USE_ANGLE_CLS)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\typing_extensions.py", line 3004, in wrapper
+    return arg(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\paddleocr\_pipelines\ocr.py", line 231, in ocr
+    return self.predict(img, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+2026-04-12 21:14:50,940 | INFO | app.services.ocr_pipeline_service | Local OCR returned empty result for image bytes, fallback to Kimi vision OCR.
+2026-04-12 21:14:51,479 | INFO | httpx | HTTP Request: POST https://api.moonshot.cn/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-04-12 21:14:51,479 | WARNING | app.services.ocr_pipeline_service | Kimi image OCR fallback failed: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\ocr_pipeline_service.py", line 35, in _perform_kimi_vision_ocr_from_bytes
+    completion = kimi.client.chat.completions.create(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_utils\_utils.py", line 286, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\resources\chat\completions\completions.py", line 1211, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1314, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1087, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.BadRequestError: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+2026-04-12 21:14:51,484 | WARNING | app.services.local_ocr_service | PaddleOCR image recognition failed: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\local_ocr_service.py", line 171, in extract_text_from_image_bytes
+    result = ocr.ocr(image_array, cls=GlobalConfig.PADDLEOCR_USE_ANGLE_CLS)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\typing_extensions.py", line 3004, in wrapper
+    return arg(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\paddleocr\_pipelines\ocr.py", line 231, in ocr
+    return self.predict(img, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+2026-04-12 21:14:51,484 | INFO | app.services.ocr_pipeline_service | Local OCR returned empty result for image bytes, fallback to Kimi vision OCR.
+2026-04-12 21:14:51,956 | INFO | httpx | HTTP Request: POST https://api.moonshot.cn/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-04-12 21:14:51,956 | WARNING | app.services.ocr_pipeline_service | Kimi image OCR fallback failed: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\ocr_pipeline_service.py", line 35, in _perform_kimi_vision_ocr_from_bytes
+    completion = kimi.client.chat.completions.create(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_utils\_utils.py", line 286, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\resources\chat\completions\completions.py", line 1211, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1314, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1087, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.BadRequestError: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+2026-04-12 21:14:51,958 | WARNING | app.services.local_ocr_service | PaddleOCR image recognition failed: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\local_ocr_service.py", line 171, in extract_text_from_image_bytes
+    result = ocr.ocr(image_array, cls=GlobalConfig.PADDLEOCR_USE_ANGLE_CLS)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\typing_extensions.py", line 3004, in wrapper
+    return arg(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\paddleocr\_pipelines\ocr.py", line 231, in ocr
+    return self.predict(img, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+2026-04-12 21:14:51,960 | INFO | app.services.ocr_pipeline_service | Local OCR returned empty result for image bytes, fallback to Kimi vision OCR.
+2026-04-12 21:14:52,453 | INFO | httpx | HTTP Request: POST https://api.moonshot.cn/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-04-12 21:14:52,454 | WARNING | app.services.ocr_pipeline_service | Kimi image OCR fallback failed: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\ocr_pipeline_service.py", line 35, in _perform_kimi_vision_ocr_from_bytes
+    completion = kimi.client.chat.completions.create(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_utils\_utils.py", line 286, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\resources\chat\completions\completions.py", line 1211, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1314, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1087, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.BadRequestError: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+2026-04-12 21:14:52,459 | WARNING | app.services.local_ocr_service | PaddleOCR image recognition failed: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\local_ocr_service.py", line 171, in extract_text_from_image_bytes
+    result = ocr.ocr(image_array, cls=GlobalConfig.PADDLEOCR_USE_ANGLE_CLS)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\typing_extensions.py", line 3004, in wrapper
+    return arg(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\paddleocr\_pipelines\ocr.py", line 231, in ocr
+    return self.predict(img, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+2026-04-12 21:14:52,459 | INFO | app.services.ocr_pipeline_service | Local OCR returned empty result for image bytes, fallback to Kimi vision OCR.
+2026-04-12 21:14:52,904 | INFO | httpx | HTTP Request: POST https://api.moonshot.cn/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-04-12 21:14:52,905 | WARNING | app.services.ocr_pipeline_service | Kimi image OCR fallback failed: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\ocr_pipeline_service.py", line 35, in _perform_kimi_vision_ocr_from_bytes
+    completion = kimi.client.chat.completions.create(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_utils\_utils.py", line 286, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\resources\chat\completions\completions.py", line 1211, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1314, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1087, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.BadRequestError: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+2026-04-12 21:14:52,908 | WARNING | app.services.local_ocr_service | PaddleOCR image recognition failed: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\local_ocr_service.py", line 171, in extract_text_from_image_bytes
+    result = ocr.ocr(image_array, cls=GlobalConfig.PADDLEOCR_USE_ANGLE_CLS)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\typing_extensions.py", line 3004, in wrapper
+    return arg(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\paddleocr\_pipelines\ocr.py", line 231, in ocr
+    return self.predict(img, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+2026-04-12 21:14:52,909 | INFO | app.services.ocr_pipeline_service | Local OCR returned empty result for image bytes, fallback to Kimi vision OCR.
+2026-04-12 21:14:53,353 | INFO | httpx | HTTP Request: POST https://api.moonshot.cn/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-04-12 21:14:53,355 | WARNING | app.services.ocr_pipeline_service | Kimi image OCR fallback failed: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\ocr_pipeline_service.py", line 35, in _perform_kimi_vision_ocr_from_bytes
+    completion = kimi.client.chat.completions.create(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_utils\_utils.py", line 286, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\resources\chat\completions\completions.py", line 1211, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1314, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1087, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.BadRequestError: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+2026-04-12 21:14:53,361 | WARNING | app.services.local_ocr_service | PaddleOCR image recognition failed: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\local_ocr_service.py", line 171, in extract_text_from_image_bytes
+    result = ocr.ocr(image_array, cls=GlobalConfig.PADDLEOCR_USE_ANGLE_CLS)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\typing_extensions.py", line 3004, in wrapper
+    return arg(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\paddleocr\_pipelines\ocr.py", line 231, in ocr
+    return self.predict(img, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+2026-04-12 21:14:53,361 | INFO | app.services.ocr_pipeline_service | Local OCR returned empty result for image bytes, fallback to Kimi vision OCR.
+2026-04-12 21:14:53,826 | INFO | httpx | HTTP Request: POST https://api.moonshot.cn/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-04-12 21:14:53,826 | WARNING | app.services.ocr_pipeline_service | Kimi image OCR fallback failed: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\ocr_pipeline_service.py", line 35, in _perform_kimi_vision_ocr_from_bytes
+    completion = kimi.client.chat.completions.create(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_utils\_utils.py", line 286, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\resources\chat\completions\completions.py", line 1211, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1314, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1087, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.BadRequestError: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+2026-04-12 21:14:53,838 | WARNING | app.services.local_ocr_service | PaddleOCR image recognition failed: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\local_ocr_service.py", line 171, in extract_text_from_image_bytes
+    result = ocr.ocr(image_array, cls=GlobalConfig.PADDLEOCR_USE_ANGLE_CLS)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\typing_extensions.py", line 3004, in wrapper
+    return arg(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\paddleocr\_pipelines\ocr.py", line 231, in ocr
+    return self.predict(img, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+2026-04-12 21:14:53,838 | INFO | app.services.ocr_pipeline_service | Local OCR returned empty result for image bytes, fallback to Kimi vision OCR.
+2026-04-12 21:14:54,465 | INFO | httpx | HTTP Request: POST https://api.moonshot.cn/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-04-12 21:14:54,465 | WARNING | app.services.ocr_pipeline_service | Kimi image OCR fallback failed: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\ocr_pipeline_service.py", line 35, in _perform_kimi_vision_ocr_from_bytes
+    completion = kimi.client.chat.completions.create(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_utils\_utils.py", line 286, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\resources\chat\completions\completions.py", line 1211, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1314, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1087, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.BadRequestError: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+2026-04-12 21:14:54,472 | WARNING | app.services.local_ocr_service | PaddleOCR image recognition failed: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\local_ocr_service.py", line 171, in extract_text_from_image_bytes
+    result = ocr.ocr(image_array, cls=GlobalConfig.PADDLEOCR_USE_ANGLE_CLS)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\typing_extensions.py", line 3004, in wrapper
+    return arg(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\paddleocr\_pipelines\ocr.py", line 231, in ocr
+    return self.predict(img, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+2026-04-12 21:14:54,472 | INFO | app.services.ocr_pipeline_service | Local OCR returned empty result for image bytes, fallback to Kimi vision OCR.
+2026-04-12 21:14:55,027 | INFO | httpx | HTTP Request: POST https://api.moonshot.cn/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-04-12 21:14:55,027 | WARNING | app.services.ocr_pipeline_service | Kimi image OCR fallback failed: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\ocr_pipeline_service.py", line 35, in _perform_kimi_vision_ocr_from_bytes
+    completion = kimi.client.chat.completions.create(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_utils\_utils.py", line 286, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\resources\chat\completions\completions.py", line 1211, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1314, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1087, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.BadRequestError: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+2026-04-12 21:14:55,030 | WARNING | app.services.local_ocr_service | PaddleOCR image recognition failed: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\local_ocr_service.py", line 171, in extract_text_from_image_bytes
+    result = ocr.ocr(image_array, cls=GlobalConfig.PADDLEOCR_USE_ANGLE_CLS)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\typing_extensions.py", line 3004, in wrapper
+    return arg(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\paddleocr\_pipelines\ocr.py", line 231, in ocr
+    return self.predict(img, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: PaddleOCR.predict() got an unexpected keyword argument 'cls'
+2026-04-12 21:14:55,031 | INFO | app.services.ocr_pipeline_service | Local OCR returned empty result for image bytes, fallback to Kimi vision OCR.
+2026-04-12 21:14:55,502 | INFO | httpx | HTTP Request: POST https://api.moonshot.cn/v1/chat/completions "HTTP/1.1 400 Bad Request"
+2026-04-12 21:14:55,502 | WARNING | app.services.ocr_pipeline_service | Kimi image OCR fallback failed: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+Traceback (most recent call last):
+  File "D:\Projects\Python\CloudPolicy\app\services\ocr_pipeline_service.py", line 35, in _perform_kimi_vision_ocr_from_bytes
+    completion = kimi.client.chat.completions.create(
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_utils\_utils.py", line 286, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\resources\chat\completions\completions.py", line 1211, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1314, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Projects\Python\CloudPolicy\.venv\Lib\site-packages\openai\_base_client.py", line 1087, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.BadRequestError: Error code: 400 - {'error': {'message': 'Invalid request: Image input not supported for model moonshot-v1-8k', 'type': 'invalid_request_error'}}
+2026-04-12 21:14:55,503 | INFO | app.main | HTTP POST /upload/document -> 200
+2026-04-12 21:14:55,513 | INFO | app.main | HTTP POST /chat/
+INFO:     127.0.0.1:54856 - "POST /upload/document HTTP/1.1" 200 OK

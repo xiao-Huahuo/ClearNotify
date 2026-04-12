@@ -20,7 +20,7 @@ class AgentConfig:
     LLM_API_KEY = ""
     LLM_URL_BASE = ""
     LLM_TEMPERATURE = 0.0
-    LLM_TIMEOUT = 60
+    LLM_TIMEOUT = 240
     SYSTEM_PROMPT = ""
 
     @classmethod
@@ -63,7 +63,7 @@ class AgentConfig:
         cls.LLM_API_KEY = kwargs.get("LLM_API_KEY", "")
         cls.LLM_URL_BASE = kwargs.get("LLM_URL_BASE", "")
         cls.LLM_TEMPERATURE = float(kwargs.get("LLM_TEMPERATURE", 0))
-        cls.LLM_TIMEOUT = int(kwargs.get("LLM_TIMEOUT", 60))
+        cls.LLM_TIMEOUT = int(kwargs.get("LLM_TIMEOUT", 240))
         cls.SYSTEM_PROMPT = kwargs.get(
             "SYSTEM_PROMPT",
             "你是一个具备自主能力的 AI 助手。请在必要时调用工具，并给出准确、简洁、可执行的答案。",

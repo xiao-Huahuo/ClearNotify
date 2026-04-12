@@ -1,77 +1,170 @@
-import logging
-import os
-import base64
-from pathlib import Path
-import mimetypes
+from __future__ import annotations
 
-from fastapi import HTTPException
+import asyncio
+import json
+import logging
+import mimetypes
+import tempfile
+from pathlib import Path
 
 from app.ai.request_llm import RequestLLM
 
+
 logger = logging.getLogger(__name__)
 
-async def perform_kimi_ocr(file_path: Path, content_type: str, original_filename: str) -> str:
-    """
-    使用 Kimi 视觉模型执行 OCR 识别。
-    :param file_path: 本地文件路径
-    :param content_type: 文件的 MIME 类型
-    :param original_filename: 原始文件名
-    :return: 提取的文本
-    """
-    extracted_text = ""
-    file_id = None
-    kimi = RequestLLM() # Initialize Kimi client
+
+def _normalize_ocr_text(text: str) -> str:
+    return (
+        str(text or "")
+        .replace("\\r\\n", "\n")
+        .replace("\\n", "\n")
+        .replace("\\r", "\n")
+        .replace("\r\n", "\n")
+        .replace("\r", "\n")
+        .strip()
+    )
+
+
+def _extract_text_from_payload(payload: object) -> str:
+    if isinstance(payload, str):
+        return _normalize_ocr_text(payload)
+
+    if isinstance(payload, list):
+        parts: list[str] = []
+        for item in payload:
+            text = _extract_text_from_payload(item)
+            if text:
+                parts.append(text)
+        return "\n".join(parts).strip()
+
+    if isinstance(payload, dict):
+        for key in ("content", "text", "body", "markdown"):
+            value = payload.get(key)
+            if isinstance(value, str) and value.strip():
+                return _normalize_ocr_text(value)
+
+        parts: list[str] = []
+        for key, value in payload.items():
+            if key in {"filename", "file_type", "title", "type"}:
+                continue
+            text = _extract_text_from_payload(value)
+            if text:
+                parts.append(text)
+        return "\n".join(parts).strip()
+
+    return ""
+
+
+def _unwrap_file_extract_text(text: str) -> str:
+    normalized = _normalize_ocr_text(text)
+    if not normalized:
+        return ""
 
     try:
-        # 1. 尝试使用 Kimi 文件上传接口进行 OCR
-        logger.info(f"Attempting to upload file {original_filename} ({file_path}) to Kimi for OCR (purpose=file-extract).")
+        payload = json.loads(normalized)
+    except Exception:
+        return normalized
+
+    extracted = _extract_text_from_payload(payload)
+    return extracted or normalized
+
+
+def _guess_suffix(content_type: str, original_filename: str) -> str:
+    suffix = Path(str(original_filename or "")).suffix
+    if suffix:
+        return suffix
+    guessed = mimetypes.guess_extension(content_type or "")
+    if guessed == ".jpe":
+        return ".jpg"
+    return guessed or ".bin"
+
+
+def perform_kimi_ocr_sync(file_path: Path, content_type: str, original_filename: str) -> str:
+    extracted_text = ""
+    file_id = None
+    kimi = RequestLLM()
+
+    try:
+        logger.info(
+            "Attempting Kimi file-extract OCR for %s (%s).",
+            original_filename,
+            file_path,
+        )
         with open(file_path, "rb") as f:
-            upload_resp = kimi.client.files.create(file=(original_filename, f, content_type), purpose="file-extract")
-        file_id = upload_resp.id
-        logger.info(f"File uploaded to Kimi successfully. File ID: {file_id}")
-
-        logger.info(f"Attempting to get content for Kimi File ID: {file_id}")
-        file_content_resp = kimi.client.files.content(file_id)
-        extracted_text = file_content_resp.text
-        logger.info(f"Content extracted from Kimi File ID {file_id}. Text length: {len(extracted_text)}")
-
-        # 2. 如果文件提取返回空，降级到 Kimi 视觉模型
-        if not extracted_text or not extracted_text.strip():
-            logger.warning(f"Kimi file-extract returned empty text for file ID {file_id}. Attempting visual OCR fallback.")
-            with open(file_path, "rb") as f:
-                img_b64 = base64.b64encode(f.read()).decode()
-            
-            # Reset system prompt for visual OCR
-            kimi.system_prompt = "你是一个OCR识别助手，请将图片中的所有文字原样提取出来，保持原有格式和段落结构。"
-            completion = kimi.client.chat.completions.create(
-                model="moonshot-v1-8k", # Assuming moonshot-v1-8k supports vision
-                messages=[{
-                    "role": "user",
-                    "content": [
-                        {"type": "image_url", "image_url": {"url": f"data:{content_type};base64,{img_b64}"}},
-                        {"type": "text", "text": "请提取图片中的所有文字内容。"}
-                    ]
-                }],
-                temperature=0.1
+            upload_resp = kimi.client.files.create(
+                file=(original_filename, f, content_type),
+                purpose="file-extract",
             )
-            extracted_text = completion.choices[0].message.content
-            logger.info(f"Visual OCR fallback completed. Extracted text length: {len(extracted_text)}")
+        file_id = upload_resp.id
+        logger.info("Kimi OCR upload succeeded. File ID: %s", file_id)
 
-    except Exception as e:
-        logger.error(f"OCR processing failed for file {original_filename} ({file_path}): {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"OCR 识别失败: {str(e)}")
+        logger.info("Reading extracted content for Kimi File ID: %s", file_id)
+        file_content_resp = kimi.client.files.content(file_id)
+        extracted_text = _unwrap_file_extract_text(getattr(file_content_resp, "text", ""))
+        logger.info("Kimi OCR extracted text length: %s", len(extracted_text))
+
+        if not extracted_text:
+            logger.warning(
+                "Kimi file-extract returned empty text for %s. Skip unsupported chat-vision fallback.",
+                original_filename,
+            )
+    except Exception as exc:
+        logger.warning(
+            "Kimi OCR failed for %s (%s): %s",
+            original_filename,
+            file_path,
+            exc,
+            exc_info=True,
+        )
+        return ""
     finally:
-        # 确保 Kimi 上传的文件被清理
         if file_id:
             try:
                 kimi.client.files.delete(file_id)
-                logger.info(f"Kimi File ID {file_id} deleted successfully.")
-            except Exception as e:
-                logger.error(f"Failed to delete Kimi File ID {file_id}: {e}")
-        
-        # 清理本地临时文件 (如果需要，这里假设调用者会处理本地文件清理)
-        # if file_path.exists():
-        #     os.remove(file_path)
-        #     logger.info(f"Local temporary file {file_path} deleted.")
+                logger.info("Kimi File ID %s deleted successfully.", file_id)
+            except Exception as exc:
+                logger.warning("Failed to delete Kimi File ID %s: %s", file_id, exc)
 
     return extracted_text
+
+
+def perform_kimi_ocr_from_bytes_sync(
+    file_bytes: bytes,
+    *,
+    content_type: str,
+    original_filename: str,
+) -> str:
+    if not file_bytes:
+        return ""
+
+    suffix = _guess_suffix(content_type, original_filename)
+    upload_name = original_filename if Path(str(original_filename or "")).suffix else f"{original_filename}{suffix}"
+    temp_path: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as temp_file:
+            temp_file.write(file_bytes)
+            temp_path = Path(temp_file.name)
+        return perform_kimi_ocr_sync(temp_path, content_type, upload_name)
+    except Exception as exc:
+        logger.warning(
+            "Kimi OCR temp-file fallback failed for %s: %s",
+            original_filename,
+            exc,
+            exc_info=True,
+        )
+        return ""
+    finally:
+        if temp_path and temp_path.exists():
+            try:
+                temp_path.unlink()
+            except OSError:
+                logger.warning("Failed to delete temporary OCR file: %s", temp_path)
+
+
+async def perform_kimi_ocr(file_path: Path, content_type: str, original_filename: str) -> str:
+    return await asyncio.to_thread(
+        perform_kimi_ocr_sync,
+        file_path,
+        content_type,
+        original_filename,
+    )

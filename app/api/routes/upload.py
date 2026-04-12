@@ -4,11 +4,10 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from app.models.user import User
 from app.api.deps import get_current_user
 from app.core.config import GlobalConfig
-from app.services.document_extractor import extract_text_from_docx, extract_text_from_excel
-from app.ai.document_parser import extract_pdf_with_ai
+from app.services.document_text_service import extract_supported_document_text
+from app.services.ocr_pipeline_service import extract_text_from_file_with_fallback
 import uuid
 import mimetypes
-from app.services.ocr_service import perform_kimi_ocr # Import the new service
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -130,15 +129,11 @@ async def upload_document( # Made async
     extracted_text = ""
     
     try:
-        if ext == ".pdf":
-            # PDF 包含 AI 处理逻辑，放在 ai 目录下
-            extracted_text = await extract_pdf_with_ai(file_path) # Added await
-        elif ext in [".docx", ".doc"]:
-            # Word 使用常规 python 库解析
-            extracted_text = extract_text_from_docx(file_path)
-        elif ext in [".xlsx", ".xls"]:
-            # Excel 使用常规 python 库解析
-            extracted_text = extract_text_from_excel(file_path)
+        if ext in {".pdf", ".docx", ".doc", ".xlsx", ".xls"}:
+            extracted_text = await extract_supported_document_text(
+                file_path,
+                original_filename=file.filename,
+            )
         elif ext == ".txt":
             # TXT 直接读取
             with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
@@ -171,8 +166,8 @@ async def ocr_image(
     current_user: User = Depends(get_current_user)
 ):
     """
-    截图/扫描型PDF的OCR识别接口。
-    上传图片或扫描PDF，调用 Kimi 视觉模型提取文字内容。
+    截图/扫描型 PDF 的 OCR 识别接口。
+    优先使用本地 PaddleOCR，必要时回退到 LLM OCR。
     """
     content_type = file.content_type
     filename = file.filename.lower()
@@ -214,8 +209,11 @@ async def ocr_image(
     finally:
         file.file.close()
 
-    # Call the new OCR service
-    extracted_text = await perform_kimi_ocr(file_path, content_type, file.filename)
+    extracted_text = await extract_text_from_file_with_fallback(
+        file_path,
+        content_type=content_type,
+        original_filename=file.filename,
+    )
 
     logger.info("OCR source file retained for downstream agent parsing: %s", file_path)
 

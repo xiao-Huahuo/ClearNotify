@@ -43,6 +43,7 @@ class GlobalConfig:
     EMBEDDING_MODELS_DIR = KNOWLEDGE_DIR / "embedding"
     DEFAULT_AGENT_PLUGIN_EMBEDDING_MODEL = EMBEDDING_MODELS_DIR / "paraphrase-multilingual-MiniLM-L12-v2"
     DEFAULT_PADDLEOCR_MODELS_DIR = KNOWLEDGE_DIR / "paddleocr"
+    DEFAULT_PADDLEX_CACHE_DIR = KNOWLEDGE_DIR / "paddlex"
     DB_INIT_DIR = KNOWLEDGE_DIR / "db_init"
     DB_INIT_DATA_PATH = PROJECT_ROOT / "seed_data.json"  # deprecated compatibility only
     LOG_DIR = PROJECT_ROOT / "logs"
@@ -126,6 +127,14 @@ class GlobalConfig:
         if _paddleocr_models_dir_path.is_absolute()
         else KNOWLEDGE_DIR / _paddleocr_models_dir_path
     )
+    _paddlex_cache_dir_raw = os.getenv("PADDLE_PDX_CACHE_HOME", "paddlex")
+    _paddlex_cache_dir_path = Path(_paddlex_cache_dir_raw)
+    PADDLEX_CACHE_DIR = (
+        _paddlex_cache_dir_path
+        if _paddlex_cache_dir_path.is_absolute()
+        else KNOWLEDGE_DIR / _paddlex_cache_dir_path
+    )
+    PADDLEX_OFFICIAL_MODELS_DIR = PADDLEX_CACHE_DIR / "official_models"
     PADDLEOCR_LANG = os.getenv("PADDLEOCR_LANG", "ch")
     PADDLEOCR_USE_ANGLE_CLS = _to_bool(os.getenv("PADDLEOCR_USE_ANGLE_CLS"))
     PADDLEOCR_ENABLE_STRUCTURE = _to_bool(os.getenv("PADDLEOCR_ENABLE_STRUCTURE"))
@@ -152,3 +161,4 @@ class GlobalConfig:
 
 
 GlobalConfig._show_config()
+os.environ["PADDLE_PDX_CACHE_HOME"] = str(GlobalConfig.PADDLEX_CACHE_DIR)

@@ -44,6 +44,8 @@ def resolve_paddleocr_model_paths() -> dict[str, Path]:
         "cls": Path(str(GlobalConfig.PADDLEOCR_CLS_MODEL_DIR)),
         "layout": Path(str(GlobalConfig.PADDLEOCR_LAYOUT_MODEL_DIR)),
         "table": Path(str(GlobalConfig.PADDLEOCR_TABLE_MODEL_DIR)),
+        "paddlex_cache": Path(str(GlobalConfig.PADDLEX_CACHE_DIR)),
+        "official_models": Path(str(GlobalConfig.PADDLEX_OFFICIAL_MODELS_DIR)),
     }
 
 
@@ -93,6 +95,8 @@ def ensure_paddleocr_models_ready(
 
     if _all_required_models_ready(paths) and not force:
         _console(f"[PaddleOCR] Models already exist: {paths['base']}")
+        _console(f"[PaddleOCR] PaddleX cache root: {paths['paddlex_cache']}")
+        _console(f"[PaddleOCR] PaddleX official models: {paths['official_models']}")
         return paths
 
     if not allow_download:
@@ -100,6 +104,9 @@ def ensure_paddleocr_models_ready(
             "PaddleOCR models are missing. Run `python -m app.scripts.download_paddleocr_models` "
             "before starting Docker."
         )
+
+    for path in paths.values():
+        path.mkdir(parents=True, exist_ok=True)
 
     try:
         from paddleocr import PaddleOCR  # type: ignore
@@ -111,17 +118,17 @@ def ensure_paddleocr_models_ready(
 
     action = "Refreshing" if force else "Downloading"
     _console(f"[PaddleOCR] {action} models into: {paths['base']}")
+    _console(f"[PaddleOCR] PaddleX cache root: {paths['paddlex_cache']}")
+    _console(f"[PaddleOCR] PaddleX official models: {paths['official_models']}")
     logger.info(
-        "Preparing PaddleOCR models: base=%s, lang=%s, cls=%s, structure=%s, force=%s",
+        "Preparing PaddleOCR models: base=%s, paddlex_cache=%s, lang=%s, cls=%s, structure=%s, force=%s",
         paths["base"],
+        paths["paddlex_cache"],
         GlobalConfig.PADDLEOCR_LANG,
         GlobalConfig.PADDLEOCR_USE_ANGLE_CLS,
         GlobalConfig.PADDLEOCR_ENABLE_STRUCTURE,
         force,
     )
-
-    for path in paths.values():
-        path.mkdir(parents=True, exist_ok=True)
 
     def _build_ocr_kwargs(use_angle_cls: bool) -> dict[str, object]:
         return _filter_supported_kwargs(PaddleOCR, {
@@ -172,6 +179,7 @@ def ensure_paddleocr_models_ready(
             logger.info("Structured PaddleOCR warmup completed with %s.", structure_name)
 
     _console(f"[PaddleOCR] Models ready: {paths['base']}")
+    _console(f"[PaddleOCR] PaddleX official models ready: {paths['official_models']}")
     logger.info("PaddleOCR model prepare completed: base=%s", paths["base"])
     return paths
 

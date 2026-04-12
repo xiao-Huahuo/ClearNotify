@@ -152,6 +152,7 @@
 │   ├── resources/              # 【静态资源】政策原文、办事百科等 RAG 检索数据存放目录,Embedding 模型文件等
 │   │   ├── embedding/          # 【需下载】【Embedding模型】本地向量模型与缓存目录
 │   │   ├── paddleocr/          # 【需下载】【OCR模型】本地 PaddleOCR 模型目录
+│   │   ├── paddlex/            # 【需下载】【OCR缓存】PaddleX 官方模型缓存目录（含 official_models）
 │   │   ├── db_init/            # 【初始化数据】数据库演示数据与种子文件
 │   │   ├── vector_init/        # 【知识库】RAG 初始知识文本与向量化源文件
 │   │   └── sensitive/          # 【敏感词】内容安全与过滤相关资源
@@ -297,7 +298,14 @@ $$
 本轮图谱工作区不只负责“画图”，还把局部检索与用户价值判断直接嵌入到图谱侧边栏。
 * **节点检索混合打分**：前端会同时对节点标题、节点出处摘要做前缀命中、包含命中与 Dice bigram 相似度计算，形成一个轻量级本地 Hybrid RAG 检索器，专门服务图谱节点搜索与定位。
 * **深度筛选前置生效**：深度筛选不再依赖“必须先点击一个节点”，而是直接基于整张图的深度映射工作，确保用户未选中节点时也能按层级快速聚焦。
-* **个性需求推荐评分**：系统结合用户角色、职业标签、文档适用对象、事项关键词与办理触发词，输出当前文档对用户的相关度估计，并给出优先阅读建议、时间节点提醒与材料准备提示。
+* **个性需求推荐评分**：系统不把“推荐”做成黑盒，而是显式计算当前文档对个人卡片的价值分数：
+$$
+R = 100 \cdot \frac{w_p S_{profession} + w_r S_{role} + w_a S_{action} + w_u S_{urgency} + w_c S_{complexity}}{\sum w}
+$$
+其中 $S_{profession}$ 表示“职业短语 + 职业扩展关键词”与文档正文、节点标签、动态载荷文本的匹配强度；$S_{role}$ 表示用户角色（普通用户 / 认证主体 / 管理员）与文档语义重心的匹配强度；$S_{action}$ 表示申请、申报、材料、入口、资格、流程等可执行信号的密度；$S_{urgency}$ 表示截止时间、逾期、处罚、风险等时效/约束信号的密度；$S_{complexity}$ 则由节点数、关系数、负向约束数量与正文长度共同估计“结构化节省价值”。
+  * **动态权重归一化**：若用户未填写 `profession`，则 $w_p = 0$，其余权重自动重新归一化，避免“职业空白”直接拉低推荐质量。
+  * **推荐解释可见**：前端不会只展示一个分数，而是同步给出命中的画像关键词、推荐理由、建议动作，以及“建议优先办理 / 建议重点阅读 / 建议收藏备查 / 按需浏览”四档优先级。
+  * **当前实现权重**：职业匹配 `0.30`、角色匹配 `0.22`、可执行性 `0.24`、时效/风险 `0.14`、复杂度节省价值 `0.10`。
 
 ### 4. 实时轨迹调度与流式消费模型 (Trace Scheduling & Streaming Consumption)
 智能体的“思考过程展示”背后是一套专门的实时编排算法，而不是普通聊天返回。
@@ -421,6 +429,7 @@ AGENT_PLUGIN_SYSTEM_PROMPT=You are an autonomous AI assistant called 云小圆. 
 # PaddleOCR（本地图片 OCR / PDF 图片 OCR / DOCX 图片 OCR，可选）
 PADDLEOCR_ENABLED=false
 PADDLEOCR_MODELS_DIR=paddleocr
+PADDLE_PDX_CACHE_HOME=paddlex
 PADDLEOCR_LANG=ch
 PADDLEOCR_USE_ANGLE_CLS=true
 PADDLEOCR_ENABLE_STRUCTURE=true
@@ -430,6 +439,7 @@ OCR 运行策略说明：
 - 图片、截图、扫描型 PDF、图片型 PDF、图文混排 PDF、DOCX 内嵌图片默认优先走本地 PaddleOCR。
 - 当 PaddleOCR 未启用、依赖缺失、模型不可用或本地识别结果为空时，系统会自动回退到 LLM OCR。
 - 因此，未配置 PaddleOCR 时系统不会失去 OCR 能力，但图片类解析会更多依赖 LLM OCR，速度、成本与稳定性会弱于本地模型链路。
+- `PADDLEOCR_MODELS_DIR` 默认对应 `app/resources/paddleocr`；`PADDLE_PDX_CACHE_HOME` 默认对应 `app/resources/paddlex`，PaddleX 额外下载的 `official_models` 等缓存也会放进项目目录，而不是默认落到 `~/.paddlex`。
 
 ### 运行
 
@@ -468,6 +478,7 @@ uvicorn app.main:app --reload
 初次启动时会进行数据库初始化+Embedding模型下载+PaddleOCR模型下载+向量库初始化(建议科学上网以稳定下载).
 当前 OCR 链路为“PaddleOCR 优先，LLM OCR 兜底”；如果只想先保证服务可启动，也可以暂时关闭 `PADDLEOCR_ENABLED`，系统会保留 LLM OCR 备选机制。
 对于两个模型下载,app/scripts目录下也提供了独立的下载脚本,可以单独执行以提前准备好模型文件,避免在容器环境下下载失败.
+其中 PaddleOCR 的显式模型会落在 `app/resources/paddleocr`，PaddleX 自动拉取的官方缓存会落在 `app/resources/paddlex/official_models`。
 或者可以在.env中添加以下两句,自定义初始化管理员账户,然后再进行后台启动:
 ```
 ADMIN_USERNAME = your_admin_username
@@ -538,7 +549,7 @@ docker pull python:3.12-slim-bookworm
     python -m app.scripts.download_embedding
     python -m app.scripts.download_paddleocr_models
     ```
-   说明：线上部署推荐使用“本地 PaddleOCR + LLM OCR 兜底”策略；如果部署环境无法顺利下载或预热本地模型，也可以先关闭 `PADDLEOCR_ENABLED`，保留 LLM OCR 作为备选链路。
+   说明：线上部署推荐使用“本地 PaddleOCR + LLM OCR 兜底”策略；如果部署环境无法顺利下载或预热本地模型，也可以先关闭 `PADDLEOCR_ENABLED`，保留 LLM OCR 作为备选链路。执行上述脚本后，`app/resources/paddleocr` 与 `app/resources/paddlex/official_models` 都会在项目目录内完成准备。
 1.  **启动服务**:
     在项目根目录执行以下命令：
     ```bash

@@ -54,6 +54,36 @@
                 <div class="kg-depth-label">自适应簇</div>
                 <div class="kg-cluster-copy">同级子节点过多的父节点会默认收拢，点击该节点可局部展开。</div>
               </div>
+              <div v-if="personalRecommendation" class="kg-panel-section kg-persona-panel" :class="recommendationToneClass">
+                <div class="kg-section-heading kg-persona-heading">
+                  <div>
+                    <div class="kg-depth-label">个性需求推荐</div>
+                    <div class="kg-cluster-copy">{{ recommendationSummary }}</div>
+                  </div>
+                  <div class="kg-persona-score">
+                    <strong>{{ recommendationScore }}</strong>
+                    <span>{{ recommendationPriority }}</span>
+                  </div>
+                </div>
+                <div v-if="recommendationProfileLabel" class="kg-persona-meta">
+                  <span class="kg-source-pill">{{ recommendationProfileLabel }}</span>
+                </div>
+                <div v-if="recommendationKeywords.length" class="kg-persona-tags">
+                  <span v-for="keyword in recommendationKeywords" :key="keyword" class="kg-persona-tag">{{ keyword }}</span>
+                </div>
+                <div v-if="recommendationReasons.length" class="kg-persona-block">
+                  <div class="kg-depth-label">推荐理由</div>
+                  <ul class="kg-persona-list">
+                    <li v-for="reason in recommendationReasons" :key="reason">{{ reason }}</li>
+                  </ul>
+                </div>
+                <div v-if="recommendationSuggestions.length" class="kg-persona-block">
+                  <div class="kg-depth-label">建议动作</div>
+                  <ul class="kg-persona-list is-action">
+                    <li v-for="suggestion in recommendationSuggestions" :key="suggestion">{{ suggestion }}</li>
+                  </ul>
+                </div>
+              </div>
               <div v-if="rewriteTargetsSafe.length" class="kg-panel-section">
                 <div class="kg-section-heading">
                   <div>
@@ -192,6 +222,7 @@ const props = defineProps({
   nodes: { type: Array, default: () => [] },
   links: { type: Array, default: () => [] },
   dynamicPayload: { type: Object, default: () => ({}) },
+  analysisPayload: { type: Object, default: () => ({}) },
   visualConfig: { type: Object, default: () => ({}) },
   originalFileUrl: { type: String, default: '' },
   rewriteTargets: { type: Array, default: () => [] },
@@ -640,6 +671,35 @@ const textMapping = computed(() => {
 });
 
 const prettyDynamicPayload = computed(() => JSON.stringify(props.dynamicPayload || {}, null, 2));
+
+const personalRecommendation = computed(() => {
+  const raw = props.analysisPayload?.personal_recommendation;
+  return raw && typeof raw === 'object' ? raw : null;
+});
+
+const recommendationScore = computed(() => clamp(Math.round(Number(personalRecommendation.value?.score || 0)), 0, 100));
+const recommendationToneClass = computed(() => `is-${String(personalRecommendation.value?.level || 'low')}`);
+const recommendationPriority = computed(() => String(personalRecommendation.value?.priority_label || '').trim());
+const recommendationProfileLabel = computed(() => String(personalRecommendation.value?.profile_label || '').trim());
+const recommendationSummary = computed(() => String(personalRecommendation.value?.summary || '').trim());
+const recommendationKeywords = computed(() =>
+  (Array.isArray(personalRecommendation.value?.matched_keywords) ? personalRecommendation.value.matched_keywords : [])
+    .map((item) => String(item || '').trim())
+    .filter(Boolean)
+    .slice(0, 6)
+);
+const recommendationReasons = computed(() =>
+  (Array.isArray(personalRecommendation.value?.reasons) ? personalRecommendation.value.reasons : [])
+    .map((item) => String(item || '').trim())
+    .filter(Boolean)
+    .slice(0, 3)
+);
+const recommendationSuggestions = computed(() =>
+  (Array.isArray(personalRecommendation.value?.suggestions) ? personalRecommendation.value.suggestions : [])
+    .map((item) => String(item || '').trim())
+    .filter(Boolean)
+    .slice(0, 3)
+);
 
 const escapeHtml = (value) =>
   String(value || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
@@ -2980,6 +3040,91 @@ onBeforeUnmount(() => {
   font-size: 12px;
   line-height: 1.65;
   color: var(--text-secondary);
+}
+
+.kg-persona-panel {
+  border: 1px solid color-mix(in srgb, var(--color-primary) 16%, var(--border-color));
+  border-radius: 16px;
+  padding: 12px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 6%, var(--card-bg)), color-mix(in srgb, var(--color-secondary) 4%, var(--card-bg)));
+  box-shadow: 0 14px 28px color-mix(in srgb, var(--color-primary) 10%, transparent);
+}
+
+.kg-persona-panel.is-high,
+.kg-persona-panel.is-medium {
+  border-color: color-mix(in srgb, var(--color-primary) 26%, var(--border-color));
+}
+
+.kg-persona-heading {
+  align-items: stretch;
+}
+
+.kg-persona-score {
+  min-width: 84px;
+  border-radius: 14px;
+  padding: 10px 9px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: linear-gradient(145deg, var(--color-primary-dark), var(--color-primary), var(--color-secondary));
+  color: #fff;
+  text-align: center;
+  box-shadow: 0 14px 26px color-mix(in srgb, var(--color-primary) 24%, transparent);
+}
+
+.kg-persona-score strong {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.kg-persona-score span {
+  font-size: 10px;
+  line-height: 1.4;
+  opacity: 0.92;
+}
+
+.kg-persona-meta,
+.kg-persona-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.kg-persona-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 9px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--color-primary) 18%, var(--border-color));
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--card-bg));
+  color: color-mix(in srgb, var(--color-primary-dark) 74%, var(--text-primary));
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.kg-persona-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kg-persona-list {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text-primary);
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.kg-persona-list li + li {
+  margin-top: 4px;
+}
+
+.kg-persona-list.is-action li::marker {
+  color: var(--color-primary);
 }
 
 .kg-rewrite-grid { display: flex; flex-wrap: wrap; gap: 8px; }

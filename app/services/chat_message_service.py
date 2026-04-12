@@ -15,6 +15,7 @@ from app.ai.document_parser import rewrite_document, build_visual_config_for_gra
 from app.core.config import GlobalConfig
 from app.models.chat_message import ChatMessage
 from app.services import history_service
+from app.services.personal_recommendation_service import build_personal_recommendation
 
 
 logger = logging.getLogger(__name__)
@@ -37,6 +38,32 @@ def estimate_message_time_saved(message: ChatMessage) -> int:
     read_time_original = max(word_count / 150, 3)
     saved = max(int(read_time_original - 1), 2)
     return min(saved, 30)
+
+
+def enrich_payload_with_personal_recommendation(
+    payload: dict[str, Any],
+    *,
+    role: Optional[str] = None,
+    profession: Optional[str] = None,
+) -> dict[str, Any]:
+    if not isinstance(payload, dict):
+        return payload
+    analysis = payload.get("chat_analysis")
+    if not isinstance(analysis, dict):
+        analysis = _parse_chat_analysis(analysis)
+        payload["chat_analysis"] = analysis
+    if not isinstance(analysis, dict):
+        return payload
+
+    analysis["personal_recommendation"] = build_personal_recommendation(
+        role=role,
+        profession=profession,
+        content=str(payload.get("content") or analysis.get("content") or payload.get("original_text") or ""),
+        nodes=payload.get("nodes") or analysis.get("nodes") or [],
+        links=payload.get("links") or analysis.get("links") or [],
+        dynamic_payload=payload.get("dynamic_payload") or analysis.get("dynamic_payload") or {},
+    )
+    return payload
 
 
 def serialize_message(message: ChatMessage) -> dict[str, Any]:
@@ -91,6 +118,8 @@ def build_chat_analysis_payload(
     links: list[dict[str, Any]],
     dynamic_payload: dict[str, Any],
     visual_config: dict[str, Any],
+    role: Optional[str] = None,
+    profession: Optional[str] = None,
 ) -> dict[str, Any]:
     node_count = len(nodes)
     link_count = len(links)
@@ -109,7 +138,7 @@ def build_chat_analysis_payload(
     risk_level = "高" if negative_edges >= 4 else ("中" if negative_edges >= 2 else "低")
     language_complexity = "高" if content_len > 1200 else ("中" if content_len > 400 else "低")
 
-    return {
+    payload = {
         "version": "kg_v1",
         "parse_mode": parse_mode,
         "language_complexity": language_complexity,
@@ -122,6 +151,11 @@ def build_chat_analysis_payload(
         "dynamic_payload": dynamic_payload,
         "visual_config": visual_config,
     }
+    return enrich_payload_with_personal_recommendation(
+        payload,
+        role=role,
+        profession=profession,
+    )
 
 
 def _ensure_export_dir(user_id: int) -> Path:

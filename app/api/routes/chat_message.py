@@ -18,6 +18,16 @@ from app.services import chat_message_service, history_service, parse_progress_s
 router = APIRouter()
 
 
+def _build_chat_message_read(message, current_user: User) -> ChatMessageRead:
+    payload = chat_message_service.serialize_message(message)
+    chat_message_service.enrich_payload_with_personal_recommendation(
+        payload,
+        role=getattr(current_user, "role", None),
+        profession=getattr(current_user, "profession", None),
+    )
+    return ChatMessageRead(**payload)
+
+
 def _to_payload_dict(parsed_payload, original_text: str, user_id: int) -> dict:
     """
     关键兼容层（禁止随意删除/改写）：
@@ -114,6 +124,8 @@ def create_chat_message(
         links=parsed_payload.get("links") or [],
         dynamic_payload=parsed_payload.get("dynamic_payload") or {},
         visual_config=parsed_payload.get("visual_config") or {},
+        role=getattr(getattr(current_user, "role", None), "value", getattr(current_user, "role", None)),
+        profession=getattr(current_user, "profession", None),
     )
     parsed_payload["chat_analysis"] = analysis_payload
 
@@ -127,7 +139,7 @@ def create_chat_message(
     except Exception:
         pass
     emit(100, "解析完成", "completed")
-    return ChatMessageRead(**chat_message_service.serialize_message(db_message))
+    return _build_chat_message_read(db_message, current_user)
 
 
 @router.post("/progress/start")
@@ -212,7 +224,7 @@ def read_chat_messages(
         sort_order=sort_order,
         handling_only=handling_only,
     )
-    return [ChatMessageRead(**chat_message_service.serialize_message(msg)) for msg in messages]
+    return [_build_chat_message_read(msg, current_user) for msg in messages]
 
 
 @router.post("/import", response_model=ChatMessageRead)
@@ -231,7 +243,7 @@ def import_chat_message(
         raise HTTPException(status_code=400, detail=str(exc))
     except Exception:
         raise HTTPException(status_code=400, detail="导入文件不是合法的 JSON")
-    return ChatMessageRead(**chat_message_service.serialize_message(message))
+    return _build_chat_message_read(message, current_user)
 
 
 @router.get("/{message_id}", response_model=ChatMessageRead)
@@ -243,7 +255,7 @@ def read_chat_message(
     message = chat_message_service.get_message_by_id(session, current_user.uid, message_id)
     if not message:
         raise HTTPException(status_code=404, detail="Message not found")
-    return ChatMessageRead(**chat_message_service.serialize_message(message))
+    return _build_chat_message_read(message, current_user)
 
 
 @router.patch("/{message_id}", response_model=ChatMessageRead)
@@ -264,7 +276,7 @@ def update_chat_message_audience(
             status_code=404,
             detail="Message not found or you don't have permission",
         )
-    return ChatMessageRead(**chat_message_service.serialize_message(updated_message))
+    return _build_chat_message_read(updated_message, current_user)
 
 
 @router.get("/{message_id}/export")

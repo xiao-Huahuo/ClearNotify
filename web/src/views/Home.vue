@@ -246,6 +246,7 @@
                 :nodes="kgPayload.nodes"
                 :links="kgPayload.links"
                 :dynamic-payload="kgPayload.dynamicPayload"
+                :analysis-payload="aiResponse?.chat_analysis || {}"
                 :visual-config="kgPayload.visualConfig"
                 :original-file-url="aiResponse?.file_url || ''"
                 :rewrite-targets="REWRITE_TARGETS"

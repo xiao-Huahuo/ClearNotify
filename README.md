@@ -520,17 +520,16 @@ app.mount("/", StaticFiles(directory="dist", html=True), name="static")
   },
   "experimental": false,
   "registry-mirrors": [
-    "https://dockerproxy.com",
-    "https://docker.nju.edu.cn",
-    "https://docker.mirrors.sjtug.sjtu.edu.cn",
-    "https://docker.mirrors.ustc.edu.cn",
-    "https://hub-mirror.c.163.com",
-    "https://mirror.baidubce.com",
-    "https://docker.xuanyuan.me",
-    "https://xuanyuan.cloud",
-    "https://mirror.ccs.tencentyun.com",
-    "https://docker.1panel.live",
-    "https://docker.nju.edu.cn"
+   "https://registry.docker-cn.com",
+   "http://hub-mirror.c.163.com",
+   "https://dockerhub.azk8s.cn",
+   "https://mirror.ccs.tencentyun.com",
+   "https://registry.cn-hangzhou.aliyuncs.com",
+   "https://docker.mirrors.ustc.edu.cn",
+   "https://docker.m.daocloud.io",  
+   "https://noohub.ru", 
+   "https://huecker.io",
+   "https://dockerhub.timeweb.cloud" 
   ]
 }
 ```
@@ -542,7 +541,7 @@ app.mount("/", StaticFiles(directory="dist", html=True), name="static")
 docker pull redis:latest
 docker pull node:16-alpine
 docker pull nginx:stable-alpine
-docker pull python:3.12-slim-bookworm
+docker pull python:3.12-slim-bullseye
 ```
 0. 在 Docker 部署前，必须先准备好本地 Embedding；如果你要启用文档图片 OCR，也建议同时准备好本地 PaddleOCR 模型。否则容器启动时只会检查并直接报错，不会在容器内自动下载。可以先在本地跑一次后端，或单独执行以下脚本：
     ```bash

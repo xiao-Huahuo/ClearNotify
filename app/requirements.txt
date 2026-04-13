@@ -10,7 +10,7 @@ python-dotenv
 jieba
 python-docx
 pdfplumber
-PyMuPDF
+PyMuPDF==1.24.3
 Pillow
 numpy
 paddleocr

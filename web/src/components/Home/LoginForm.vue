@@ -18,7 +18,7 @@
           {{ ch }}
         </span>
       </h1>
-      <p class="logo-subtitle">手机号登录不再要求短信验证码，支持手机号 / 邮箱 / 用户名 + 密码登录</p>
+      <p class="logo-subtitle">支持手机号 + 密码、手机号一键登录，以及邮箱 / 用户名 + 密码登录</p>
     </div>
 
     <form class="form" @submit.prevent="handleLogin">
@@ -30,6 +30,14 @@
           @click="mode = 'phone'"
         >
           手机号登录
+        </button>
+        <button
+          type="button"
+          class="auth-tab"
+          :class="{ active: mode === 'quick' }"
+          @click="mode = 'quick'"
+        >
+          手机号一键登录
         </button>
         <button
           type="button"
@@ -66,6 +74,20 @@
         <p class="tip-text">如果你是一键注册后还没设置密码，请用“忘记密码”通过已绑定手机号补设密码。</p>
       </template>
 
+      <template v-else-if="mode === 'quick'">
+        <div class="flex-column">
+          <label>手机号</label>
+        </div>
+        <div class="inputForm">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" class="input-icon">
+            <rect x="7" y="2" width="10" height="20" rx="2"></rect>
+            <line x1="11" y1="18" x2="13" y2="18"></line>
+          </svg>
+          <input v-model="phone" type="text" class="input" placeholder="请输入 11 位手机号" required />
+        </div>
+        <p class="tip-text">沙箱模式下会自动获取并填写验证码，你只需要输入手机号即可完成登录。</p>
+      </template>
+
       <template v-else>
         <div class="flex-column">
           <label>邮箱 / 用户名</label>
@@ -97,6 +119,7 @@
         <p class="tip-text">手机号账号请切换到“手机号登录”，邮箱和用户名在这里登录。</p>
       </template>
 
+      <p v-if="statusMessage" class="status-msg">{{ statusMessage }}</p>
       <p v-if="errorMessage" class="error-msg">{{ errorMessage }}</p>
 
       <div class="flex-row">
@@ -105,7 +128,7 @@
       </div>
 
       <button class="button-submit" type="submit" :disabled="loading">
-        {{ loading ? '登录中...' : '登录' }}
+        {{ loading ? '登录中...' : submitText }}
       </button>
     </form>
   </div>
@@ -113,6 +136,7 @@
 
 <script setup>
 import { ref, watch } from 'vue';
+import { sendPhoneCode } from '@/api/user';
 import { useUserStore } from '@/stores/auth.js';
 
 const emit = defineEmits(['success', 'switch-to-register', 'switch-to-recover']);
@@ -127,16 +151,33 @@ const phonePassword = ref('');
 const identity = ref('');
 const password = ref('');
 
+const statusMessage = ref('');
 const errorMessage = ref('');
 
 const loading = ref(false);
+const submitText = ref('登录');
+
+const handleQuickLogin = async () => {
+  const { data } = await sendPhoneCode({
+    phone: phone.value,
+    purpose: 'login',
+  });
+  if (!data.preview_code) {
+    throw new Error('当前环境未开启沙箱短信预览，暂不支持手机号一键登录');
+  }
+  statusMessage.value = '沙箱验证码已自动获取，正在登录...';
+  await userStore.loginWithPhone(phone.value, data.preview_code);
+};
 
 const handleLogin = async () => {
   loading.value = true;
+  statusMessage.value = '';
   errorMessage.value = '';
   try {
     if (mode.value === 'phone') {
       await userStore.loginWithPassword(phone.value, phonePassword.value);
+    } else if (mode.value === 'quick') {
+      await handleQuickLogin();
     } else {
       await userStore.loginWithPassword(identity.value, password.value);
     }
@@ -149,13 +190,21 @@ const handleLogin = async () => {
 };
 
 watch(mode, (value) => {
+  statusMessage.value = '';
   errorMessage.value = '';
   if (value === 'phone') {
+    submitText.value = '登录';
     identity.value = '';
     password.value = '';
     return;
   }
-  phone.value = '';
+  if (value === 'quick') {
+    submitText.value = '一键登录';
+    identity.value = '';
+    password.value = '';
+    return;
+  }
+  submitText.value = '登录';
   phonePassword.value = '';
 });
 </script>
@@ -256,7 +305,7 @@ watch(mode, (value) => {
 
 .auth-tabs {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
   padding: 4px;
   border-radius: 18px;
@@ -329,12 +378,19 @@ watch(mode, (value) => {
   line-height: 1.6;
 }
 
+.status-msg,
 .error-msg {
   border-radius: 14px;
   padding: 10px 12px;
   font-size: 13px;
   line-height: 1.5;
   margin: 0;
+}
+
+.status-msg {
+  background: rgba(128, 250, 176, 0.12);
+  border: 1px solid rgba(128, 250, 176, 0.24);
+  color: #d2ffe2;
 }
 
 .error-msg {

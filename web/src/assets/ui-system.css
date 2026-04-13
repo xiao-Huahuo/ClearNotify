@@ -194,6 +194,24 @@ body {
   background: transparent !important;
 }
 
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus {
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: 0 0 0 1000px transparent inset !important;
+  -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
+  -webkit-text-fill-color: inherit !important;
+  caret-color: inherit !important;
+  transition: background-color 9999s ease-out 0s;
+}
+
 [data-theme='dark'] .discover-page .tsb-input-wrap,
 [data-theme='dark'] .swipe-page .search-bar,
 [data-theme='dark'] .history-page .search-bar {

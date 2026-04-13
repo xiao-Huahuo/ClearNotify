@@ -174,17 +174,32 @@ let bubbleRaf = null
 let resizeHandler = null
 const BUBBLE_PADDING = 14
 
-const updateCloudHeight = (nodes, minHeight = 240) => {
-  if (!nodes.length) {
-    cloudHeight.value = minHeight
-    return
-  }
+const getCloudBounds = (nodes) => {
   let minTop = Number.POSITIVE_INFINITY
   let maxBottom = Number.NEGATIVE_INFINITY
   nodes.forEach((n) => {
     minTop = Math.min(minTop, n.y - n.radius)
     maxBottom = Math.max(maxBottom, n.y + n.radius)
   })
+  return { minTop, maxBottom }
+}
+
+const updateCloudHeight = (nodes, minHeight = 260) => {
+  if (!nodes.length) {
+    cloudHeight.value = minHeight
+    return
+  }
+
+  let { minTop, maxBottom } = getCloudBounds(nodes)
+  const shift = BUBBLE_PADDING - minTop
+  if (Math.abs(shift) > 0.5) {
+    nodes.forEach((n) => {
+      n.y += shift
+    })
+    minTop += shift
+    maxBottom += shift
+  }
+
   const needed = Math.ceil((maxBottom - minTop) + BUBBLE_PADDING * 2)
   cloudHeight.value = Math.max(minHeight, needed)
 }
@@ -275,10 +290,14 @@ const startBubbleCluster = () => {
     w.y = cy + Math.sin(angle) * dist
     w.vx = 0
     w.vy = 0
+  })
+
+  updateCloudHeight(cloudWords.value, 260)
+
+  cloudWords.value.forEach((w) => {
     w.bubbleStyle.left = `${w.x - w.radius}px`
     w.bubbleStyle.top = `${w.y - w.radius}px`
   })
-  updateCloudHeight(cloudWords.value)
   bubbleRaf = requestAnimationFrame(stepBubbleCluster)
 }
 
@@ -391,28 +410,13 @@ const stepBubbleCluster = () => {
     }
   }
 
-  let minTop = Number.POSITIVE_INFINITY
-  let maxBottom = Number.NEGATIVE_INFINITY
-  for (let i = 0; i < nodes.length; i += 1) {
-    const n = nodes[i]
-    minTop = Math.min(minTop, n.y - n.radius)
-    maxBottom = Math.max(maxBottom, n.y + n.radius)
-  }
-  if (minTop < BUBBLE_PADDING) {
-    const shift = BUBBLE_PADDING - minTop
-    for (let i = 0; i < nodes.length; i += 1) nodes[i].y += shift
-    maxBottom += shift
-  }
-  const neededHeight = Math.ceil(maxBottom + BUBBLE_PADDING)
-  if (neededHeight > cloudHeight.value) cloudHeight.value = neededHeight
+  updateCloudHeight(nodes, 260)
 
   for (let i = 0; i < nodes.length; i += 1) {
     const n = nodes[i]
     n.bubbleStyle.left = `${n.x - n.radius}px`
     n.bubbleStyle.top = `${n.y - n.radius}px`
   }
-
-  updateCloudHeight(nodes)
   bubbleRaf = requestAnimationFrame(stepBubbleCluster)
 }
 
@@ -501,13 +505,21 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: 18px;
-  height: 100%;
+  min-height: 100%;
   box-sizing: border-box;
-  overflow-y: auto;
+  overflow: visible;
 }
 
 .hall-header { display: flex; flex-direction: column; gap: 6px; }
 .hall-desc { color: var(--text-secondary, #666); font-size: 14px; margin: 6px 0 0; }
+
+.hall-header,
+.top-section,
+.wordcloud-section,
+.certified-section,
+.feed-section {
+  flex-shrink: 0;
+}
 
 /* 顶部区域 */
 .top-section {

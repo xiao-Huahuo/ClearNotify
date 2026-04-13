@@ -185,12 +185,12 @@ def _backfill_auth_fields():
                 user.preferred_login_method = None
                 dirty = True
             if not getattr(user, "preferred_login_method", None):
-                if user.login_phone and (user.phone_verified or not user.password_login_enabled):
+                if user.login_phone and not user.password_login_enabled:
                     user.preferred_login_method = "phone_code"
-                elif getattr(user, "last_login_method", None):
-                    user.preferred_login_method = user.last_login_method
                 elif user.hashed_pwd:
                     user.preferred_login_method = "email_password" if public_email else ("phone_password" if user.login_phone else "username_password")
+                elif getattr(user, "last_login_method", None):
+                    user.preferred_login_method = user.last_login_method
                 dirty = True
             if dirty:
                 session.add(user)
@@ -241,7 +241,7 @@ def _init_admin_user() -> int:
             existing.hashed_pwd = get_password_hash(admin_password)
             existing.role = UserRole.admin
             existing.password_login_enabled = True
-            existing.preferred_login_method = "email_password" if admin_email else ("phone_code" if admin_phone else "username_password")
+            existing.preferred_login_method = "email_password" if admin_email else ("phone_password" if admin_phone else "username_password")
             if not existing.last_login_method:
                 existing.last_login_method = existing.preferred_login_method
             session.add(existing)
@@ -251,7 +251,7 @@ def _init_admin_user() -> int:
 
         # 创建新管理员
         stored_email = admin_email or build_placeholder_email(admin_phone)
-        preferred_login_method = "email_password" if admin_email else ("phone_code" if admin_phone else "username_password")
+        preferred_login_method = "email_password" if admin_email else ("phone_password" if admin_phone else "username_password")
         admin = User(
             uname=admin_username,
             email=stored_email,
@@ -382,10 +382,12 @@ def _build_seed_user(user_data: Dict[str, Any], *, default_role: UserRole, defau
 
     if "preferred_login_method" in user_data:
         preferred_login_method = user_data.get("preferred_login_method")
-    elif login_phone and (phone_verified or not password_login_enabled):
+    elif login_phone and not password_login_enabled:
         preferred_login_method = "phone_code"
     elif password_login_enabled and public_email:
         preferred_login_method = "email_password"
+    elif password_login_enabled and login_phone:
+        preferred_login_method = "phone_password"
     elif password_login_enabled:
         preferred_login_method = "username_password"
     else:

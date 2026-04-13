@@ -165,7 +165,7 @@ const modeConfig = computed(() => {
       return {
         eyebrow: '手机号绑定',
         title: userStore.user?.login_phone ? '更换登录手机号' : '绑定登录手机号',
-        subtitle: '绑定后可直接用手机号验证码登录，也可用于找回密码。',
+        subtitle: '绑定后可用于手机号 + 密码登录，也可用于找回密码。',
         targetLabel: '手机号',
         targetPlaceholder: '请输入 11 位手机号',
         submitLabel: userStore.user?.login_phone ? '更新手机号' : '绑定手机号',

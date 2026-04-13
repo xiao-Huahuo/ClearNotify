@@ -18,7 +18,7 @@
           {{ ch }}
         </span>
       </h1>
-      <p class="logo-subtitle">支持手机号短信登录，也支持手机号 / 邮箱 / 用户名密码登录</p>
+      <p class="logo-subtitle">手机号登录不再要求短信验证码，支持手机号 / 邮箱 / 用户名 + 密码登录</p>
     </div>
 
     <form class="form" @submit.prevent="handleLogin">
@@ -29,15 +29,15 @@
           :class="{ active: mode === 'phone' }"
           @click="mode = 'phone'"
         >
-          手机号短信登录
+          手机号登录
         </button>
         <button
           type="button"
           class="auth-tab"
-          :class="{ active: mode === 'password' }"
-          @click="mode = 'password'"
+          :class="{ active: mode === 'identity' }"
+          @click="mode = 'identity'"
         >
-          密码登录
+          邮箱 / 用户名
         </button>
       </div>
 
@@ -54,38 +54,21 @@
         </div>
 
         <div class="flex-column">
-          <label>短信验证码</label>
+          <label>密码</label>
         </div>
-        <div class="code-row">
-          <div class="inputForm inputForm--code">
-            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" class="input-icon">
-              <path d="M9 12l2 2 4-4"></path>
-              <path d="M21 12c.552 0 1-.449.973-1A10 10 0 1 0 12 22c.551.027 1-.421 1-.973V18"></path>
-            </svg>
-            <input
-              v-model="code"
-              type="text"
-              class="input"
-              maxlength="6"
-              placeholder="输入 6 位验证码"
-              required
-            />
-          </div>
-          <button
-            type="button"
-            class="send-code-btn"
-            :disabled="!canSendCode"
-            @click="handleSendCode"
-          >
-            {{ sendingCode ? '发送中...' : '发送验证码' }}
-          </button>
+        <div class="inputForm">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" class="input-icon">
+            <rect x="3" y="11" width="18" height="11" rx="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <input v-model="phonePassword" type="password" class="input" placeholder="请输入登录密码" required />
         </div>
-        <p class="tip-text">如果你已经设置过密码，也可以切到密码登录，直接用手机号登录。</p>
+        <p class="tip-text">如果你是一键注册后还没设置密码，请用“忘记密码”通过已绑定手机号补设密码。</p>
       </template>
 
       <template v-else>
         <div class="flex-column">
-          <label>手机号 / 邮箱 / 用户名</label>
+          <label>邮箱 / 用户名</label>
         </div>
         <div class="inputForm">
           <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none" class="input-icon">
@@ -96,7 +79,7 @@
             v-model="identity"
             type="text"
             class="input"
-            placeholder="请输入手机号、邮箱或用户名"
+            placeholder="请输入邮箱或用户名"
             required
           />
         </div>
@@ -111,10 +94,9 @@
           </svg>
           <input v-model="password" type="password" class="input" placeholder="请输入密码" required />
         </div>
+        <p class="tip-text">手机号账号请切换到“手机号登录”，邮箱和用户名在这里登录。</p>
       </template>
 
-      <p v-if="statusMessage" class="status-msg">{{ statusMessage }}</p>
-      <p v-if="previewCode" class="preview-box">沙箱验证码：<strong>{{ previewCode }}</strong></p>
       <p v-if="errorMessage" class="error-msg">{{ errorMessage }}</p>
 
       <div class="flex-row">
@@ -130,8 +112,7 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue';
-import { sendPhoneCode } from '@/api/user';
+import { ref, watch } from 'vue';
 import { useUserStore } from '@/stores/auth.js';
 
 const emit = defineEmits(['success', 'switch-to-register', 'switch-to-recover']);
@@ -142,44 +123,20 @@ const hasIcon = ref(true);
 
 const mode = ref('phone');
 const phone = ref('');
-const code = ref('');
+const phonePassword = ref('');
 const identity = ref('');
 const password = ref('');
 
-const previewCode = ref('');
-const statusMessage = ref('');
 const errorMessage = ref('');
 
 const loading = ref(false);
-const sendingCode = ref(false);
-
-const canSendCode = computed(() => !sendingCode.value && phone.value.trim());
-
-const handleSendCode = async () => {
-  sendingCode.value = true;
-  errorMessage.value = '';
-  statusMessage.value = '';
-  try {
-    const { data } = await sendPhoneCode({
-      phone: phone.value,
-      purpose: 'login',
-    });
-    previewCode.value = data.preview_code || '';
-    statusMessage.value = '验证码已发送，请在下方输入。';
-  } catch (error) {
-    errorMessage.value = error.response?.data?.detail || '验证码发送失败';
-  } finally {
-    sendingCode.value = false;
-  }
-};
 
 const handleLogin = async () => {
   loading.value = true;
   errorMessage.value = '';
-  statusMessage.value = '';
   try {
     if (mode.value === 'phone') {
-      await userStore.loginWithPhone(phone.value, code.value);
+      await userStore.loginWithPassword(phone.value, phonePassword.value);
     } else {
       await userStore.loginWithPassword(identity.value, password.value);
     }
@@ -193,14 +150,13 @@ const handleLogin = async () => {
 
 watch(mode, (value) => {
   errorMessage.value = '';
-  statusMessage.value = '';
-  previewCode.value = '';
   if (value === 'phone') {
-    code.value = '';
+    identity.value = '';
+    password.value = '';
     return;
   }
-  identity.value = '';
-  password.value = '';
+  phone.value = '';
+  phonePassword.value = '';
 });
 </script>
 
@@ -348,10 +304,6 @@ watch(mode, (value) => {
   box-shadow: 0 0 0 4px rgba(95, 209, 255, 0.12);
 }
 
-.inputForm--code {
-  flex: 1;
-}
-
 .input-icon {
   color: rgba(255, 255, 255, 0.72);
   flex-shrink: 0;
@@ -370,29 +322,6 @@ watch(mode, (value) => {
   color: rgba(245, 247, 255, 0.44);
 }
 
-.code-row {
-  display: flex;
-  gap: 10px;
-}
-
-.send-code-btn {
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.05);
-  color: rgba(255, 247, 245, 0.86);
-  cursor: pointer;
-  min-height: 48px;
-  min-width: 118px;
-  padding: 0 14px;
-  font-weight: 700;
-  transition: border-color 0.2s ease, transform 0.2s ease;
-}
-
-.send-code-btn:hover {
-  border-color: rgba(95, 209, 255, 0.3);
-  transform: translateY(-1px);
-}
-
 .tip-text {
   margin: -2px 0 0;
   color: rgba(255, 247, 245, 0.62);
@@ -400,26 +329,12 @@ watch(mode, (value) => {
   line-height: 1.6;
 }
 
-.preview-box,
-.status-msg,
 .error-msg {
   border-radius: 14px;
   padding: 10px 12px;
   font-size: 13px;
   line-height: 1.5;
   margin: 0;
-}
-
-.preview-box {
-  background: rgba(255, 219, 100, 0.12);
-  border: 1px solid rgba(255, 219, 100, 0.28);
-  color: #ffe7a0;
-}
-
-.status-msg {
-  background: rgba(128, 250, 176, 0.12);
-  border: 1px solid rgba(128, 250, 176, 0.22);
-  color: #c7fdd8;
 }
 
 .error-msg {
@@ -455,8 +370,7 @@ watch(mode, (value) => {
   cursor: pointer;
 }
 
-.button-submit:disabled,
-.send-code-btn:disabled {
+.button-submit:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
@@ -467,13 +381,8 @@ watch(mode, (value) => {
     padding: 28px 20px;
   }
 
-  .code-row,
   .flex-row {
     flex-direction: column;
-  }
-
-  .send-code-btn {
-    width: 100%;
   }
 }
 </style>

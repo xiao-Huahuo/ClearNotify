@@ -39,7 +39,7 @@
                 {{ userStore.user?.phone_verified ? '手机号已验证' : '手机号未验证' }}
               </span>
               <span class="status-pill">
-                {{ userStore.user?.password_login_enabled ? '已设置密码登录' : '当前仅验证码登录' }}
+                {{ userStore.user?.password_login_enabled ? '已设置登录密码' : '尚未设置登录密码' }}
               </span>
               <span class="status-pill">偏好登录：{{ preferredLoginText }}</span>
             </div>
@@ -202,7 +202,7 @@
                 </div>
                 <div class="text-wrap">
                   <p class="name">登录密码</p>
-                  <p class="desc">{{ userStore.user?.password_login_enabled ? '已设置，可用手机号、邮箱或用户名密码登录' : '未设置，当前仅支持验证码登录' }}</p>
+                  <p class="desc">{{ userStore.user?.password_login_enabled ? '已设置，可用手机号、邮箱或用户名 + 密码登录' : '未设置，建议现在补充，避免后续只能通过找回密码重设' }}</p>
                 </div>
               </div>
               <div class="setting-control">

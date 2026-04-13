@@ -7,7 +7,7 @@
       "login_phone": "13900020001",
       "profession": "政务服务",
       "avatar_url": null,
-      "preferred_login_method": "phone_code",
+      "preferred_login_method": "phone_password",
       "last_login_method": "email_password"
     },
     {
@@ -17,7 +17,7 @@
       "login_phone": "13900020002",
       "profession": "人力资源",
       "avatar_url": null,
-      "preferred_login_method": "phone_code",
+      "preferred_login_method": "email_password",
       "last_login_method": "email_password"
     },
     {
@@ -93,7 +93,7 @@
       "login_phone": "13800010001",
       "profession": "软件工程师",
       "avatar_url": null,
-      "preferred_login_method": "phone_code",
+      "preferred_login_method": "phone_password",
       "last_login_method": "email_password"
     },
     {
@@ -184,7 +184,7 @@
       "phone_verified": true,
       "preferred_login_method": "phone_code",
       "last_login_method": "phone_code",
-      "demo_label": "纯手机号免密用户"
+      "demo_label": "手机号一键注册用户"
     },
     {
       "uname": "双通道恢复用户乙",
@@ -196,7 +196,7 @@
       "seed_password": "Recover#2026",
       "email_verified": true,
       "phone_verified": true,
-      "preferred_login_method": "phone_code",
+      "preferred_login_method": "phone_password",
       "last_login_method": "email_password",
       "demo_label": "手机邮箱双绑定用户"
     },
@@ -223,7 +223,7 @@
       "seed_password": "Pending#2026",
       "email_verified": false,
       "phone_verified": true,
-      "preferred_login_method": "phone_code",
+      "preferred_login_method": "phone_password",
       "last_login_method": "username_password",
       "demo_label": "邮箱未验证但手机可用用户"
     },

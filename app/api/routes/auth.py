@@ -251,6 +251,10 @@ def phone_register(
     else:
         uname = _build_default_phone_username(session, phone)
 
+    password = (payload.pwd or "").strip()
+    if password:
+        _assert_password_strength(password)
+
     ok, reason, _ = verify_code(
         "phone",
         "register",
@@ -261,9 +265,7 @@ def phone_register(
     if not ok:
         raise HTTPException(status_code=400, detail="验证码错误或已过期" if reason != "too_many_attempts" else "验证码错误次数过多，请重新获取")
 
-    password = (payload.pwd or "").strip()
     if password:
-        _assert_password_strength(password)
         hashed_pwd = get_password_hash(password)
         password_login_enabled = True
         preferred_login_method = "phone_password"
@@ -285,6 +287,7 @@ def phone_register(
         last_login_method="phone_code",
     )
     _update_login_tracking(user, request, "phone_code")
+    user.preferred_login_method = preferred_login_method
     session.add(user)
     session.commit()
     session.refresh(user)
@@ -332,7 +335,7 @@ def password_login(
     if not user or not password_login_allowed(user) or not verify_password(payload.password, user.hashed_pwd):
         raise HTTPException(status_code=400, detail="账号或密码错误")
     if not verification_allows_password_login(user):
-        raise HTTPException(status_code=403, detail="邮箱尚未验证，请先完成邮箱验证或使用手机号验证码登录")
+        raise HTTPException(status_code=403, detail="邮箱尚未验证，请先完成邮箱验证")
 
     identity_kind = detect_identity_kind(identity)
     _update_login_tracking(user, request, _password_login_method(identity_kind))

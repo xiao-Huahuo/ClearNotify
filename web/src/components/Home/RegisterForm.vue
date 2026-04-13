@@ -76,10 +76,10 @@
             v-model="phonePassword"
             type="password"
             class="input"
-            placeholder="留空则先使用短信验证码登录"
+            placeholder="留空则注册后建议尽快补设密码"
           />
         </div>
-        <p class="tip-text">设置密码后，后续可直接用手机号 / 用户名 + 密码登录。</p>
+        <p class="tip-text">设置密码后，后续可直接用手机号或用户名 + 密码登录。</p>
 
         <div class="flex-column">
           <label>图形验证码</label>
@@ -241,6 +241,7 @@
         <button class="button-submit" type="submit" :disabled="submitting || captchaLoading">
           {{ submitting ? '提交中...' : '完成注册' }}
         </button>
+        <p class="tip-text action-hint">一键注册会直接使用沙箱验证码完成注册并自动登录。若未设置密码，建议登录后立即到账户安全补设密码。</p>
       </div>
       <button v-else class="button-submit" type="submit" :disabled="submitting">
         {{ submitting ? '提交中...' : '注册' }}
@@ -737,6 +738,10 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.action-hint {
+  margin: 0;
 }
 
 .button-secondary {

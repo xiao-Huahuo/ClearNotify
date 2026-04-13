@@ -32,7 +32,7 @@ def login_access_token(
     if not user or not password_login_allowed(user) or not verify_password(form_data.password, user.hashed_pwd):
         raise HTTPException(status_code=400, detail="Incorrect identity or password")
     if not verification_allows_password_login(user):
-        raise HTTPException(status_code=403, detail="邮箱尚未验证，请先完成邮箱验证或使用手机号验证码登录")
+        raise HTTPException(status_code=403, detail="邮箱尚未验证，请先完成邮箱验证")
 
     user.last_login = datetime.now()
     identity_kind = detect_identity_kind(identity)

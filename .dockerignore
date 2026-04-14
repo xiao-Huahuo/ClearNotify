@@ -29,7 +29,6 @@ ENV/
 # IDE / OS
 .idea/
 .jbeval/
-.claude/
 .vscode/
 *.swp
 *.swo
@@ -77,3 +76,10 @@ web/pnpm-debug.log*
 coverage.xml
 .junit.xml
 .VSCodeCounter
+
+# agents
+.agents
+.codex
+.claude
+.superpowers
+skills-lock.json

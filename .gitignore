@@ -33,7 +33,6 @@ ENV/
 # IDE / OS
 .idea/
 .jbeval/
-.claude/
 .vscode/
 *.swp
 *.swo
@@ -78,3 +77,10 @@ embedding
 # PaddleOCR Model
 paddleocr
 paddlex
+
+# agents
+.agents
+.codex
+.claude
+.superpowers
+skills-lock.json

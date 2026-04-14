@@ -7,5 +7,8 @@
       "Bash(docker tag:*)",
       "Bash(docker-compose up:*)"
     ]
+  },
+  "enabledPlugins": {
+    "superpowers@claude-plugins-official": true
   }
 }

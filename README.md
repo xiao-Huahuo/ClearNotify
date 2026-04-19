@@ -45,7 +45,7 @@
 除了静态文档解析，平台还建设了独立的智能体系统页 `/agent`，提供更强的连续对话与复杂任务处理能力。该页面支持 Agent 与 Chat 双模式切换，用户既可以像传统聊天一样直接提问，也可以让智能体围绕上传材料展开分步骤处理。系统通过 WebSocket 与后端保持长连接，在对话过程中实时推送推理轨迹、工具调用过程与答案正文，用户可随时打开侧边的“推理轨迹”面板查看智能体正在经历哪些分析步骤。与一般的黑盒式问答不同，云枢观策把“智能体是如何得到结论的”同步展示给用户，同时提供历史会话切换、会话删除、断线重连、文件伴随对话上传等能力，使智能体真正具备可解释、可持续、可运营的使用体验。
 
 #### 结果复用、证据追溯与多版本阅读
-系统并不把解析结果停留在一次性展示层面，而是进一步提供结果复用能力。用户可以查看原文内容、导出会话 JSON、导入既有会话、恢复历史解析，并把重点内容一键收藏。对于生成出的结构化结果，平台支持收藏、再次进入办理链路，以及在不同阅读方式之间切换，使一次解析能够持续服务后续工作。系统同时保留原文与解析结果之间的关联，使用户在阅读办理步骤时，仍可回溯到对应的文本来源，避免“看到了结论，却找不到依据”的断层。对需要快速传播或转述的场景，平台还提供不同风格的改写版本与语音播报能力，方便用户按对象、场景和阅读习惯选择最合适的表达方式。
+系统并不把解析结果停留在一次性展示层面，而是进一步提供结果复用能力。用户可以查看原文内容、导出会话 JSON、导入既有会话、恢复历史解析，并把重点内容一键收藏。对于生成出的自由结构解析与图谱结果，平台支持收藏、再次进入办理链路，以及在不同阅读方式之间切换，使一次解析能够持续服务后续工作。系统同时保留原文与解析结果之间的关联，使用户在阅读办理步骤时，仍可回溯到对应的文本来源，避免“看到了结论，却找不到依据”的断层。对需要快速传播或转述的场景，平台还提供不同风格的改写版本与语音播报能力，方便用户按对象、场景和阅读习惯选择最合适的表达方式。
 
 #### 发现页、热点资讯与全景政策广场
 为了解决“政策文件在哪里、哪些值得看、哪些已经公开发布”的入口问题，平台建设了完整的发现页体系。系统发现页整合了资讯列表、热点文件 Top 5、搜索入口、功能中心与全景政策广场，既承接当前热点信息流，也承接经过审核后的真实政策文件公开展示链路。用户可以像浏览内容平台一样查看时事热点与重点文件，也可以在“全景政策广场”中浏览认证主体上传、管理员审核通过后的政策文本。配合独立的“政策推荐阅读”页面，平台进一步把中央文件、热点资讯、推荐阅读和全文详情展开结合起来，构成“资讯入口 + 文件入口 + 推荐阅读 + 深度查看”的完整发现机制，提升政策内容的可见性与可达性。
@@ -81,7 +81,7 @@
 * **多模态感知 (Perception)**：
     * **语音交互**：集成 **Web Audio API**，实现实时语音录入与指令识别，适配大众化办事与信息查询场景。
     * **视觉解析**：通过 **Canvas API** 结合前端 OCR 预处理，支持直接截屏上传政策公告并提取文字。
-    * **结果播报**：内置 **TTS (Text-to-Speech)** 引擎，为用户提供结构化结果的语音朗读功能。
+    * **结果播报**：内置 **TTS (Text-to-Speech)** 引擎，为用户提供自由结构解析与图谱结果的语音朗读功能。
 * **数据可视化**：利用 **ECharts 5.0** 绘制动态图表，包含个人/全体用户节省时间趋势的双线图、高频材料词云及通知难度评估雷达图。
 * **工程化前端工具链**：项目已接入 **Vitest** 单元测试能力，以及 **ESLint / OXlint / Prettier** 前端规范化工具链，保障展示页、业务页与公共组件在持续迭代中的可维护性。
 
@@ -95,7 +95,7 @@
 * **异步任务管理**：集成 **Redis** 作为消息代理，处理 **真实邮件系统 (SMTP)** 的异步发送（如权限申请通知、效率周报）及高频热点资讯缓存。
 * **Agent 插件化架构**：在基础 AI 链路之上，项目进一步落地了基于 **LangGraph** 的通用 Agent 插件系统，具备短期会话记忆、长期向量记忆、工具注册、图谱输出与流式执行能力，并在应用启动阶段进行 AgentGraph 生成与插件预热。
 * **本地 Embedding 与知识预热机制**：后端通过 **sentence-transformers** 管理本地 embedding 模型，支持独立脚本下载、启动前检查、Docker 外预下载与知识库首次向量化同步，降低容器部署阶段对外部网络和 GPU 环境的依赖。
-* **自由结构化解析引擎**：文档解析并非固定模板抽取，而是基于 LLM 输出严格 JSON、局部修复、失败回退和动态载荷生成的多级容错链路，同时支持 `nodes / links / dynamic_payload / visual_config` 等结构化结果，便于后续图谱展示与二次处理。
+* **自由结构化解析引擎**：文档解析并非固定模板抽取，而是基于 LLM 输出严格 JSON、局部修复、失败回退和动态载荷生成的多级容错链路，同时支持 `nodes / links / dynamic_payload / visual_config` 等自由结构图谱载荷，便于后续图谱展示与二次处理。
 * **文档解析与 OCR 处理链**：系统支持 **PDF / DOCX / DOC / XLSX / XLS / TXT** 多格式文档上传与解析，结合 **PyMuPDF、pdfplumber、python-docx、openpyxl、xlrd** 等工具链，并对图片、扫描版 PDF、图文混排 PDF 与 DOCX 内嵌图片统一采用“**本地 PaddleOCR 优先，LLM OCR 兜底**”的混合链路完成文字提取；同时针对内嵌图片过多的 DOCX 自动切换为“**整文件抽取优先**”策略，避免逐图串行 OCR 导致的长时间阻塞。
 * **实时通信编排**：智能体服务基于 **FastAPI WebSocket + asyncio.Queue + to_thread** 形成“轨迹先行、结果后达、正文分块输出”的实时推理编排机制，支持 trace step、trace done 与 chunk 化回答分阶段推送。
 * **统计建模与内容分析**：后端通过 **jieba** 进行材料词频、风险词频与复杂度分布计算，结合时间节省估算模型、RAG 命中率统计、向量散点数据与用户画像摘要，为个人中心、管理后台与展示大屏提供统一的数据分析底座。
@@ -316,7 +316,7 @@ $$
 ### 4. 实时轨迹调度与流式消费模型 (Trace Scheduling & Streaming Consumption)
 智能体的“思考过程展示”背后是一套专门的实时编排算法，而不是普通聊天返回。
 * **异步双通道调度**：后端以 `asyncio.Queue + asyncio.to_thread` 形成“主协程负责推送、工作线程负责推理”的并发模型，保证 trace 事件能实时到达前端。
-* **事件分层输出**：推理过程中会分阶段推送 `trace step`、`trace_done`、`result`、`chunk` 与 `done` 事件，使工具过程、结构化结果与正文输出保持解耦。
+* **事件分层输出**：推理过程中会分阶段推送 `trace step`、`trace_done`、`result`、`chunk` 与 `done` 事件，使工具过程、自由结构图谱与正文输出保持解耦。
 * **最小可读时长策略**：前端不会在 trace 抵达瞬间就强制切帧，而是按最小可读时长消费队列，避免工具步骤快速闪过导致“看到了，但没看清”。
 * **轨迹先行、正文后达**：系统显式等待轨迹阶段结束后再释放正文流式回答，防止长文本答案直接覆盖最后几步关键工具轨迹。
 
@@ -337,7 +337,7 @@ $$
 
 ### 7. 效率增益与统计建模体系 (Efficiency Gain & Statistical Modeling)
 为了让“政策看懂了、事情更好办了”不只停留在感性描述，系统进一步将效率提升、内容结构与检索表现做成可量化模型。
-* **时间节省估算模型**：系统通过比较原始材料阅读成本与结构化结果阅读成本，估算用户节省的理解时间：
+* **时间节省估算模型**：系统通过比较原始材料阅读成本与自由结构图谱阅读成本，估算用户节省的理解时间：
 
 $$
 T_{saved} = \max \left( 0, \frac{W_{original}}{V_{human}} - T_{card} \right)
@@ -375,6 +375,11 @@ $$
 以下为**所有可配置字段**的模板，按需填写即可：
 ```env
 # 基础服务配置
+# HOST: 后端监听地址，本地开发用 127.0.0.1，Docker 部署改为 0.0.0.0
+# PORT: 后端监听端口
+# SECRET_KEY: JWT 签名密钥，建议用 openssl rand -hex 32 生成，勿泄露
+# ALGORITHM: JWT 签名算法，保持默认即可
+# ACCESS_TOKEN_EXPIRE_DAYS: 登录 Token 有效天数
 HOST=127.0.0.1
 PORT=8080
 SECRET_KEY=your_random_secret_key
@@ -382,12 +387,24 @@ ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_DAYS=30
 
 # 默认管理员初始化（可选）
+# ADMIN_USERNAME: 首次启动自动创建的管理员用户名
+# ADMIN_PASSWORD: 管理员初始密码，生产环境请改为强密码
+# ADMIN_EMAIL: 管理员邮箱
+# ADMIN_PHONE: 管理员手机号，格式：11位数字
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=111111
 ADMIN_EMAIL=admin@example.com
 ADMIN_PHONE=your_phone
 
-# SMTP 邮件系统（真实发信需配置）
+# SMTP 邮件系统（真实发信需配置，不配置则邮件落盘至 mail_outbox/）
+# SMTP_HOST: SMTP 服务器地址，如 smtp.qq.com、smtp.163.com
+# SMTP_PORT: 端口，SSL 通常为 465，TLS 通常为 587
+# SMTP_USERNAME: SMTP 登录账号（通常为邮箱地址）
+# SMTP_PASSWORD: SMTP 授权码（非邮箱登录密码，需在邮箱设置中生成）
+# SMTP_SENDER: 发件人邮箱地址
+# SMTP_SENDER_NAME: 发件人显示名称
+# SMTP_USE_SSL: 是否使用 SSL，端口 465 时设为 true
+# SMTP_USE_TLS: 是否使用 STARTTLS，端口 587 时设为 true，与 SSL 互斥
 SMTP_HOST=smtp.example.com
 SMTP_PORT=465
 SMTP_USERNAME=your_smtp_user
@@ -398,12 +415,21 @@ SMTP_USE_SSL=true
 SMTP_USE_TLS=false
 
 # 邮箱验证与前后端回跳
+# EMAIL_VERIFICATION_CODE_LENGTH: 验证码位数，默认 6 位
+# EMAIL_VERIFICATION_EXPIRE_MINUTES: 验证码有效期（分钟）
+# PUBLIC_BASE_URL: 后端公开访问地址，用于邮件中的链接跳转
+# FRONTEND_BASE_URL: 前端访问地址，用于邮件验证后的页面回跳
 EMAIL_VERIFICATION_CODE_LENGTH=6
 EMAIL_VERIFICATION_EXPIRE_MINUTES=15
 PUBLIC_BASE_URL=http://127.0.0.1:8080
 FRONTEND_BASE_URL=http://127.0.0.1:5173
 
 # Redis/任务队列
+# REDIS_HOST: Redis 服务地址，Docker 部署时改为服务名 redis
+# REDIS_PORT: Redis 端口，默认 6379
+# REDIS_DB_CACHE: 用于缓存（热点资讯等）的 Redis 数据库编号
+# REDIS_DB_QUEUE: 用于任务队列（邮件发送等）的 Redis 数据库编号
+# REDIS_QUEUE_NAME: 任务队列名称，保持默认即可
 REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_DB_CACHE=0
@@ -411,10 +437,17 @@ REDIS_DB_QUEUE=1
 REDIS_QUEUE_NAME=crawler_tasks
 
 # 爬虫限流
+# CRAWLER_RATE_LIMIT: 每个时间窗口内最大请求次数
+# CRAWLER_RATE_WINDOW_SECONDS: 限流时间窗口（秒）
 CRAWLER_RATE_LIMIT=30
 CRAWLER_RATE_WINDOW_SECONDS=60
 
 # 模型密钥（如需）
+# LLM_API_KEY: Kimi/OpenAI 等 LLM 的 API Key
+# LLM_BASE_URL: LLM API 地址，使用 Kimi 保持默认，换其他模型按需修改
+# LLM_TIMEOUT: 请求超时时间（秒），长文档解析建议不低于 120
+# LLM_MODEL: 使用的模型名称，可选 moonshot-v1-32k、moonshot-v1-128k 等
+# LLM_TEMPERATURE: 模型温度，0 表示输出最稳定，政策解析场景建议保持 0
 LLM_API_KEY=sk-xxxxx
 LLM_BASE_URL=https://api.moonshot.cn/v1
 LLM_TIMEOUT=240
@@ -422,6 +455,15 @@ LLM_MODEL=moonshot-v1-8k
 LLM_TEMPERATURE=0
 
 # Agent Plugin（通用插件配置，统一由 GlobalConfig 控制）
+# AGENT_PLUGIN_ENABLED: 是否启用 Agent 插件，false 时智能体页仅支持普通对话
+# AGENT_PLUGIN_EMBEDDING_MODEL: 向量化模型名称，首次启动自动下载
+# AGENT_PLUGIN_COLLECTION_NAME: ChromaDB 向量集合名称，保持默认即可
+# AGENT_PLUGIN_RAG_CHUNK_SIZE: 知识库文本分片大小（字符数）
+# AGENT_PLUGIN_RAG_METADATA_EXTRAS: 向量存储时附加的元数据字段
+# AGENT_PLUGIN_RAG_FORCE_UPDATE: 是否强制重建向量库，true 时每次启动都重新向量化
+# AGENT_PLUGIN_RAG_TOP_K: 语义检索返回的最大候选片段数
+# AGENT_PLUGIN_RAG_SCORE_THRESHOLD: 相似度过滤阈值，低于此值的检索结果将被丢弃
+# AGENT_PLUGIN_SYSTEM_PROMPT: 智能体系统提示词
 AGENT_PLUGIN_ENABLED=true
 AGENT_PLUGIN_EMBEDDING_MODEL=paraphrase-multilingual-MiniLM-L12-v2
 AGENT_PLUGIN_COLLECTION_NAME=agent_plugin_memory
@@ -433,6 +475,12 @@ AGENT_PLUGIN_RAG_SCORE_THRESHOLD=0.7
 AGENT_PLUGIN_SYSTEM_PROMPT=You are an autonomous AI assistant called 云小圆. Call tools when necessary and answer accurately and concisely.
 
 # PaddleOCR（本地图片 OCR / PDF 图片 OCR / DOCX 图片 OCR，可选）
+# PADDLEOCR_ENABLED: 是否启用本地 PaddleOCR，false 时图片识别自动回退至 LLM OCR
+# PADDLEOCR_MODELS_DIR: PaddleOCR 模型存放目录，对应 app/resources/paddleocr
+# PADDLE_PDX_CACHE_HOME: PaddleX 缓存目录，对应 app/resources/paddlex
+# PADDLEOCR_LANG: 识别语言，ch 为中英文混合，en 为纯英文
+# PADDLEOCR_USE_ANGLE_CLS: 是否启用方向分类，处理旋转图片时建议开启
+# PADDLEOCR_ENABLE_STRUCTURE: 是否启用版面分析，处理表格、多栏排版时建议开启
 PADDLEOCR_ENABLED=false
 PADDLEOCR_MODELS_DIR=paddleocr
 PADDLE_PDX_CACHE_HOME=paddlex
@@ -446,6 +494,7 @@ OCR 运行策略说明：
 - 当 PaddleOCR 未启用、依赖缺失、模型不可用或本地识别结果为空时，系统会自动回退到 LLM OCR。
 - 因此，未配置 PaddleOCR 时系统不会失去 OCR 能力，但图片类解析会更多依赖 LLM OCR，速度、成本与稳定性会弱于本地模型链路。
 - `PADDLEOCR_MODELS_DIR` 默认对应 `app/resources/paddleocr`；`PADDLE_PDX_CACHE_HOME` 默认对应 `app/resources/paddlex`，PaddleX 额外下载的 `official_models` 等缓存也会放进项目目录，而不是默认落到 `~/.paddlex`。
+
 
 ### 运行
 
@@ -492,15 +541,11 @@ ADMIN_PASSWORD = your_admin_password
 ```
 
 ### 构建
-1. 安装打包工具:
-```
-pip install pyinstaller
-```
-2. 执行打包指令:
-Windows:     ```pyinstaller --onefile --noconsole --name CloudPolicyServer --add-data "app/core;app/core" app/main.py```
-macOS/Linux: ```pyinstaller --onefile --name CloudPolicyServer --add-data "app/core:app/core" app/main.py```
-构建完成后,在`CloudPolicy/dist/`生成可执行文件`CloudPolicyServer.exe`（Windows 系统）或`CloudPolicyServer`（Linux/macOS 系统）.
-3. 前端生产环境构建：
+
+#### 后端生产环境构建
+> **后端不使用 pyinstaller 打包**：本项目依赖 PaddleOCR、PyTorch、ChromaDB、LangChain 等重型库，打包体积超过 1GB；向量数据库、embedding 模型、uploads/ 等运行时资源无法静态内嵌；建议使用 Docker 部署。
+
+#### 前端生产环境构建
 ```shell 
 cd web
 npm install --verbose
@@ -510,7 +555,7 @@ npm run build
 **若集成到后端**: 将 `dist` 内的所有内容拷贝至后端项目的静态文件目录，并在 FastAPI 中挂载：
 app.mount("/", StaticFiles(directory="dist", html=True), name="static")
 
----
+
 
 ### Docker 部署 
 

@@ -28,3 +28,78 @@
 AI 在作品中的应用说明
 
 本作品以 Kimi 大语言模型为核心驱动。系统基于 LangGraph 构建智能体，由 Kimi 执行工具调用与链式推理，推理轨迹实时推送前端，实现决策过程可视化；Kimi 将政策原文解析为自由结构图谱，支持知识图谱展示与原文节点联动；集成 RAG 机制，调用 Kimi 前先检索政策知识库，以官方原文约束输出，抑制幻觉；图片、扫描件本地识别失败时自动回退至 Kimi OCR，保障多模态输入可用性。
+
+
+设计思路
+
+本作品围绕"政策信息难以抵达普通用户"这一核心痛点展开设计，构建了共享、解读、服务、协同四个层次的完整链路。
+
+在顶层设计上，平台采用展示入口与业务系统并行的双入口架构：展示层面向演示与传播，业务层面向真实使用，用户可从展示页自然切换至智能体工作区，降低使用门槛。
+
+在核心解析链路上，系统以 Kimi 大语言模型为驱动，通过 LangGraph 构建 Agent 智能体，将政策文件解析为自由结构知识图谱，而非固定模板卡片。这一设计的出发点在于：政策文本结构差异极大，固定模板无法覆盖所有场景，自由结构解析配合多级容错机制才能保证结果稳定可用。
+
+在可信度设计上，系统引入 RAG 检索增强机制，以政策知识库约束模型输出，同时通过 WebSocket 将推理轨迹实时推送前端，让用户看到智能体的每一步推理过程，从根本上解决 AI 黑盒问题。
+
+在业务闭环上，平台不止于文档解析，还提供政策广场、办事进度中心、用户评价纠错、认证主体发布审核等模块，形成从"看懂政策"到"办成事情"的完整路径。
+
+
+设计重点难点
+
+重点一：自由结构解析与图谱生成
+
+政策文本格式多样，无法依赖固定字段模板。系统采用"严格 JSON 约束输出 + 宽松修复 + 失败回退"三段式解析链路，并从解析结果中自动构建 nodes / links / dynamic_payload 图谱载荷，支持前端知识图谱可视化与原文节点联动。即使模型返回非理想结构，系统仍能生成最小可展示结果，保证前端不因单点失败整体崩溃。
+
+重点二：实时推理轨迹流式编排
+
+智能体推理过程需要实时展示，而非事后回放。系统通过 asyncio.Queue + to_thread 实现"主协程推送、工作线程推理"的并发模型，将 trace step、trace_done、chunk 等事件分阶段推送；前端为每条轨迹设置最小可读时长，避免工具步骤快速闪过；正文流式输出在最后一条轨迹展示完成后才释放，防止答案覆盖推理过程。
+
+重点三：多模态文档解析与 OCR 容错
+
+系统需要处理 PDF、Word、图片、截图、扫描件等多种格式，且各格式解析路径不同。难点在于图文混排 PDF 和内嵌大量图片的 DOCX：前者需要按页面顺序混排文本块与图片块，后者在图片数量过多时需自动切换为整文件抽取策略，避免逐图串行 OCR 导致超时。OCR 链路采用本地 PaddleOCR 优先、Kimi LLM OCR 兜底的双轨机制，保障任意部署环境下的可用性。
+
+重点四：RAG 检索与幻觉抑制
+
+大语言模型在政策领域易产生幻觉，错误的办理材料或截止日期会直接误导用户。系统通过 sentence-transformers 将政策知识库向量化存入 ChromaDB，在调用 Kimi 前先进行语义检索，以 top_k + score_threshold 双阈筛选高质量证据片段，以官方原文约束模型输出，并在智能体界面直接展示每条证据的相似度分数，使 RAG 能力可观测。
+
+
+作品安装说明
+
+推荐使用 Docker 一键部署，也支持本地分别启动前后端。
+
+一、Docker 部署（推荐）
+
+前置条件：已安装 Docker Desktop，已在根目录创建 .env 文件并填写必要环境变量（至少填写 SECRET_KEY 和 LLM_API_KEY）。
+
+首次部署前需在本地预下载模型（容器内无法自动下载）：
+python -m app.scripts.download_embedding
+python -m app.scripts.download_paddleocr_models（可选，不下载则自动使用 Kimi OCR）
+
+启动服务：
+docker-compose up --build -d
+
+访问地址：
+前端：http://localhost:80
+API 文档：http://localhost/api/docs
+
+停止服务：
+docker-compose down
+
+二、本地运行
+
+前端：
+cd web
+npm install
+npm run dev
+访问 http://localhost:5173
+
+后端：
+1. 启动 Redis：docker run --name redis -p 6379:6379 -d redis
+2. 在根目录创建 .env 并填写环境变量
+3. 创建并激活虚拟环境（需 Python 3.12）：
+   python -m venv .venv
+   .venv\Scripts\activate（Windows）或 source .venv/bin/activate（macOS/Linux）
+4. 安装依赖：pip install -r app/requirements.txt
+5. 启动服务：uvicorn app.main:app --reload
+
+首次启动会自动完成数据库初始化、Embedding 模型下载与向量库初始化，建议网络畅通。
+如需跳过 PaddleOCR 下载，可在 .env 中设置 PADDLEOCR_ENABLED=false，系统将使用 Kimi OCR 作为备选。

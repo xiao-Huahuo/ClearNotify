@@ -609,6 +609,7 @@ docker pull python:3.12-slim-bullseye
     *   `-d`: 在后台运行服务。
 
 2. **访问应用**:
+    *   可以在docker-compose完成构建后在浏览器中访问`http://localhost`访问应用.
     *   前端应用将通过 Nginx 运行在 `http://localhost:80`。
     *   后端 API 将在 Docker 内部运行于 `http://app:8080`，并通过前端 Nginx 代理访问。
     *   API 文档可通过 `http://localhost/api/docs`、`http://localhost/api/redoc`、`http://localhost/api/openapi.json` 与 `http://localhost/api/openapi.yaml` 访问。

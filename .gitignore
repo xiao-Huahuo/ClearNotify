@@ -85,3 +85,5 @@ paddlex
 .superpowers
 .worktrees
 skills-lock.json
+/kmp-renders/*
+!/kmp-renders/.gitkeep

@@ -629,20 +629,24 @@ docker pull python:3.12-slim-bullseye
 ```shell
 .
 └── doc/                                      # 【项目文档】设计方案、协作规则与说明文档
-    ├── AGENTS.md                             # 【协作说明】多智能体协作约定与角色说明
-    ├── AGENT_TOOLS.md                         # 【工具说明】Agent 可用工具与能力清单
-    ├── CHANGE_HISTORY.md                     # 【变更记录】阶段性改动与迭代记录
-    ├── CLAUDE.md                             # 【协作规范】Claude/Codex 类工具协作提示与规则
-    ├── CloudPolicy.openapi.yaml              # 【接口文档】项目 OpenAPI YAML 快照
-    ├── PUBLIC_DATA_ANALYSIS_PLAN.md          # 【方案】公共数据分析功能规划文档
-    ├── SHOWCASE_IMPLEMENTATION_PLAN.md       # 【方案】展示首页与展示大屏实现计划
-    ├── HISTORY_REDESIGN_PLAN.md              # 【方案】历史记录重设计计划
-    ├── SEARCH_PLAN.md                        # 【方案】全局Trie+RAG搜索功能设计与实现计划
-    ├── UI_COMPATITY_PLAN.md                  # 【方案】页面色系切换与响应式适配计划
-    ├── README-NOW.md                         # 【新版说明】当前阶段的扩展版项目说明书
     ├── TODO.md                               # 【任务单】当前开发待办与部署问题清单
-    ├── prompt.md                             # 【提示词文档】项目相关 Prompt 记录
-    ├── 开发规范.md                            # 【规范】代码组织、协作与开发规范说明
+    ├── prompt.md                             # 【比赛填报】比赛相关填报材料
+    ├── specs/                                # 【功能方案】各功能模块的设计与实现计划
+    │   ├── AGENT_TOOLS.md                    # 【工具说明】Agent 可用工具与能力清单
+    │   ├── GRAPH_TEXT_PRESENTATION_PLAN.md   # 【方案】图谱文本展示设计计划
+    │   ├── HISTORY_REDESIGN_PLAN.md          # 【方案】历史记录重设计计划
+    │   ├── PHONE_AUTH_IMPLEMENTATION_PLAN.md # 【方案】手机号认证实现计划
+    │   ├── PUBLIC_DATA_ANALYSIS_PLAN.md      # 【方案】公共数据分析功能规划文档
+    │   ├── SEARCH_PLAN.md                    # 【方案】全局Trie+RAG搜索功能设计与实现计划
+    │   ├── SHOWCASE_IMPLEMENTATION_PLAN.md   # 【方案】展示首页与展示大屏实现计划
+    │   └── UI_COMPATITY_PLAN.md              # 【方案】页面色系切换与响应式适配计划
+    ├── dev/                                  # 【开发规范】协作约定与开发说明
+    │   ├── README-NOW.md                     # 【新版说明】当前阶段的扩展版项目说明书
+    │   └── 开发规范.md                        # 【规范】代码组织、协作与开发规范说明
+    ├── history/                              # 【变更记录】阶段性改动与迭代记录
+    │   └── CHANGE_HISTORY.md                 # 【变更记录】阶段性改动与迭代记录
+    ├── api/                                  # 【接口文档】OpenAPI 快照
+    │   └── CloudPolicy.openapi.yaml          # 【接口文档】项目 OpenAPI YAML 快照
     └── assets/                               # 【配图】README说明配图
 ```
 ### API文档

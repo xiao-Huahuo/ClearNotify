@@ -2,6 +2,8 @@ import json
 import logging
 import re
 import sqlite3
+from dataclasses import dataclass
+from html import escape
 from pathlib import Path
 from typing import Annotated, TypedDict, Any, Generator
 
@@ -54,44 +56,190 @@ class AgentState(TypedDict):
     thought_event: str
 
 
-AGENT_GRAPH_SVG_TEMPLATE = """<svg xmlns="http://www.w3.org/2000/svg" width="980" height="420" viewBox="0 0 980 420">
-  <defs>
-    <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-      <polygon points="0 0, 10 3.5, 0 7" fill="#445"/>
-    </marker>
-    <style>
-      .n{fill:#f8fafc;stroke:#334155;stroke-width:2;rx:12;ry:12}
-      .t{font:14px 'Microsoft YaHei',sans-serif;fill:#0f172a}
-      .l{stroke:#475569;stroke-width:2;marker-end:url(#arrow);fill:none}
-      .h{font:12px 'Microsoft YaHei',sans-serif;fill:#334155}
-      .ttl{font:18px 'Microsoft YaHei',sans-serif;fill:#111827;font-weight:700}
-    </style>
-  </defs>
-  <text x="24" y="34" class="ttl">AgentGraph ?????</text>
+@dataclass(frozen=True)
+class AgentGraphNode:
+    id: str
+    x: int
+    y: int
+    width: int = 168
+    height: int = 56
+    shape: str = "rect"
 
-  <rect class="n" x="40"  y="90"  width="150" height="56"/><text class="t" x="89"  y="124">decide</text>
-  <rect class="n" x="250" y="90"  width="150" height="56"/><text class="t" x="307" y="124">agent</text>
-  <rect class="n" x="460" y="90"  width="150" height="56"/><text class="t" x="515" y="124">action</text>
-  <rect class="n" x="250" y="230" width="150" height="56"/><text class="t" x="304" y="264">answer</text>
-  <rect class="n" x="670" y="160" width="170" height="56"/><text class="t" x="719" y="194">summarize</text>
-  <rect class="n" x="880" y="160" width="70"  height="56"/><text class="t" x="904" y="194">END</text>
 
-  <path class="l" d="M190 118 L250 118"/><text class="h" x="202" y="108">tools</text>
-  <path class="l" d="M190 130 C220 190, 220 250, 250 258"/><text class="h" x="194" y="208">answer</text>
-  <path class="l" d="M400 118 L460 118"/><text class="h" x="414" y="108">has tool_calls</text>
-  <path class="l" d="M610 118 L400 118"/><text class="h" x="488" y="106">loop</text>
-  <path class="l" d="M400 130 C500 150, 580 170, 670 188"/><text class="h" x="486" y="160">no tool_calls</text>
-  <path class="l" d="M400 258 C510 240, 580 210, 670 188"/>
-  <path class="l" d="M840 188 L880 188"/>
-</svg>
-"""
+@dataclass(frozen=True)
+class AgentGraphEdge:
+    source: str
+    target: str
+    label: str | None = None
+
+
+@dataclass(frozen=True)
+class AgentGraphSpec:
+    title: str
+    nodes: tuple[AgentGraphNode, ...]
+    edges: tuple[AgentGraphEdge, ...]
+
+
+AGENT_GRAPH_TITLE = "Agent Workflow"
+AGENT_WORKFLOW_NODE_ORDER = (
+    "input_safety",
+    "decide",
+    "agent",
+    "tool_safety",
+    "action",
+    "blocked",
+    "answer",
+    "summarize",
+    "output_safety",
+)
+AGENT_WORKFLOW_LAYOUT: dict[str, AgentGraphNode] = {
+    "START": AgentGraphNode(id="START", x=24, y=160, width=92, height=42, shape="pill"),
+    "input_safety": AgentGraphNode(id="input_safety", x=150, y=160),
+    "decide": AgentGraphNode(id="decide", x=360, y=80),
+    "agent": AgentGraphNode(id="agent", x=360, y=160),
+    "tool_safety": AgentGraphNode(id="tool_safety", x=580, y=80),
+    "action": AgentGraphNode(id="action", x=790, y=80),
+    "blocked": AgentGraphNode(id="blocked", x=360, y=300),
+    "answer": AgentGraphNode(id="answer", x=580, y=300),
+    "summarize": AgentGraphNode(id="summarize", x=790, y=220),
+    "output_safety": AgentGraphNode(id="output_safety", x=1010, y=220),
+    "END": AgentGraphNode(id="END", x=1240, y=220, width=92, height=42, shape="pill"),
+}
+AGENT_WORKFLOW_CONDITIONAL_EDGES = (
+    ("input_safety", "blocked", "block"),
+    ("input_safety", "decide", "allow"),
+    ("decide", "agent", "tools"),
+    ("decide", "answer", "answer"),
+    ("agent", "tool_safety", "tools"),
+    ("agent", "summarize", "summarize"),
+    ("tool_safety", "action", "action"),
+    ("tool_safety", "summarize", "summarize"),
+)
+AGENT_WORKFLOW_DIRECT_EDGES = (
+    ("START", "input_safety"),
+    ("action", "agent"),
+    ("blocked", "output_safety"),
+    ("answer", "summarize"),
+    ("summarize", "output_safety"),
+    ("output_safety", "END"),
+)
+
+
+def build_agent_graph_spec() -> AgentGraphSpec:
+    nodes = tuple(AGENT_WORKFLOW_LAYOUT[name] for name in ("START", *AGENT_WORKFLOW_NODE_ORDER, "END"))
+    edges = tuple(
+        [AgentGraphEdge(source, target, label) for source, target, label in AGENT_WORKFLOW_CONDITIONAL_EDGES]
+        + [AgentGraphEdge(source, target) for source, target in AGENT_WORKFLOW_DIRECT_EDGES]
+    )
+    return AgentGraphSpec(title=AGENT_GRAPH_TITLE, nodes=nodes, edges=edges)
+
+
+def _node_center_x(node: AgentGraphNode) -> float:
+    return node.x + node.width / 2
+
+
+def _node_center_y(node: AgentGraphNode) -> float:
+    return node.y + node.height / 2
+
+
+def _edge_anchor_points(source: AgentGraphNode, target: AgentGraphNode) -> tuple[tuple[float, float], tuple[float, float]]:
+    source_cx = _node_center_x(source)
+    source_cy = _node_center_y(source)
+    target_cx = _node_center_x(target)
+    target_cy = _node_center_y(target)
+
+    dx = target_cx - source_cx
+    dy = target_cy - source_cy
+    horizontal = abs(dx) >= abs(dy)
+
+    if horizontal:
+        start = (source.x + source.width, source_cy) if dx >= 0 else (source.x, source_cy)
+        end = (target.x, target_cy) if dx >= 0 else (target.x + target.width, target_cy)
+    else:
+        start = (source_cx, source.y + source.height) if dy >= 0 else (source_cx, source.y)
+        end = (target_cx, target.y) if dy >= 0 else (target_cx, target.y + target.height)
+    return start, end
+
+
+def _edge_path(source: AgentGraphNode, target: AgentGraphNode) -> tuple[str, float, float]:
+    start, end = _edge_anchor_points(source, target)
+    sx, sy = start
+    ex, ey = end
+    mid_x = (sx + ex) / 2
+    mid_y = (sy + ey) / 2
+
+    if abs(sy - ey) < 1 and ex > sx:
+        path = f"M{sx:.1f} {sy:.1f} L{ex:.1f} {ey:.1f}"
+    elif abs(sy - ey) < 1 and ex < sx:
+        offset = 56.0
+        path = (
+            f"M{sx:.1f} {sy:.1f} "
+            f"C{sx - offset:.1f} {sy - offset:.1f}, {ex + offset:.1f} {ey - offset:.1f}, {ex:.1f} {ey:.1f}"
+        )
+        mid_y -= offset
+    else:
+        ctrl_dx = max(abs(ex - sx) * 0.35, 48.0)
+        path = f"M{sx:.1f} {sy:.1f} C{sx + ctrl_dx:.1f} {sy:.1f}, {ex - ctrl_dx:.1f} {ey:.1f}, {ex:.1f} {ey:.1f}"
+    return path, mid_x, mid_y
+
+
+def render_agent_graph_svg(spec: AgentGraphSpec | None = None) -> str:
+    spec = spec or build_agent_graph_spec()
+    width = max(node.x + node.width for node in spec.nodes) + 48
+    height = max(node.y + node.height for node in spec.nodes) + 56
+
+    parts = [
+        f'<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}" viewBox="0 0 {width} {height}">',
+        "  <defs>",
+        '    <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">',
+        '      <polygon points="0 0, 10 3.5, 0 7" fill="#475569"/>',
+        "    </marker>",
+        "    <style>",
+        "      .node{fill:#f8fafc;stroke:#334155;stroke-width:2}",
+        "      .pill{fill:#e2e8f0;stroke:#334155;stroke-width:2}",
+        "      .text{font:14px 'Microsoft YaHei',sans-serif;fill:#0f172a}",
+        "      .edge{stroke:#475569;stroke-width:2;marker-end:url(#arrow);fill:none}",
+        "      .edge-label{font:12px 'Microsoft YaHei',sans-serif;fill:#334155}",
+        "      .title{font:18px 'Microsoft YaHei',sans-serif;fill:#111827;font-weight:700}",
+        "    </style>",
+        "  </defs>",
+        f'  <text x="24" y="34" class="title">{escape(spec.title)}</text>',
+    ]
+
+    node_lookup = {node.id: node for node in spec.nodes}
+    for edge in spec.edges:
+        source = node_lookup[edge.source]
+        target = node_lookup[edge.target]
+        path, label_x, label_y = _edge_path(source, target)
+        parts.append(f'  <path class="edge" d="{path}"/>')
+        if edge.label:
+            parts.append(
+                f'  <text class="edge-label" x="{label_x:.1f}" y="{label_y - 8:.1f}" text-anchor="middle">{escape(edge.label)}</text>'
+            )
+
+    for node in spec.nodes:
+        cx = _node_center_x(node)
+        cy = _node_center_y(node)
+        label_y = cy + 5
+        if node.shape == "pill":
+            rx = node.width / 2
+            ry = node.height / 2
+            parts.append(f'  <ellipse class="pill" cx="{cx:.1f}" cy="{cy:.1f}" rx="{rx:.1f}" ry="{ry:.1f}"/>')
+        else:
+            parts.append(
+                f'  <rect class="node" x="{node.x}" y="{node.y}" width="{node.width}" height="{node.height}" rx="12" ry="12"/>'
+            )
+        parts.append(f'  <text class="text" x="{cx:.1f}" y="{label_y:.1f}" text-anchor="middle">{escape(node.id)}</text>')
+
+    parts.append("</svg>")
+    return "\n".join(parts)
 
 
 def write_agent_graph_svg(graph_path: Path, overwrite: bool = False) -> bool:
     if graph_path.exists() and not overwrite:
         return False
     graph_path.parent.mkdir(parents=True, exist_ok=True)
-    graph_path.write_text(AGENT_GRAPH_SVG_TEMPLATE, encoding="utf-8")
+    graph_path.write_text(render_agent_graph_svg(), encoding="utf-8")
     return True
 
 
@@ -132,41 +280,7 @@ class AgentCore:
         )
 
         self.workflow = StateGraph(AgentState)
-        self.workflow.add_node("input_safety", self._input_safety_check)
-        self.workflow.add_node("decide", self._decide_need_tools)
-        self.workflow.add_node("agent", self._call_model)
-        self.workflow.add_node("tool_safety", self._tool_safety_check)
-        self.workflow.add_node("action", tool_node)
-        self.workflow.add_node("blocked", self._blocked_reply)
-        self.workflow.add_node("answer", self._direct_answer)
-        self.workflow.add_node("summarize", self._summarize_and_store)
-        self.workflow.add_node("output_safety", self._output_safety_check)
-        self.workflow.set_entry_point("input_safety")
-        self.workflow.add_conditional_edges(
-            "input_safety",
-            self._route_after_input_safety,
-            path_map={"block": "blocked", "allow": "decide"},
-        )
-        self.workflow.add_conditional_edges(
-            "decide",
-            self._route_after_decide,
-            path_map={"tools": "agent", "answer": "answer"},
-        )
-        self.workflow.add_conditional_edges(
-            "agent",
-            self._should_continue,
-            path_map={"tools": "tool_safety", "summarize": "summarize"},
-        )
-        self.workflow.add_conditional_edges(
-            "tool_safety",
-            self._route_after_tool_safety,
-            path_map={"action": "action", "summarize": "summarize"},
-        )
-        self.workflow.add_edge("action", "agent")
-        self.workflow.add_edge("blocked", "output_safety")
-        self.workflow.add_edge("answer", "summarize")
-        self.workflow.add_edge("summarize", "output_safety")
-        self.workflow.add_edge("output_safety", END)
+        self._configure_workflow()
 
         self.conn = sqlite3.connect(AgentConfig.RELATIONAL_DB_PATH, check_same_thread=False)
         self.saver = SqliteSaver(self.conn)
@@ -175,10 +289,51 @@ class AgentCore:
     def _ensure_graph_image(self):
         graph_path = Path(GlobalConfig.AGENT_GRAPH_SVG_PATH)
         try:
-            write_agent_graph_svg(graph_path=graph_path, overwrite=False)
+            write_agent_graph_svg(graph_path=graph_path, overwrite=True)
         except Exception:
             # ??????????????????
             pass
+
+    def _configure_workflow(self) -> None:
+        node_handlers = {
+            "input_safety": self._input_safety_check,
+            "decide": self._decide_need_tools,
+            "agent": self._call_model,
+            "tool_safety": self._tool_safety_check,
+            "action": tool_node,
+            "blocked": self._blocked_reply,
+            "answer": self._direct_answer,
+            "summarize": self._summarize_and_store,
+            "output_safety": self._output_safety_check,
+        }
+        for node_name in AGENT_WORKFLOW_NODE_ORDER:
+            self.workflow.add_node(node_name, node_handlers[node_name])
+
+        self.workflow.set_entry_point("input_safety")
+        self.workflow.add_conditional_edges(
+            "input_safety",
+            self._route_after_input_safety,
+            path_map={label: target for source, target, label in AGENT_WORKFLOW_CONDITIONAL_EDGES if source == "input_safety"},
+        )
+        self.workflow.add_conditional_edges(
+            "decide",
+            self._route_after_decide,
+            path_map={label: target for source, target, label in AGENT_WORKFLOW_CONDITIONAL_EDGES if source == "decide"},
+        )
+        self.workflow.add_conditional_edges(
+            "agent",
+            self._should_continue,
+            path_map={label: target for source, target, label in AGENT_WORKFLOW_CONDITIONAL_EDGES if source == "agent"},
+        )
+        self.workflow.add_conditional_edges(
+            "tool_safety",
+            self._route_after_tool_safety,
+            path_map={label: target for source, target, label in AGENT_WORKFLOW_CONDITIONAL_EDGES if source == "tool_safety"},
+        )
+        for source, target in AGENT_WORKFLOW_DIRECT_EDGES:
+            if source == "START":
+                continue
+            self.workflow.add_edge(source, END if target == "END" else target)
 
     def _extract_file_refs_from_text(self, text: str) -> list[str]:
         refs: list[str] = []

@@ -184,11 +184,14 @@
 │   ├── package-lock.json       # 【环境锁定】前端依赖版本锁定文件，确保一致的构建环境
 │   ├── nginx.conf              # 【网关】Nginx配置
 │   └── Dockerfile              # 网页端Dockerfile配置
-├── .env                        # 【变量】环境变量：存储 API Keys、数据库路径及邮件服务器私密信息
+├── .env                        # 【变量】开发环境环境变量：存储 API Keys、数据库路径及邮件服务器私密信息
+├── .env.example                # 【示例】环境变量字段示例,不含有真实身份信息
+├── .server.env                 # 【变量】生产环境环境变量
 ├── .gitignore                  # 【版本控制】Git 忽略清单，排除敏感配置与临时文件息
 ├── .dockerignore               # 【Docker】Docker 构建忽略清单，优化镜像构建上下文
 ├── README.md                   # 【文档】项目说明书、技术架构与启动指南
 ├── admin_original_data.json    # 【预置数据】系统初始化的政策公告测试数据集
+└── docker-compose.prod.yml     # Docker-Compose生产部署配置
 └── docker-compose.yml          # Docker-Compose自动部署配置
 ```
 ### 运行时生成目录
@@ -220,11 +223,12 @@
 
 ### 1. 声明式智能体协同架构 (Declarative Agentic Workflow)
 项目后端并未采用简单的 API 转发，而是构建了一套基于 **LangChain** 的“逻辑自洽”智能体层，重点在于对非结构化文本的深度理解与策略分发。
+![Agent 工作流图](./AgentGraph.svg "Agent工作流")
 * **可视化不确定拆解**：系统面对政策公告、社区通知、拍照扫描件和截图 OCR 等不同来源内容时，并不依赖单一固定模板，而是通过 Prompt 链、严格 JSON 输出、局部修复与失败回退机制，对非标准化文本进行开放式拆解。它在抽取“适用对象、办理事项、材料清单、办理流程、风险提醒”等核心字段的同时，还会同步生成 `nodes / links / dynamic_payload / visual_config` 等可视化载荷，让解析结果能够直接服务于知识图谱、结构卡片与结果面板渲染。
 * **思考过程可视化 (CoT Transparency)**：利用大模型的思维链（Chain-of-Thought）技术，系统将 AI 的解析逻辑从“黑盒”转变为“白屏”。用户可以直观查看到智能体是如何从一段长达数千字的原文中，逐步推导出具体办事步骤的。这种**可解释性 AI** 的设计，显著提升了政策解读场景下的用户信任度。
 * **结果与展示同构**：智能体输出并非只面向接口返回，而是从设计之初就与前端结果页、知识图谱、标签体系、原文回看和后续二次处理保持同构关系，使“模型结果”能够稳定进入业务页面，而非停留在一次性的文本回答层。
 * **展示意图控制机制**：系统不会把所有 Agent 对话一律强制转成图谱或 OCR 卡片，而是先结合用户话术、附件类型和当前会话语义，判断当前是否属于“上传解析任务”。只有在用户明确提出“解析 / 提取 / 识别 / 图谱化”等诉求时，才激活附件展示链路：文档默认进入图谱小窗，图片则继续细分为“提取文字 / OCR”与“解析 / 可视化”两类意图，前者直接返回整理后的正文内容，避免把工具 JSON 或转义换行原样暴露给用户，后者再进入图谱面板；普通闲聊、身份询问、工具咨询等常规问答则保持自然对话输出，不额外触发解析展示卡片。这样实现了“解析型任务强展示、普通型问答轻交互”的稳定分流，避免任何问题都被强行图谱化。 
-
+* **三层安全审核**：系统构建了从输入到输出的全链路安全防护体系，依次通过输入安全校验、工具安全审核、输出安全校验三重核心关卡，结合节点权限管控与异常行为拦截，既防范输入内容中的风险隐患，也确保工具调用合规性和输出结果安全性，为解析任务全程筑牢安全屏障，保障业务流程稳定可控。
 ### 2. 实时推理轨迹流式编排 (Realtime Trace Streaming Pipeline)
 CloudCycle Agent 页面对“工具调用过程”的展示，不再采用任务结束后统一回放的伪流式模式，而是拆分为“后端实时产出 trace、前端按可读节奏消费 trace”的双阶段链路。
 * **后端真流式推送**：WebSocket 层不再等待 `run_agent` 整体结束后再一次性发送所有工具调用，而是将推理任务放入独立线程执行，再通过 `asyncio.Queue` 把 `trace_callback` 产生的思考事件、工具调用事件实时回推到主协程。这样前端看到的是正在发生的推理过程，而不是结束后的补播录像。
@@ -643,17 +647,24 @@ docker pull python:3.12-slim-bullseye
 1. 准备云服务器
   - 系统建议 Ubuntu 22.04/24.04。
   - 安装 Docker 和 Compose 插件 和 Git。
-    ``` bash
-    sudo apt update
-    sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin git
-    sudo systemctl enable --now docker
-    ```
-2. 配安全组/防火墙
-   - 放行 22、80。
-   - 如果后面要上 HTTPS，再放行 443。
-   - 不要对公网放行 6379。
-   - 不要对公网放行 8080。
-     说明：生产部署使用的 `docker-compose.prod.yml` 只对外暴露 80 端口；Redis(6379) 和后端 app(8080) 仅在容器内部网络中使用，不应该对公网开放。
+   ```bash
+   sudo apt update
+   sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin git
+   sudo systemctl enable --now docker
+   ```
+   注意：如果你之前装过 `docker.io`，可能出现 `containerd.io conflicts: containerd`。这种情况下不要混装，统一使用 Docker 官方这一套即可。
+2. 阿里云安全组放行 80
+   如果服务器本机容器正常，但浏览器打不开 `http://47.86.23.163/`，最常见原因不是代码，而是云安全组没有放行 80。
+   本次真实配置为：
+   - 授权策略：`允许`
+   - 优先级：`1`
+   - 协议类型：`TCP`
+   - 访问来源：`IPv4`
+   - 源地址：`0.0.0.0/0`
+   - 访问目的：本实例
+   - 端口：`HTTP(80)`
+   - 描述：`http`
+   如后续要上 HTTPS，再加一条 `HTTPS(443)`。
 
 3. 在服务器中 clone 项目源代码
     ``` bash
@@ -676,42 +687,68 @@ docker pull python:3.12-slim-bullseye
    - `SMTP_*`、`LLM_*`：替换为服务器实际可用的配置
    - `PADDLEOCR_ENABLED`：如首次部署因 OCR 模型准备失败，可先临时设为 `false`
 
-5. 下载模型资源
-   云服务器部署与本地 Docker 部署一样：如果 embedding 模型还没有准备好，就直接执行 `docker compose up`，部署可能失败，或在容器启动阶段因模型检查失败而无法完成。
-   至少确认以下目录中的模型文件已就绪：
-   - `app/resources/embedding`
-   **独立下载脚本见"### Docker部署"的第1条.**
+5. 先构建 app 镜像
+   ```bash
+   docker compose --env-file .server.env -f docker-compose.prod.yml build app
+   ```
 
-6. 构建容器
-    使用生产环境专用的 `docker-compose.prod.yml` 构建：
-    ```bash
-    docker compose --env-file .server.env -f docker-compose.prod.yml up --build -d
-    docker compose --env-file .server.env -f docker-compose.prod.yml logs -f
-    ```
+6. 用 app 镜像把 embedding 下载到运行卷
+   这是这次实际部署里最关键的一步。因为后端启动时会检查 embedding 模型，如果直接 `up -d` 而模型还没准备好，`CloudPolicy_Service` 会反复启动失败。
+   ```bash
+   docker compose --env-file .server.env -f docker-compose.prod.yml run --rm --no-deps app /bin/sh -lc "
+     set -eu
+     mkdir -p /runtime/resources/embedding
+     rm -rf /server/app/resources/embedding
+     ln -snf /runtime/resources/embedding /server/app/resources/embedding
+     python -m app.scripts.download_embedding
+   "
+   ```
 
-7. 公网访问
+7. 可选：确认 embedding 已进入运行卷
+   ```bash
+   docker compose --env-file .server.env -f docker-compose.prod.yml run --rm --no-deps app /bin/sh -lc "
+     find /runtime/resources/embedding -maxdepth 2 -type f | head
+   "
+   ```
+
+8. 正式启动生产容器
+   ```bash
+   docker compose --env-file .server.env -f docker-compose.prod.yml up -d --build
+   docker compose --env-file .server.env -f docker-compose.prod.yml logs -f
+   ```
+   如果看到：
+   - `CloudPolicy_Redis_Service` healthy
+   - `CloudPolicy_Service` healthy
+   - `CloudPolicy_Web` started
+   说明容器层已经启动完成。
+   
+9. 最终验收
    在浏览器访问：
    - `http://47.86.23.163/`
    - `http://47.86.23.163/api/docs`
-  如果首页能开、`/api/docs` 能开，说明前后端代理链路通了。
+   两个地址都能打开，就说明这次公网部署已经真正完成。
 
-注:
-- 运行时:
-  - 项目根目录为 `/opt/cloudpolicy/`。
-  - 业务运行时数据统一落到 Docker named volume `cloudpolicy_app_runtime`，包括 `database.db`、`uploads`、`logs`、`mail_outbox`、OCR/embedding 目录。
-  - Redis 数据统一落到 Docker named volume `cloudpolicy_redis_data`。
-- 公网运行时目录:
-```shell
-/opt/cloudpolicy/
-├── docker-compose.prod.yml      # 公网部署使用的 Compose 文件
-├── .server.env                  # 服务器环境变量
-├── app/                         # 后端源码与 Dockerfile
-├── web/                         # 前端源码与 Nginx 配置
-└── Docker named volumes
-    ├── cloudpolicy_app_runtime  # 运行时数据卷：database.db、uploads、logs、mail_outbox、OCR/embedding
-    └── cloudpolicy_redis_data   # Redis 数据卷
-```
-
+10. 关机后重新启动的方法
+  1. 确认 Docker 是否起来
+  ```bash
+  sudo systemctl status docker
+  ```
+  2. 进入项目目录
+  ```bash
+  cd /opt/cloudpolicy
+  ```
+  3. 启动容器
+  ```bash
+  docker compose --env-file .server.env -f docker-compose.prod.yml up -d
+  ```
+  4. 看状态
+  ```bash
+  docker compose --env-file .server.env -f docker-compose.prod.yml ps
+  ```
+  5. 如果有问题，再看日志
+  ```bash
+  docker compose --env-file .server.env -f docker-compose.prod.yml logs -f
+  ```
 ---
 ## 文档
 ### 静态文档
@@ -719,7 +756,7 @@ docker pull python:3.12-slim-bullseye
 .
 └── doc/                                      # 【项目文档】设计方案、协作规则与说明文档
     ├── TODO.md                               # 【任务单】当前开发待办与部署问题清单
-    ├── prompt.md                             # 【比赛填报】比赛相关填报材料
+    ├── prompt.md                             # 【垃圾】小垃圾
     ├── specs/                                # 【功能方案】各功能模块的设计与实现计划
     │   ├── AGENT_TOOLS.md                    # 【工具说明】Agent 可用工具与能力清单
     │   ├── GRAPH_TEXT_PRESENTATION_PLAN.md   # 【方案】图谱文本展示设计计划
@@ -731,6 +768,8 @@ docker pull python:3.12-slim-bullseye
     │   └── UI_COMPATITY_PLAN.md              # 【方案】页面色系切换与响应式适配计划
     ├── dev/                                  # 【开发规范】协作约定与开发说明
     │   ├── README-NOW.md                     # 【新版说明】当前阶段的扩展版项目说明书
+    │   ├── 路由.md                           # 【路由说明】整个项目的路由配置与原理
+    │   ├── 详细设计与开发文档.md               # 【设计与开发】项目开发说明书
     │   └── 开发规范.md                        # 【规范】代码组织、协作与开发规范说明
     ├── history/                              # 【变更记录】阶段性改动与迭代记录
     │   └── CHANGE_HISTORY.md                 # 【变更记录】阶段性改动与迭代记录

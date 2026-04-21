@@ -44,11 +44,24 @@ services:
       - -lc
       - |
           set -eu
+          copy_if_missing() {
+            src="$1"
+            dst="$2"
+            if [ ! -d "$src" ]; then
+              return 0
+            fi
+            if [ -L "$src" ] && [ "$(readlink -f "$src")" = "$(readlink -f "$dst")" ]; then
+              return 0
+            fi
+            if [ -z "$(ls -A "$dst" 2>/dev/null)" ]; then
+              cp -a "$src"/. "$dst"/
+            fi
+          }
           mkdir -p /runtime/uploads /runtime/logs /runtime/mail_outbox /runtime/resources/embedding /runtime/resources/paddleocr /runtime/resources/paddlex
           touch /runtime/database.db
-          if [ -d /server/app/resources/embedding ] && [ -z "$(ls -A /runtime/resources/embedding 2>/dev/null)" ]; then cp -a /server/app/resources/embedding/. /runtime/resources/embedding/; fi
-          if [ -d /server/app/resources/paddleocr ] && [ -z "$(ls -A /runtime/resources/paddleocr 2>/dev/null)" ]; then cp -a /server/app/resources/paddleocr/. /runtime/resources/paddleocr/; fi
-          if [ -d /server/app/resources/paddlex ] && [ -z "$(ls -A /runtime/resources/paddlex 2>/dev/null)" ]; then cp -a /server/app/resources/paddlex/. /runtime/resources/paddlex/; fi
+          copy_if_missing /server/app/resources/embedding /runtime/resources/embedding
+          copy_if_missing /server/app/resources/paddleocr /runtime/resources/paddleocr
+          copy_if_missing /server/app/resources/paddlex /runtime/resources/paddlex
           ln -snf /runtime/database.db /server/database.db
           rm -rf /server/uploads /server/logs /server/mail_outbox /server/app/resources/embedding /server/app/resources/paddleocr /server/app/resources/paddlex
           ln -snf /runtime/uploads /server/uploads

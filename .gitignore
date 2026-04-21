@@ -25,12 +25,12 @@ venv/
 env/
 ENV/
 
-# Environment files
-.env
-.server.env
-*.env
-.env.*
-!.env.example
+# Environment files 暂时不ignore
+# .env
+# .server.env
+# *.env
+# .env.*
+# !.env.example
 
 # IDE / OS
 .idea/

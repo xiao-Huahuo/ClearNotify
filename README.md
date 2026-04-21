@@ -225,7 +225,7 @@
 
 ## 技术亮点 (Technical Highlights)
 
-### 1. 声明式智能体流程编排架构 (Declarative Agentic Workflow)
+### 1. 动态自适应任务图智能体 (Dynamic Adaptive Task Graph Agent)
 项目后端并未采用简单的 API 转发，而是构建了一套基于 **LangChain** 的“逻辑自洽”智能体层，重点在于对非结构化文本的深度理解与策略分发。
 ![Agent 工作流图](./AgentGraph.svg "Agent工作流")
 * **可视化不确定拆解**：系统面对政策公告、社区通知、拍照扫描件和截图 OCR 等不同来源内容时，并不依赖单一固定模板，而是通过 Prompt 链、严格 JSON 输出、局部修复与失败回退机制，对非标准化文本进行开放式拆解。它在抽取“适用对象、办理事项、材料清单、办理流程、风险提醒”等核心字段的同时，还会同步生成 `nodes / links / dynamic_payload / visual_config` 等可视化载荷，让解析结果能够直接服务于知识图谱、结构卡片与结果面板渲染。
